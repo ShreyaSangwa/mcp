@@ -9,4 +9,7 @@ public sealed class CollaborationsListOptions : BaseManagedCleanroomOptions
 {
     [JsonPropertyName(ManagedCleanroomOptionDefinitions.ActiveOnlyName)]
     public bool? ActiveOnly { get; set; }
+
+    [JsonPropertyName(ManagedCleanroomOptionDefinitions.AllowUntrustedCertName)]
+    public bool AllowUntrustedCert { get; set; }
 }

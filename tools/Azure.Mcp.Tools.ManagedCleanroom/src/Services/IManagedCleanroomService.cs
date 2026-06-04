@@ -10,5 +10,7 @@ public interface IManagedCleanroomService
     Task<List<Collaboration>> ListCollaborationsAsync(
         string endpoint,
         bool? activeOnly = null,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
         CancellationToken cancellationToken = default);
 }

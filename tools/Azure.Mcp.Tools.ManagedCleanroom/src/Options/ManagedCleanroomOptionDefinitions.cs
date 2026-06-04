@@ -9,6 +9,7 @@ public static class ManagedCleanroomOptionDefinitions
 {
     public const string EndpointName = "endpoint";
     public const string ActiveOnlyName = "active-only";
+    public const string AllowUntrustedCertName = "allow-untrusted-cert";
 
     public static readonly Option<string> Endpoint = new($"--{EndpointName}")
     {
@@ -19,6 +20,12 @@ public static class ManagedCleanroomOptionDefinitions
     public static readonly Option<bool?> ActiveOnly = new($"--{ActiveOnlyName}")
     {
         Description = "When true, returns only active collaborations (email-only lookup). When false or omitted, returns all collaborations.",
+        Required = false
+    };
+
+    public static readonly Option<bool> AllowUntrustedCert = new($"--{AllowUntrustedCertName}")
+    {
+        Description = "When true, skips TLS certificate validation for the cleanroom endpoint. Use only for dev/test endpoints with self-signed certificates.",
         Required = false
     };
 }

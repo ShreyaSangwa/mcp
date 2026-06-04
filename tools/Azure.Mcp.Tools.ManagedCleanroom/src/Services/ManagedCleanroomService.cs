@@ -4,6 +4,8 @@
 using System.Text.Json;
 using AnalyticsFrontendAPI;
 using Azure;
+using Azure.Core;
+using Azure.Core.Pipeline;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Tenant;
 using Azure.Mcp.Tools.ManagedCleanroom.Models;
@@ -13,9 +15,13 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Services;
 public class ManagedCleanroomService(ITenantService tenantService)
     : BaseAzureService(tenantService), IManagedCleanroomService
 {
+    private const string DefaultScope = "https://management.azure.com/.default";
+
     public async Task<List<Collaboration>> ListCollaborationsAsync(
         string endpoint,
         bool? activeOnly = null,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
         CancellationToken cancellationToken = default)
     {
         ValidateRequiredParameters((nameof(endpoint), endpoint));
@@ -25,7 +31,23 @@ public class ManagedCleanroomService(ITenantService tenantService)
             throw new ArgumentException($"Endpoint '{endpoint}' is not a valid absolute URI.", nameof(endpoint));
         }
 
-        var client = new CollaborationClient(endpointUri);
+        var credential = await GetCredential(tenant, cancellationToken).ConfigureAwait(false);
+
+        var options = new CollaborationClientOptions();
+        options.AddPolicy(
+            new BearerTokenAuthenticationPolicy(credential, DefaultScope),
+            HttpPipelinePosition.PerCall);
+
+        if (allowUntrustedCert)
+        {
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+            options.Transport = new HttpClientTransport(handler);
+        }
+
+        var client = new CollaborationClient(endpointUri, options);
 
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
         Response response = await client.GetGetsAsync(activeOnly, requestContext).ConfigureAwait(false);

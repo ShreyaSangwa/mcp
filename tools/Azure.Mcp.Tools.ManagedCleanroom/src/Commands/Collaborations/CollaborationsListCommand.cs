@@ -35,12 +35,14 @@ public sealed class CollaborationsListCommand(IManagedCleanroomService service, 
     {
         base.RegisterOptions(command);
         command.Options.Add(ManagedCleanroomOptionDefinitions.ActiveOnly);
+        command.Options.Add(ManagedCleanroomOptionDefinitions.AllowUntrustedCert);
     }
 
     protected override CollaborationsListOptions BindOptions(ParseResult parseResult)
     {
         var options = base.BindOptions(parseResult);
         options.ActiveOnly = parseResult.GetValueOrDefault<bool?>(ManagedCleanroomOptionDefinitions.ActiveOnly.Name);
+        options.AllowUntrustedCert = parseResult.GetValueOrDefault<bool>(ManagedCleanroomOptionDefinitions.AllowUntrustedCert.Name);
         return options;
     }
 
@@ -58,6 +60,8 @@ public sealed class CollaborationsListCommand(IManagedCleanroomService service, 
             var collaborations = await _service.ListCollaborationsAsync(
                 options.Endpoint!,
                 options.ActiveOnly,
+                options.AllowUntrustedCert,
+                options.Tenant,
                 cancellationToken).ConfigureAwait(false);
 
             context.Response.Results = ResponseResult.Create(
