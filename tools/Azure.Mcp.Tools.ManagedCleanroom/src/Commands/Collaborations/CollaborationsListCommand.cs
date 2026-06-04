@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System.CommandLine;
-using Azure.Mcp.Tools.ManagedCleanroom.Models;
+using System.Text.Json;
 using Azure.Mcp.Tools.ManagedCleanroom.Options;
 using Azure.Mcp.Tools.ManagedCleanroom.Options.Collaborations;
 using Azure.Mcp.Tools.ManagedCleanroom.Services;
@@ -18,7 +18,7 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaborations;
     Id = "0d6a0a0e-7a3a-4a7c-8e3f-2c0d2cfb91a1",
     Name = "list",
     Title = "List Cleanroom Collaborations",
-    Description = "Lists Azure Cleanroom collaborations the calling user participates in via the Cleanroom Analytics Frontend service. Returns each collaboration's identifier, name, and the user's membership status. Optionally filters to only active (email-verified) collaborations.",
+    Description = "Lists Azure Cleanroom collaborations the calling user participates in via the Cleanroom Analytics Frontend service. Returns the full collaboration details from the service.",
     Destructive = false,
     Idempotent = true,
     OpenWorld = false,
@@ -57,7 +57,7 @@ public sealed class CollaborationsListCommand(IManagedCleanroomService service, 
 
         try
         {
-            var collaborations = await _service.ListCollaborationsAsync(
+            var result = await _service.ListCollaborationsAsync(
                 options.Endpoint!,
                 options.ActiveOnly,
                 options.AllowUntrustedCert,
@@ -65,8 +65,8 @@ public sealed class CollaborationsListCommand(IManagedCleanroomService service, 
                 cancellationToken).ConfigureAwait(false);
 
             context.Response.Results = ResponseResult.Create(
-                new CollaborationsListResult(collaborations ?? []),
-                ManagedCleanroomJsonContext.Default.CollaborationsListResult);
+                result,
+                ManagedCleanroomJsonContext.Default.JsonElement);
         }
         catch (Exception ex)
         {
@@ -78,6 +78,4 @@ public sealed class CollaborationsListCommand(IManagedCleanroomService service, 
 
         return context.Response;
     }
-
-    internal record CollaborationsListResult(List<Collaboration> Collaborations);
 }

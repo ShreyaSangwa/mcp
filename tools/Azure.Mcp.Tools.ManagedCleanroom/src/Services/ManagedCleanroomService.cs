@@ -8,7 +8,6 @@ using Azure.Core;
 using Azure.Core.Pipeline;
 using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Tenant;
-using Azure.Mcp.Tools.ManagedCleanroom.Models;
 
 namespace Azure.Mcp.Tools.ManagedCleanroom.Services;
 
@@ -17,12 +16,27 @@ public class ManagedCleanroomService(ITenantService tenantService)
 {
     private const string DefaultScope = "https://management.azure.com/.default";
 
-    public async Task<List<Collaboration>> ListCollaborationsAsync(
+    public async Task<JsonElement> ListCollaborationsAsync(
         string endpoint,
         bool? activeOnly = null,
         bool allowUntrustedCert = false,
         string? tenant = null,
         CancellationToken cancellationToken = default)
+    {
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+            .ConfigureAwait(false);
+
+        var requestContext = new RequestContext { CancellationToken = cancellationToken };
+        Response response = await client.GetGetsAsync(activeOnly, requestContext).ConfigureAwait(false);
+
+        return ParseResponse(response);
+    }
+
+    private async Task<CollaborationClient> BuildClientAsync(
+        string endpoint,
+        bool allowUntrustedCert,
+        string? tenant,
+        CancellationToken cancellationToken)
     {
         ValidateRequiredParameters((nameof(endpoint), endpoint));
 
@@ -47,38 +61,18 @@ public class ManagedCleanroomService(ITenantService tenantService)
             options.Transport = new HttpClientTransport(handler);
         }
 
-        var client = new CollaborationClient(endpointUri, options);
-
-        var requestContext = new RequestContext { CancellationToken = cancellationToken };
-        Response response = await client.GetGetsAsync(activeOnly, requestContext).ConfigureAwait(false);
-
-        var collaborations = new List<Collaboration>();
-        if (response.Content is null)
-        {
-            return collaborations;
-        }
-
-        using var document = JsonDocument.Parse(response.Content.ToMemory());
-        if (document.RootElement.ValueKind != JsonValueKind.Array)
-        {
-            return collaborations;
-        }
-
-        foreach (var element in document.RootElement.EnumerateArray())
-        {
-            collaborations.Add(new Collaboration
-            {
-                CollaborationId = ReadString(element, "collaborationId"),
-                CollaborationName = ReadString(element, "collaborationName"),
-                UserStatus = ReadString(element, "userStatus"),
-            });
-        }
-
-        return collaborations;
+        return new CollaborationClient(endpointUri, options);
     }
 
-    private static string? ReadString(JsonElement element, string propertyName)
-        => element.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
-            ? value.GetString()
-            : null;
+    private static JsonElement ParseResponse(Response response)
+    {
+        if (response.Content is null)
+        {
+            return default;
+        }
+
+        return JsonSerializer.Deserialize(
+            response.Content.ToMemory().Span,
+            ManagedCleanroomSerializerContext.Default.JsonElement);
+    }
 }
