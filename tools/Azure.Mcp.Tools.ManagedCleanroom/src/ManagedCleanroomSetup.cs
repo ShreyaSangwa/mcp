@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.Analytics;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaborations;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.Oidc;
 using Azure.Mcp.Tools.ManagedCleanroom.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Mcp.Core.Areas;
@@ -19,17 +21,33 @@ public class ManagedCleanroomSetup : IAreaSetup
     {
         services.AddSingleton<IManagedCleanroomService, ManagedCleanroomService>();
         services.AddSingleton<CollaborationsListCommand>();
+        services.AddSingleton<CollaborationsGetCommand>();
+        services.AddSingleton<AnalyticsGetCommand>();
+        services.AddSingleton<AnalyticsSkrPolicyCommand>();
+        services.AddSingleton<OidcIssuerInfoCommand>();
     }
 
     public CommandGroup RegisterCommands(IServiceProvider serviceProvider)
     {
         var root = new CommandGroup(Name,
-            "Azure Managed Cleanroom operations - Commands for interacting with the Azure Cleanroom Analytics Frontend, including listing collaborations a user participates in.", Title);
+            "Azure Managed Cleanroom operations - Commands for interacting with the Azure Cleanroom Analytics Frontend, including listing and inspecting collaborations and analytics workloads.", Title);
 
         var collaborations = new CommandGroup("collaborations", "Cleanroom collaboration operations - Commands for listing and inspecting cleanroom collaborations.");
         root.AddSubGroup(collaborations);
 
         collaborations.AddCommand<CollaborationsListCommand>(serviceProvider);
+        collaborations.AddCommand<CollaborationsGetCommand>(serviceProvider);
+
+        var analytics = new CommandGroup("analytics", "Cleanroom analytics operations - Commands for inspecting analytics workload configuration on a cleanroom collaboration.");
+        root.AddSubGroup(analytics);
+
+        analytics.AddCommand<AnalyticsGetCommand>(serviceProvider);
+        analytics.AddCommand<AnalyticsSkrPolicyCommand>(serviceProvider);
+
+        var oidc = new CommandGroup("oidc", "Cleanroom OIDC operations - Commands for inspecting OIDC issuer configuration on a cleanroom collaboration.");
+        root.AddSubGroup(oidc);
+
+        oidc.AddCommand<OidcIssuerInfoCommand>(serviceProvider);
 
         return root;
     }

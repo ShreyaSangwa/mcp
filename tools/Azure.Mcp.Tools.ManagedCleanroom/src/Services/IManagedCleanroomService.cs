@@ -13,4 +13,34 @@ public interface IManagedCleanroomService
         bool allowUntrustedCert = false,
         string? tenant = null,
         CancellationToken cancellationToken = default);
+
+    Task<JsonElement> GetCollaborationAsync(
+        string endpoint,
+        string collaborationId,
+        bool? includeDeleted = null,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
+        CancellationToken cancellationToken = default);
+
+    Task<JsonElement> GetAnalyticsAsync(
+        string endpoint,
+        string collaborationId,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
+        CancellationToken cancellationToken = default);
+
+    Task<JsonElement> GetAnalyticsSkrPolicyAsync(
+        string endpoint,
+        string collaborationId,
+        string kid,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
+        CancellationToken cancellationToken = default);
+
+    Task<JsonElement> GetOidcIssuerInfoAsync(
+        string endpoint,
+        string collaborationId,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
+        CancellationToken cancellationToken = default);
 }
