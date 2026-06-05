@@ -1,13 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.CommandLine;
-using Azure.Mcp.Tools.ManagedCleanroom.Options;
 using Azure.Mcp.Tools.ManagedCleanroom.Options.Oidc;
 using Azure.Mcp.Tools.ManagedCleanroom.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Mcp.Core.Commands;
-using Microsoft.Mcp.Core.Extensions;
 using Microsoft.Mcp.Core.Models.Command;
 using Microsoft.Mcp.Core.Models.Option;
 
@@ -24,41 +21,20 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Oidc;
     ReadOnly = true,
     Secret = false,
     LocalRequired = false)]
-public sealed class OidcIssuerInfoCommand(IManagedCleanroomService service, ILogger<OidcIssuerInfoCommand> logger)
-    : BaseManagedCleanroomCommand<OidcIssuerInfoOptions>
+public sealed class OidcIssuerInfoCommand(ILogger<OidcIssuerInfoCommand> logger, IManagedCleanroomService service)
+    : AuthenticatedCommand<OidcIssuerInfoOptions, OidcIssuerInfoCommand.OidcIssuerInfoCommandResult>
 {
-    private readonly IManagedCleanroomService _service = service;
     private readonly ILogger<OidcIssuerInfoCommand> _logger = logger;
+    private readonly IManagedCleanroomService _service = service;
 
-    protected override void RegisterOptions(Command command)
+    public override async Task<CommandResponse> ExecuteAsync(
+        CommandContext context, OidcIssuerInfoOptions options, CancellationToken cancellationToken)
     {
-        base.RegisterOptions(command);
-        command.Options.Add(ManagedCleanroomOptionDefinitions.CollaborationId);
-        command.Options.Add(ManagedCleanroomOptionDefinitions.AllowUntrustedCert);
-    }
-
-    protected override OidcIssuerInfoOptions BindOptions(ParseResult parseResult)
-    {
-        var options = base.BindOptions(parseResult);
-        options.CollaborationId = parseResult.GetValueOrDefault<string>(ManagedCleanroomOptionDefinitions.CollaborationId.Name);
-        options.AllowUntrustedCert = parseResult.GetValueOrDefault<bool>(ManagedCleanroomOptionDefinitions.AllowUntrustedCert.Name);
-        return options;
-    }
-
-    public override async Task<CommandResponse> ExecuteAsync(CommandContext context, ParseResult parseResult, CancellationToken cancellationToken)
-    {
-        if (!Validate(parseResult.CommandResult, context.Response).IsValid)
-        {
-            return context.Response;
-        }
-
-        var options = BindOptions(parseResult);
-
         try
         {
             var result = await _service.GetOidcIssuerInfoAsync(
-                options.Endpoint!,
-                options.CollaborationId!,
+                options.Endpoint,
+                options.CollaborationId,
                 options.AllowUntrustedCert,
                 options.Tenant,
                 cancellationToken).ConfigureAwait(false);
@@ -77,4 +53,7 @@ public sealed class OidcIssuerInfoCommand(IManagedCleanroomService service, ILog
 
         return context.Response;
     }
+
+    public record OidcIssuerInfoCommandResult;
 }
+

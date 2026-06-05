@@ -1,14 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.CommandLine;
-using System.Text.Json;
-using Azure.Mcp.Tools.ManagedCleanroom.Options;
 using Azure.Mcp.Tools.ManagedCleanroom.Options.Collaborations;
 using Azure.Mcp.Tools.ManagedCleanroom.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Mcp.Core.Commands;
-using Microsoft.Mcp.Core.Extensions;
 using Microsoft.Mcp.Core.Models.Command;
 using Microsoft.Mcp.Core.Models.Option;
 
@@ -25,40 +21,19 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaborations;
     ReadOnly = true,
     Secret = false,
     LocalRequired = false)]
-public sealed class CollaborationsListCommand(IManagedCleanroomService service, ILogger<CollaborationsListCommand> logger)
-    : BaseManagedCleanroomCommand<CollaborationsListOptions>
+public sealed class CollaborationsListCommand(ILogger<CollaborationsListCommand> logger, IManagedCleanroomService service)
+    : AuthenticatedCommand<CollaborationsListOptions, CollaborationsListCommand.CollaborationsListCommandResult>
 {
-    private readonly IManagedCleanroomService _service = service;
     private readonly ILogger<CollaborationsListCommand> _logger = logger;
+    private readonly IManagedCleanroomService _service = service;
 
-    protected override void RegisterOptions(Command command)
+    public override async Task<CommandResponse> ExecuteAsync(
+        CommandContext context, CollaborationsListOptions options, CancellationToken cancellationToken)
     {
-        base.RegisterOptions(command);
-        command.Options.Add(ManagedCleanroomOptionDefinitions.ActiveOnly);
-        command.Options.Add(ManagedCleanroomOptionDefinitions.AllowUntrustedCert);
-    }
-
-    protected override CollaborationsListOptions BindOptions(ParseResult parseResult)
-    {
-        var options = base.BindOptions(parseResult);
-        options.ActiveOnly = parseResult.GetValueOrDefault<bool?>(ManagedCleanroomOptionDefinitions.ActiveOnly.Name);
-        options.AllowUntrustedCert = parseResult.GetValueOrDefault<bool>(ManagedCleanroomOptionDefinitions.AllowUntrustedCert.Name);
-        return options;
-    }
-
-    public override async Task<CommandResponse> ExecuteAsync(CommandContext context, ParseResult parseResult, CancellationToken cancellationToken)
-    {
-        if (!Validate(parseResult.CommandResult, context.Response).IsValid)
-        {
-            return context.Response;
-        }
-
-        var options = BindOptions(parseResult);
-
         try
         {
             var result = await _service.ListCollaborationsAsync(
-                options.Endpoint!,
+                options.Endpoint,
                 options.ActiveOnly,
                 options.AllowUntrustedCert,
                 options.Tenant,
@@ -78,4 +53,7 @@ public sealed class CollaborationsListCommand(IManagedCleanroomService service, 
 
         return context.Response;
     }
+
+    public record CollaborationsListCommandResult;
 }
+

@@ -1,15 +1,23 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json.Serialization;
+using Azure.Mcp.Core.Options;
+using Microsoft.Mcp.Core.Options;
 
 namespace Azure.Mcp.Tools.ManagedCleanroom.Options.Collaborations;
 
-public sealed class CollaborationsListOptions : BaseManagedCleanroomOptions
+public class CollaborationsListOptions
 {
-    [JsonPropertyName(ManagedCleanroomOptionDefinitions.ActiveOnlyName)]
+    [Option("The Azure Cleanroom Analytics Frontend service endpoint URL (e.g., 'https://my-cleanroom.cloudapp.azure.net').")]
+    public required string Endpoint { get; set; }
+
+    [Option("When true, returns only active collaborations (email-only lookup). When omitted, returns all collaborations.")]
     public bool? ActiveOnly { get; set; }
 
-    [JsonPropertyName(ManagedCleanroomOptionDefinitions.AllowUntrustedCertName)]
+    [Option("When true, skips TLS certificate validation for the cleanroom endpoint. Use only for dev/test endpoints with self-signed certificates.")]
     public bool AllowUntrustedCert { get; set; }
+
+    [Option(OptionDescriptions.Tenant)]
+    public string? Tenant { get; set; }
 }
+

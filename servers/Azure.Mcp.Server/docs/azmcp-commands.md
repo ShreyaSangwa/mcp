@@ -2862,6 +2862,47 @@ azmcp grafana list --subscription <subscription> \
                   [--resource-group <resource-group>]
 ```
 
+### Azure Managed Cleanroom Operations
+
+```bash
+# List Azure Cleanroom collaborations the calling user participates in
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom collaborations list --endpoint <endpoint> \
+                                          [--active-only <true/false>] \
+                                          [--allow-untrusted-cert] \
+                                          [--tenant <tenant>]
+
+# Get details for a single Azure Cleanroom collaboration by its identifier
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom collaborations get --endpoint <endpoint> \
+                                         --collaboration-id <collaboration-id> \
+                                         [--include-deleted <true/false>] \
+                                         [--allow-untrusted-cert] \
+                                         [--tenant <tenant>]
+
+# Get the analytics workload configuration for a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom analytics get --endpoint <endpoint> \
+                                     --collaboration-id <collaboration-id> \
+                                     [--allow-untrusted-cert] \
+                                     [--tenant <tenant>]
+
+# Get the Secure Key Release (SKR) policy for a key on a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom analytics skr-policy --endpoint <endpoint> \
+                                            --collaboration-id <collaboration-id> \
+                                            --kid <kid> \
+                                            [--allow-untrusted-cert] \
+                                            [--tenant <tenant>]
+
+# Get the OIDC issuer information for a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom oidc issuer-info --endpoint <endpoint> \
+                                        --collaboration-id <collaboration-id> \
+                                        [--allow-untrusted-cert] \
+                                        [--tenant <tenant>]
+```
+
 ### Azure Marketplace Operations
 
 ```bash

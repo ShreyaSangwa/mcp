@@ -662,6 +662,22 @@ This file contains prompts used for end-to-end testing to ensure each tool is in
 |:----------|:----------|
 | grafana_list | List all Azure Managed Grafana in one subscription |
 
+## Azure Managed Cleanroom
+
+| Tool Name | Test Prompt |
+|:----------|:----------|
+| managedcleanroom_collaborations_list | List my Azure Cleanroom collaborations from endpoint <endpoint> |
+| managedcleanroom_collaborations_list | Show me the cleanroom collaborations I participate in using endpoint <endpoint> |
+| managedcleanroom_collaborations_list | List active cleanroom collaborations from <endpoint> |
+| managedcleanroom_collaborations_get | Get details for cleanroom collaboration <collaboration-id> from endpoint <endpoint> |
+| managedcleanroom_collaborations_get | Show me the cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_analytics_get | Get the analytics workload configuration for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_analytics_get | Show me the analytics config for cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_analytics_skr-policy | Get the SKR policy for key <kid> on cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_analytics_skr-policy | Show me the Secure Key Release policy for key <kid> in cleanroom <collaboration-id> |
+| managedcleanroom_oidc_issuer-info | Get the OIDC issuer info for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_oidc_issuer-info | Show me the OIDC issuer configuration for cleanroom <collaboration-id> using endpoint <endpoint> |
+
 ## Azure Managed Lustre
 
 | Tool Name | Test Prompt |

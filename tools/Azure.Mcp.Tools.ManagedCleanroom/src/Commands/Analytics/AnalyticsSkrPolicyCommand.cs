@@ -1,13 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.CommandLine;
-using Azure.Mcp.Tools.ManagedCleanroom.Options;
 using Azure.Mcp.Tools.ManagedCleanroom.Options.Analytics;
 using Azure.Mcp.Tools.ManagedCleanroom.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Mcp.Core.Commands;
-using Microsoft.Mcp.Core.Extensions;
 using Microsoft.Mcp.Core.Models.Command;
 using Microsoft.Mcp.Core.Models.Option;
 
@@ -24,44 +21,21 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Analytics;
     ReadOnly = true,
     Secret = false,
     LocalRequired = false)]
-public sealed class AnalyticsSkrPolicyCommand(IManagedCleanroomService service, ILogger<AnalyticsSkrPolicyCommand> logger)
-    : BaseManagedCleanroomCommand<AnalyticsSkrPolicyOptions>
+public sealed class AnalyticsSkrPolicyCommand(ILogger<AnalyticsSkrPolicyCommand> logger, IManagedCleanroomService service)
+    : AuthenticatedCommand<AnalyticsSkrPolicyOptions, AnalyticsSkrPolicyCommand.AnalyticsSkrPolicyCommandResult>
 {
-    private readonly IManagedCleanroomService _service = service;
     private readonly ILogger<AnalyticsSkrPolicyCommand> _logger = logger;
+    private readonly IManagedCleanroomService _service = service;
 
-    protected override void RegisterOptions(Command command)
+    public override async Task<CommandResponse> ExecuteAsync(
+        CommandContext context, AnalyticsSkrPolicyOptions options, CancellationToken cancellationToken)
     {
-        base.RegisterOptions(command);
-        command.Options.Add(ManagedCleanroomOptionDefinitions.CollaborationId);
-        command.Options.Add(ManagedCleanroomOptionDefinitions.Kid);
-        command.Options.Add(ManagedCleanroomOptionDefinitions.AllowUntrustedCert);
-    }
-
-    protected override AnalyticsSkrPolicyOptions BindOptions(ParseResult parseResult)
-    {
-        var options = base.BindOptions(parseResult);
-        options.CollaborationId = parseResult.GetValueOrDefault<string>(ManagedCleanroomOptionDefinitions.CollaborationId.Name);
-        options.Kid = parseResult.GetValueOrDefault<string>(ManagedCleanroomOptionDefinitions.Kid.Name);
-        options.AllowUntrustedCert = parseResult.GetValueOrDefault<bool>(ManagedCleanroomOptionDefinitions.AllowUntrustedCert.Name);
-        return options;
-    }
-
-    public override async Task<CommandResponse> ExecuteAsync(CommandContext context, ParseResult parseResult, CancellationToken cancellationToken)
-    {
-        if (!Validate(parseResult.CommandResult, context.Response).IsValid)
-        {
-            return context.Response;
-        }
-
-        var options = BindOptions(parseResult);
-
         try
         {
             var result = await _service.GetAnalyticsSkrPolicyAsync(
-                options.Endpoint!,
-                options.CollaborationId!,
-                options.Kid!,
+                options.Endpoint,
+                options.CollaborationId,
+                options.Kid,
                 options.AllowUntrustedCert,
                 options.Tenant,
                 cancellationToken).ConfigureAwait(false);
@@ -80,4 +54,7 @@ public sealed class AnalyticsSkrPolicyCommand(IManagedCleanroomService service, 
 
         return context.Response;
     }
+
+    public record AnalyticsSkrPolicyCommandResult;
 }
+

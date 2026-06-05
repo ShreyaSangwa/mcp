@@ -1,64 +1,90 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Azure.Mcp.Tools.ManagedCleanroom.Commands;
+using System.Net;
+using System.Text.Json;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaborations;
-using Azure.Mcp.Tools.ManagedCleanroom.Models;
 using Azure.Mcp.Tools.ManagedCleanroom.Services;
 using Microsoft.Mcp.Tests.Client;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 
 namespace Azure.Mcp.Tools.ManagedCleanroom.Tests.Collaborations;
 
 public sealed class CollaborationsListCommandTests : CommandUnitTestsBase<CollaborationsListCommand, IManagedCleanroomService>
 {
-    private const string TestEndpoint = "https://my-cleanroom.azure.com";
+    private const string TestEndpoint = "https://my-cleanroom.cloudapp.azure.net";
 
     [Fact]
-    public async Task Execute_WithEndpoint_ReturnsCollaborations()
+    public void Constructor_InitializesCommandCorrectly()
     {
-        var collaborations = new List<Collaboration>
-        {
-            new() { CollaborationId = "c1", CollaborationName = "Alpha", UserStatus = "Active" },
-            new() { CollaborationId = "c2", CollaborationName = "Beta", UserStatus = "Pending" },
-        };
-
-        Service.ListCollaborationsAsync(TestEndpoint, null, Arg.Any<CancellationToken>())
-            .Returns(collaborations);
-
-        var response = await ExecuteCommandAsync("--endpoint", TestEndpoint);
-
-        var result = ValidateAndDeserializeResponse(response, ManagedCleanroomJsonContext.Default.CollaborationsListResult);
-        Assert.NotNull(result);
-        Assert.Equal(2, result!.Collaborations.Count);
-        Assert.Equal("c1", result.Collaborations[0].CollaborationId);
-
-        await Service.Received(1).ListCollaborationsAsync(TestEndpoint, null, Arg.Any<CancellationToken>());
+        var command = Command.GetCommand();
+        Assert.Equal("list", command.Name);
+        Assert.NotNull(command.Description);
+        Assert.NotEmpty(command.Description);
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task Execute_WithActiveOnly_PassesFlagThrough(bool activeOnly)
+    [InlineData("--endpoint https://my-cleanroom.cloudapp.azure.net", true)]
+    [InlineData("--endpoint https://my-cleanroom.cloudapp.azure.net --active-only true", true)]
+    [InlineData("", false)]
+    public async Task ExecuteAsync_ValidatesInputCorrectly(string args, bool shouldSucceed)
     {
-        Service.ListCollaborationsAsync(TestEndpoint, activeOnly, Arg.Any<CancellationToken>())
-            .Returns([]);
+        if (shouldSucceed)
+        {
+            Service.ListCollaborationsAsync(
+                Arg.Any<string>(), Arg.Any<bool?>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+                .Returns(default(JsonElement));
+        }
 
-        var response = await ExecuteCommandAsync(
-            "--endpoint", TestEndpoint,
-            "--active-only", activeOnly.ToString().ToLowerInvariant());
+        var response = await ExecuteCommandAsync(args);
 
-        var result = ValidateAndDeserializeResponse(response, ManagedCleanroomJsonContext.Default.CollaborationsListResult);
-        Assert.NotNull(result);
-        Assert.Empty(result!.Collaborations);
-
-        await Service.Received(1).ListCollaborationsAsync(TestEndpoint, activeOnly, Arg.Any<CancellationToken>());
+        Assert.Equal(shouldSucceed ? HttpStatusCode.OK : HttpStatusCode.BadRequest, response.Status);
+        if (!shouldSucceed)
+        {
+            Assert.Contains("required", response.Message, StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     [Fact]
-    public async Task Execute_WithoutEndpoint_FailsValidation()
+    public async Task ExecuteAsync_ReturnsServiceResponse()
     {
-        var response = await ExecuteCommandAsync();
-        Assert.NotEqual(System.Net.HttpStatusCode.OK, response.Status);
+        Service.ListCollaborationsAsync(
+            Arg.Any<string>(), Arg.Any<bool?>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(default(JsonElement));
+
+        var response = await ExecuteCommandAsync("--endpoint", TestEndpoint);
+
+        Assert.Equal(HttpStatusCode.OK, response.Status);
+        await Service.Received(1).ListCollaborationsAsync(
+            TestEndpoint, null, false, null, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithActiveOnly_PassesFlagThrough()
+    {
+        Service.ListCollaborationsAsync(
+            Arg.Any<string>(), Arg.Any<bool?>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(default(JsonElement));
+
+        var response = await ExecuteCommandAsync("--endpoint", TestEndpoint, "--active-only", "true");
+
+        Assert.Equal(HttpStatusCode.OK, response.Status);
+        await Service.Received(1).ListCollaborationsAsync(
+            TestEndpoint, true, false, null, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_HandlesServiceErrors()
+    {
+        Service.ListCollaborationsAsync(
+            Arg.Any<string>(), Arg.Any<bool?>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new Exception("Test error"));
+
+        var response = await ExecuteCommandAsync("--endpoint", TestEndpoint);
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.Status);
+        Assert.Contains("Test error", response.Message);
     }
 }
+
