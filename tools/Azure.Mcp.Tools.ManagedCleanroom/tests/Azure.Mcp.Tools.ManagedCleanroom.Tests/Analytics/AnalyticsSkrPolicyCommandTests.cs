@@ -3,8 +3,10 @@
 
 using System.Net;
 using System.Text.Json;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Analytics;
 using Azure.Mcp.Tools.ManagedCleanroom.Services;
+using Microsoft.Mcp.Tests;
 using Microsoft.Mcp.Tests.Client;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -47,6 +49,22 @@ public sealed class AnalyticsSkrPolicyCommandTests : CommandUnitTestsBase<Analyt
         {
             Assert.Contains("required", response.Message, StringComparison.OrdinalIgnoreCase);
         }
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_DeserializationValidation()
+    {
+        var expected = JsonDocument.Parse("""{"kid":"my-key-id","policy":{"anyOf":[{"authority":"https://sharedoai.skr.attest.azure.net"}]}}""").RootElement;
+        Service.GetAnalyticsSkrPolicyAsync(
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(expected);
+
+        var response = await ExecuteCommandAsync(
+            "--endpoint", TestEndpoint, "--collaboration-id", TestCollaborationId, "--kid", TestKid);
+
+        var result = ValidateAndDeserializeResponse(response, ManagedCleanroomJsonContext.Default.JsonElement);
+        Assert.Equal(JsonValueKind.Object, result.ValueKind);
+        result.AssertProperty("kid");
     }
 
     [Fact]

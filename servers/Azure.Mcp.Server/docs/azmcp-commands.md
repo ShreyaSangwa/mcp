@@ -2901,6 +2901,16 @@ azmcp managedcleanroom oidc issuer-info --endpoint <endpoint> \
                                         --collaboration-id <collaboration-id> \
                                         [--allow-untrusted-cert] \
                                         [--tenant <tenant>]
+
+# Create an Azure Cleanroom collaboration ARM resource (provisions AKS cluster + CACI instances ~25 min)
+# ✅ Destructive | ✅ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom collaboration create --name <name> \
+                                            --location <location> \
+                                            --resource-group <resource-group> \
+                                            --subscription <subscription> \
+                                            [--resource-location <resource-location>] \
+                                            [--collaborator <email>] \
+                                            [--tenant <tenant>]
 ```
 
 ### Azure Marketplace Operations

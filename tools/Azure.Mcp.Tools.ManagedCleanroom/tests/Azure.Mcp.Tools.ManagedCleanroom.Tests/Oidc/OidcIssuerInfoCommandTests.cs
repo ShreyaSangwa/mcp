@@ -3,8 +3,10 @@
 
 using System.Net;
 using System.Text.Json;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Oidc;
 using Azure.Mcp.Tools.ManagedCleanroom.Services;
+using Microsoft.Mcp.Tests;
 using Microsoft.Mcp.Tests.Client;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -46,6 +48,21 @@ public sealed class OidcIssuerInfoCommandTests : CommandUnitTestsBase<OidcIssuer
         {
             Assert.Contains("required", response.Message, StringComparison.OrdinalIgnoreCase);
         }
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_DeserializationValidation()
+    {
+        var expected = JsonDocument.Parse("""{"issuerUrl":"https://issuer.example.com","jwksUri":"https://issuer.example.com/.well-known/jwks.json"}""").RootElement;
+        Service.GetOidcIssuerInfoAsync(
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(expected);
+
+        var response = await ExecuteCommandAsync("--endpoint", TestEndpoint, "--collaboration-id", TestCollaborationId);
+
+        var result = ValidateAndDeserializeResponse(response, ManagedCleanroomJsonContext.Default.JsonElement);
+        Assert.Equal(JsonValueKind.Object, result.ValueKind);
+        result.AssertProperty("issuerUrl");
     }
 
     [Fact]

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Microsoft.Mcp.Core.Options;
 
 namespace Azure.Mcp.Tools.ManagedCleanroom.Services;
 
@@ -42,5 +43,16 @@ public interface IManagedCleanroomService
         string collaborationId,
         bool allowUntrustedCert = false,
         string? tenant = null,
+        CancellationToken cancellationToken = default);
+
+    Task<JsonElement> CreateCollaborationArmResourceAsync(
+        string name,
+        string resourceGroup,
+        string subscription,
+        string location,
+        string? resourceLocation = null,
+        string[]? collaborators = null,
+        string? tenant = null,
+        RetryPolicyOptions? retryPolicy = null,
         CancellationToken cancellationToken = default);
 }

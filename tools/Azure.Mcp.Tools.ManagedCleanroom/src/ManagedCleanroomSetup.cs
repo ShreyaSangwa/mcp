@@ -2,8 +2,10 @@
 // Licensed under the MIT License.
 
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Analytics;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaboration;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaborations;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Oidc;
+using Azure.Mcp.Core.Services.Azure.Subscription;
 using Azure.Mcp.Tools.ManagedCleanroom.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Mcp.Core.Areas;
@@ -25,6 +27,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<AnalyticsGetCommand>();
         services.AddSingleton<AnalyticsSkrPolicyCommand>();
         services.AddSingleton<OidcIssuerInfoCommand>();
+        services.AddSingleton<CollaborationCreateCommand>();
     }
 
     public CommandGroup RegisterCommands(IServiceProvider serviceProvider)
@@ -48,6 +51,11 @@ public class ManagedCleanroomSetup : IAreaSetup
         root.AddSubGroup(oidc);
 
         oidc.AddCommand<OidcIssuerInfoCommand>(serviceProvider);
+
+        var collaboration = new CommandGroup("collaboration", "Cleanroom ARM management operations - Commands for creating and managing Azure Cleanroom collaboration ARM resources.");
+        root.AddSubGroup(collaboration);
+
+        collaboration.AddCommand<CollaborationCreateCommand>(serviceProvider);
 
         return root;
     }

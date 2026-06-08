@@ -677,6 +677,8 @@ This file contains prompts used for end-to-end testing to ensure each tool is in
 | managedcleanroom_analytics_skr-policy | Show me the Secure Key Release policy for key <kid> in cleanroom <collaboration-id> |
 | managedcleanroom_oidc_issuer-info | Get the OIDC issuer info for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
 | managedcleanroom_oidc_issuer-info | Show me the OIDC issuer configuration for cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_collaboration_create | Create an Azure Cleanroom collaboration named <name> in resource group <resource-group> in location <location> |
+| managedcleanroom_collaboration_create | Create a new cleanroom collaboration called <name> in <resource-group> in subscription <subscription> |
 
 ## Azure Managed Lustre
 

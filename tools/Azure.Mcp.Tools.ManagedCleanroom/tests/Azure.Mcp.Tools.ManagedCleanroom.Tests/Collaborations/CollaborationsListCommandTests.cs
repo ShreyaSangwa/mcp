@@ -3,8 +3,10 @@
 
 using System.Net;
 using System.Text.Json;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaborations;
 using Azure.Mcp.Tools.ManagedCleanroom.Services;
+using Microsoft.Mcp.Tests;
 using Microsoft.Mcp.Tests.Client;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -44,6 +46,21 @@ public sealed class CollaborationsListCommandTests : CommandUnitTestsBase<Collab
         {
             Assert.Contains("required", response.Message, StringComparison.OrdinalIgnoreCase);
         }
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_DeserializationValidation()
+    {
+        var expected = JsonDocument.Parse("""{"collaborations":[{"collaborationId":"c1","collaborationName":"test","userStatus":"Active"}]}""").RootElement;
+        Service.ListCollaborationsAsync(
+            Arg.Any<string>(), Arg.Any<bool?>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(expected);
+
+        var response = await ExecuteCommandAsync("--endpoint", TestEndpoint);
+
+        var result = ValidateAndDeserializeResponse(response, ManagedCleanroomJsonContext.Default.JsonElement);
+        Assert.Equal(JsonValueKind.Object, result.ValueKind);
+        result.AssertProperty("collaborations");
     }
 
     [Fact]

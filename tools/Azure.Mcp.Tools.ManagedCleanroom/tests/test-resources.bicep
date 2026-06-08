@@ -20,4 +20,8 @@ param testApplicationOid string
 @description('The Azure Cleanroom Analytics Frontend endpoint URL to test against.')
 param cleanroomEndpoint string = ''
 
+@description('A known collaboration ID to use in live tests (collaborations get, analytics get, oidc issuer-info).')
+param cleanroomCollaborationId string = ''
+
 output CLEANROOM_ENDPOINT string = cleanroomEndpoint
+output CLEANROOM_COLLABORATION_ID string = cleanroomCollaborationId
