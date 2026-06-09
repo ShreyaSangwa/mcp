@@ -47,7 +47,7 @@ public sealed class CollaborationCreateCommandTests
                 Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(),
                 Arg.Any<string?>(), Arg.Any<string[]?>(), Arg.Any<string?>(),
                 Arg.Any<Microsoft.Mcp.Core.Options.RetryPolicyOptions?>(), Arg.Any<CancellationToken>())
-                .Returns(default(JsonElement));
+                .Returns(new CollaborationCreateResult(default, string.Empty));
         }
 
         var response = await ExecuteCommandAsync(args);
@@ -62,12 +62,12 @@ public sealed class CollaborationCreateCommandTests
     [Fact]
     public async Task ExecuteAsync_DeserializationValidation()
     {
-        var expected = JsonDocument.Parse("""{"name":"my-collab","properties":{"provisioningState":"Accepted"}}""").RootElement;
+        var expected = JsonDocument.Parse("""{"name":"my-collab","properties":{"provisioningState":"Succeeded"}}""").RootElement;
         Service.CreateCollaborationArmResourceAsync(
             Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(),
             Arg.Any<string?>(), Arg.Any<string[]?>(), Arg.Any<string?>(),
             Arg.Any<Microsoft.Mcp.Core.Options.RetryPolicyOptions?>(), Arg.Any<CancellationToken>())
-            .Returns(expected);
+            .Returns(new CollaborationCreateResult(expected, "Collaboration provisioning succeeded after 24m 0s (expected ~25 minutes)."));
 
         var response = await ExecuteCommandAsync(
             "--name", TestName, "--location", TestLocation,
@@ -85,13 +85,14 @@ public sealed class CollaborationCreateCommandTests
             Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(),
             Arg.Any<string?>(), Arg.Any<string[]?>(), Arg.Any<string?>(),
             Arg.Any<Microsoft.Mcp.Core.Options.RetryPolicyOptions?>(), Arg.Any<CancellationToken>())
-            .Returns(default(JsonElement));
+            .Returns(new CollaborationCreateResult(default, "Collaboration provisioning succeeded after 24m 0s (expected ~25 minutes)."));
 
         var response = await ExecuteCommandAsync(
             "--name", TestName, "--location", TestLocation,
             "--resource-group", TestResourceGroup, "--subscription", TestSubscription);
 
         Assert.Equal(HttpStatusCode.OK, response.Status);
+        Assert.Contains("succeeded", response.Message, StringComparison.OrdinalIgnoreCase);
         await Service.Received(1).CreateCollaborationArmResourceAsync(
             TestName, TestResourceGroup, TestSubscription, TestLocation,
             null, null, null, Arg.Any<Microsoft.Mcp.Core.Options.RetryPolicyOptions?>(), Arg.Any<CancellationToken>());

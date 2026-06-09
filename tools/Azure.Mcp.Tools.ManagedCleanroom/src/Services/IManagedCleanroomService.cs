@@ -45,7 +45,7 @@ public interface IManagedCleanroomService
         string? tenant = null,
         CancellationToken cancellationToken = default);
 
-    Task<JsonElement> CreateCollaborationArmResourceAsync(
+    Task<CollaborationCreateResult> CreateCollaborationArmResourceAsync(
         string name,
         string resourceGroup,
         string subscription,
@@ -56,3 +56,8 @@ public interface IManagedCleanroomService
         RetryPolicyOptions? retryPolicy = null,
         CancellationToken cancellationToken = default);
 }
+
+/// <summary>Result returned by <see cref="IManagedCleanroomService.CreateCollaborationArmResourceAsync"/>.</summary>
+/// <param name="Properties">ARM resource properties as a raw <see cref="System.Text.Json.JsonElement"/>.</param>
+/// <param name="Message">Human-readable summary of the provisioning outcome including elapsed time.</param>
+public sealed record CollaborationCreateResult(System.Text.Json.JsonElement Properties, string Message);

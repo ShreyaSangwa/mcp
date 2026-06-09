@@ -18,8 +18,8 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaboration;
     Title = "Create Cleanroom Collaboration",
     Description = """
         Creates an Azure Cleanroom collaboration ARM resource in the specified resource group and location.
-        Returns immediately after the ARM resource is accepted — provisioning continues in the background
-        and takes approximately 25 minutes. Poll provisioningState on the ARM resource to track completion.
+        Polls provisioningState every 30 seconds until the resource reaches a terminal state (expected ~25 minutes).
+        Returns the final ARM resource properties and a summary message with the outcome and elapsed time.
         Required options:
         - --name: unique collaboration name within the resource group
         - --location: Azure region for the ARM resource (e.g., 'eastus')
@@ -57,8 +57,9 @@ public sealed class CollaborationCreateCommand(
                 options.RetryPolicy,
                 cancellationToken).ConfigureAwait(false);
 
+            context.Response.Message = result.Message;
             context.Response.Results = ResponseResult.Create(
-                result,
+                result.Properties,
                 ManagedCleanroomJsonContext.Default.JsonElement);
         }
         catch (Exception ex)

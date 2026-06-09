@@ -116,7 +116,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return ParseResponse(response);
     }
 
-    public async Task<JsonElement> CreateCollaborationArmResourceAsync(
+    public async Task<CollaborationCreateResult> CreateCollaborationArmResourceAsync(
         string name,
         string resourceGroup,
         string subscription,
@@ -155,7 +155,8 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             Properties = BinaryData.FromString(propertiesJson)
         };
 
-        var operation = await armClient.GetGenericResources()
+        // Fire the ARM PUT without blocking — provisioning takes ~25 minutes.
+        await armClient.GetGenericResources()
             .CreateOrUpdateAsync(
                 Azure.WaitUntil.Started,
                 resourceId,
@@ -163,12 +164,35 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
                 cancellationToken)
             .ConfigureAwait(false);
 
-        // ARM provisioning takes ~25 minutes. Return immediately with the accepted resource
-        // data so the caller can poll provisioningState independently.
-        var propsBytes = operation.Value.Data.Properties?.ToArray() ?? [];
-        return propsBytes.Length > 0
-            ? JsonSerializer.Deserialize(propsBytes, ManagedCleanroomSerializerContext.Default.JsonElement)
-            : default;
+        // Poll provisioningState every 30 seconds until terminal state.
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var resource = armClient.GetGenericResource(resourceId);
+        var provisioningState = "Accepted";
+        JsonElement properties = default;
+
+        while (provisioningState is not ("Succeeded" or "Failed" or "Canceled"))
+        {
+            await Task.Delay(TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false);
+
+            var getResponse = await resource.GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            var propsBytes = getResponse.Value.Data.Properties?.ToArray() ?? [];
+
+            if (propsBytes.Length > 0)
+            {
+                properties = JsonSerializer.Deserialize(propsBytes, ManagedCleanroomSerializerContext.Default.JsonElement);
+                provisioningState = properties.TryGetProperty("provisioningState", out var ps)
+                    ? ps.GetString() ?? "Unknown"
+                    : "Unknown";
+            }
+        }
+
+        stopwatch.Stop();
+        var elapsed = stopwatch.Elapsed;
+        var message = $"Collaboration provisioning {provisioningState.ToLower()} after " +
+            $"{(int)elapsed.TotalMinutes}m {elapsed.Seconds}s " +
+            $"(expected ~25 minutes).";
+
+        return new CollaborationCreateResult(properties, message);
     }
 
     private async Task<CollaborationClient> BuildClientAsync(
