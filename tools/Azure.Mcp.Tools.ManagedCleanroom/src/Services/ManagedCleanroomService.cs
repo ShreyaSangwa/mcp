@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
-using System.Text.Json.Nodes;
+using System.Buffers;
 using AnalyticsFrontendAPI;
 using Azure;
 using Azure.Core;
@@ -24,6 +24,8 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
     private const string CleanRoomApiVersion = "2026-04-30-preview";
     private const string CleanRoomResourceType = "Microsoft.CleanRoom/Collaborations";
+    private static readonly TimeSpan ProvisioningPollInterval = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan ProvisioningTimeout = TimeSpan.FromMinutes(40);
 
     public async Task<JsonElement> ListCollaborationsAsync(
         string endpoint,
@@ -145,15 +147,30 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         var resourceId = new ResourceIdentifier(
             $"{subscriptionResource.Id}/resourceGroups/{resourceGroup}/providers/{CleanRoomResourceType}/{name}");
 
-        // Build properties JSON manually for AOT safety (no BinaryData.FromObjectAsJson)
-        var collaboratorArray = (collaborators ?? [])
-            .Select(c => $"{{\"userIdentifier\":\"{c}\"}}")
-            .ToArray();
-        var propertiesJson = $"{{\"collaborators\":[{string.Join(",", collaboratorArray)}],\"resourceLocation\":\"{resourceLocation ?? location}\"}}";
+        // Build properties JSON with Utf8JsonWriter for AOT safety and proper escaping.
+        var payloadBuffer = new ArrayBufferWriter<byte>();
+        using (var jsonWriter = new Utf8JsonWriter(payloadBuffer))
+        {
+            jsonWriter.WriteStartObject();
+            jsonWriter.WritePropertyName("collaborators");
+            jsonWriter.WriteStartArray();
+
+            foreach (var collaborator in collaborators ?? [])
+            {
+                jsonWriter.WriteStartObject();
+                jsonWriter.WriteString("userIdentifier", collaborator);
+                jsonWriter.WriteEndObject();
+            }
+
+            jsonWriter.WriteEndArray();
+            jsonWriter.WriteString("resourceLocation", resourceLocation ?? location);
+            jsonWriter.WriteEndObject();
+            jsonWriter.Flush();
+        }
 
         var resourceData = new GenericResourceData(new Azure.Core.AzureLocation(location))
         {
-            Properties = BinaryData.FromString(propertiesJson)
+            Properties = BinaryData.FromBytes(payloadBuffer.WrittenSpan.ToArray())
         };
 
         // Fire the ARM PUT without blocking — provisioning takes ~25 minutes.
@@ -165,15 +182,22 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
                 cancellationToken)
             .ConfigureAwait(false);
 
-        // Poll provisioningState every 30 seconds until terminal state.
+        // Poll provisioningState until terminal state, but stop waiting after timeout.
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var timeoutAt = DateTimeOffset.UtcNow + ProvisioningTimeout;
         var resource = armClient.GetGenericResource(resourceId);
         var provisioningState = "Accepted";
         JsonElement properties = default;
 
         while (provisioningState is not ("Succeeded" or "Failed" or "Canceled"))
         {
-            await Task.Delay(TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false);
+            if (DateTimeOffset.UtcNow >= timeoutAt)
+            {
+                throw new TimeoutException(
+                    $"Timed out waiting for collaboration provisioning to reach a terminal state. Last known state: '{provisioningState}'.");
+            }
+
+            await Task.Delay(ProvisioningPollInterval, cancellationToken).ConfigureAwait(false);
 
             var getResponse = await resource.GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
             var propsBytes = getResponse.Value.Data.Properties?.ToArray() ?? [];
