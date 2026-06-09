@@ -65,7 +65,12 @@
         }
       },
       "mappedToolList": [
-        "functionapp_get"
+        "functionapp_get",
+        "managedcleanroom_analytics_get",
+        "managedcleanroom_analytics_skr-policy",
+        "managedcleanroom_collaborations_get",
+        "managedcleanroom_collaborations_list",
+        "managedcleanroom_oidc_issuer-info"
       ]
     },
     {
@@ -134,6 +139,39 @@
       },
       "mappedToolList": [
         "appservice_database_add"
+      ]
+    },
+    {
+      "name": "create_azure_managed_cleanroom_collaborations",
+      "description": "Create Azure Managed Cleanroom collaboration ARM resources.",
+      "toolMetadata": {
+        "destructive": {
+          "value": true,
+          "description": "This tool may delete or modify existing resources in its environment."
+        },
+        "idempotent": {
+          "value": true,
+          "description": "Running this operation multiple times with the same arguments produces the same result without additional effects."
+        },
+        "openWorld": {
+          "value": false,
+          "description": "This tool's domain of interaction is closed and well-defined, limited to a specific set of entities."
+        },
+        "readOnly": {
+          "value": false,
+          "description": "This tool may modify its environment by creating, updating, or deleting data."
+        },
+        "secret": {
+          "value": false,
+          "description": "This tool does not handle sensitive or secret information."
+        },
+        "localRequired": {
+          "value": false,
+          "description": "This tool is available in both local and remote server modes."
+        }
+      },
+      "mappedToolList": [
+        "managedcleanroom_collaboration_create"
       ]
     },
     {

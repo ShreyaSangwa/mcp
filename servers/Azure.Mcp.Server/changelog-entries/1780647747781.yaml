@@ -1,3 +1,3 @@
 changes:
   - section: "Features Added"
-    description: "Added Azure Managed Cleanroom toolset with five commands for interacting with the Azure Cleanroom Analytics Frontend service: `managedcleanroom collaborations list`, `managedcleanroom collaborations get`, `managedcleanroom analytics get`, `managedcleanroom analytics skr-policy`, and `managedcleanroom oidc issuer-info`."
+    description: "Added Azure Managed Cleanroom toolset with six commands for interacting with Azure Cleanroom: `managedcleanroom collaborations list`, `managedcleanroom collaborations get`, `managedcleanroom analytics get`, `managedcleanroom analytics skr-policy`, `managedcleanroom oidc issuer-info`, and `managedcleanroom collaboration create`."

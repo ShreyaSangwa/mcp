@@ -23,5 +23,24 @@ param cleanroomEndpoint string = ''
 @description('A known collaboration ID to use in live tests (collaborations get, analytics get, oidc issuer-info).')
 param cleanroomCollaborationId string = ''
 
+resource readerRoleDefinition 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+	scope: subscription()
+	name: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+}
+
+resource testAppReaderRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+	name: guid(resourceGroup().id, testApplicationOid, readerRoleDefinition.id)
+	scope: resourceGroup()
+	properties: {
+		principalId: testApplicationOid
+		principalType: 'ServicePrincipal'
+		roleDefinitionId: readerRoleDefinition.id
+		description: 'Reader role assignment for managed cleanroom test application identity'
+	}
+}
+
 output CLEANROOM_ENDPOINT string = cleanroomEndpoint
 output CLEANROOM_COLLABORATION_ID string = cleanroomCollaborationId
+output CLEANROOM_BASE_NAME string = baseName
+output CLEANROOM_LOCATION string = location
+output CLEANROOM_TENANT_ID string = tenantId
