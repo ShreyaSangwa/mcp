@@ -17,10 +17,11 @@ using Microsoft.Mcp.Core.Options;
 
 namespace Azure.Mcp.Tools.ManagedCleanroom.Services;
 
-public class ManagedCleanroomService(ISubscriptionService subscriptionService, ITenantService tenantService)
+public class ManagedCleanroomService(ISubscriptionService subscriptionService, ITenantService tenantService, IHttpClientFactory httpClientFactory)
     : BaseAzureResourceService(subscriptionService, tenantService), IManagedCleanroomService
 {
     private readonly ISubscriptionService _subscriptionService = subscriptionService;
+    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
     private const string CleanRoomApiVersion = "2026-04-30-preview";
     private const string CleanRoomResourceType = "Microsoft.CleanRoom/Collaborations";
 
@@ -215,13 +216,23 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             new BearerTokenAuthenticationPolicy(credential, TenantService.CloudConfiguration.ArmEnvironment.DefaultScope),
             HttpPipelinePosition.PerCall);
 
-        if (allowUntrustedCert)
+        var testProxyUrl = Environment.GetEnvironmentVariable("TEST_PROXY_URL");
+        if (!string.IsNullOrWhiteSpace(testProxyUrl))
+        {
+            // Keep proxy transport active in record/playback so requests are captured and replayed.
+            options.Transport = new HttpClientTransport(_httpClientFactory.CreateClient());
+        }
+        else if (allowUntrustedCert)
         {
             var handler = new HttpClientHandler
             {
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             };
             options.Transport = new HttpClientTransport(handler);
+        }
+        else
+        {
+            options.Transport = new HttpClientTransport(_httpClientFactory.CreateClient());
         }
 
         return new CollaborationClient(endpointUri, options);

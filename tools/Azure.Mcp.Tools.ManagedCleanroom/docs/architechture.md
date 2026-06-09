@@ -132,34 +132,34 @@ Legend: ✅ implemented | ❌ not yet implemented
 
 | Step | Operation | Command | Status |
 |------|-----------|---------|:------:|
-| 02 Create collaboration (ARM) | PUT (waits for completion) | `collaboration create` | ✅ |
-| 02 Enable Analytics workload | POST `/enableWorkload` | `collaboration enable-workload` | ❌ |
-| 02 Add more collaborators | POST `/addCollaborator` | `collaboration add-collaborator` | ❌ |
-| 03 Discover collaboration UUID | `collaborations list` | `collaborations list` | ✅ |
-| 03 Inspect a single collaboration | `collaborations get` | `collaborations get` | ✅ |
-| 03 List invitations | `invitations list` | `invitations list` | ❌ |
-| 03 Accept invitation | `invitations accept` | `invitations accept` | ❌ |
-| 05 Fetch JWKS | `oidc keys` | `oidc keys` | ❌ |
-| 05 Verify OIDC issuer | `oidc issuer-info` | `oidc issuer-info` | ✅ |
-| 05 Register issuer URL | `oidc set-issuer-url` | `oidc set-issuer-url` | ❌ |
-| 06 Publish input/output dataset | `datasets publish` | `datasets publish` | ❌ |
-| 06 Verify dataset | `datasets get` | `datasets get` | ❌ |
-| 06 Toggle execution consent | `consent put` | `consent put` | ❌ |
-| 06 Fetch SKR policy (CPK) | `analytics skr-policy` | `analytics skr-policy` | ✅ |
-| 06 Inspect analytics workload config | `analytics get` | `analytics get` | ✅ |
-| 07 Look up partner dataset id | `datasets list` | `datasets list` | ❌ |
-| 07 Publish query | `queries publish` | `queries publish` | ❌ |
-| 08 Inspect query + proposal ID | `queries get` | `queries get` | ❌ |
-| 08 List published queries | `queries list` | `queries list` | ❌ |
-| 08 Vote on query | `queries vote` | `queries vote` | ❌ |
-| 09 Run query | `queries run` | `queries run` | ❌ |
-| 09 Check collaboration health | ARM GET | `collaboration get` | ❌ |
-| 10 Poll run state | `runs get` | `runs get` | ❌ |
-| 11 Run history | `queries runs` | `queries runs` | ❌ |
-| 11 Audit events | `audit-events list` | `audit-events list` | ❌ |
-| 12 Get readonly kubeconfig | POST `/getReadonlyKubeConfig` | `collaboration get-readonly-kubeconfig` | ❌ |
-| App G Force recover | POST `/recover` | `collaboration recover` | ❌ |
-| App G Delete collaboration | ARM DELETE | `collaboration delete` | ❌ |
+| 02 Create collaboration (ARM) | PUT (waits for completion) | `collaboration create` | Completed |
+| 02 Enable Analytics workload | POST `/enableWorkload` | `collaboration enable-workload` | Pending |
+| 02 Add more collaborators | POST `/addCollaborator` | `collaboration add-collaborator` | Pending |
+| 03 Discover collaboration UUID | `collaborations list` | `collaborations list` | Completed |
+| 03 Inspect a single collaboration | `collaborations get` | `collaborations get` | Completed |
+| 03 List invitations | `invitations list` | `invitations list` | Pending |
+| 03 Accept invitation | `invitations accept` | `invitations accept` | Pending |
+| 05 Fetch JWKS | `oidc keys` | `oidc keys` | Pending |
+| 05 Verify OIDC issuer | `oidc issuer-info` | `oidc issuer-info` | Completed |
+| 05 Register issuer URL | `oidc set-issuer-url` | `oidc set-issuer-url` | Pending |
+| 06 Publish input/output dataset | `datasets publish` | `datasets publish` | Pending |
+| 06 Verify dataset | `datasets get` | `datasets get` | Pending |
+| 06 Toggle execution consent | `consent put` | `consent put` | Pending |
+| 06 Fetch SKR policy (CPK) | `analytics skr-policy` | `analytics skr-policy` | Completed |
+| 06 Inspect analytics workload config | `analytics get` | `analytics get` | Completed |
+| 07 Look up partner dataset id | `datasets list` | `datasets list` | Pending |
+| 07 Publish query | `queries publish` | `queries publish` | Pending |
+| 08 Inspect query + proposal ID | `queries get` | `queries get` | Pending |
+| 08 List published queries | `queries list` | `queries list` | Pending |
+| 08 Vote on query | `queries vote` | `queries vote` | Pending |
+| 09 Run query | `queries run` | `queries run` | Pending |
+| 09 Check collaboration health | ARM GET | `collaboration get` | Pending |
+| 10 Poll run state | `runs get` | `runs get` | Pending |
+| 11 Run history | `queries runs` | `queries runs` | Pending |
+| 11 Audit events | `audit-events list` | `audit-events list` | Pending |
+| 12 Get readonly kubeconfig | POST `/getReadonlyKubeConfig` | `collaboration get-readonly-kubeconfig` | Pending |
+| App G Force recover | POST `/recover` | `collaboration recover` | Pending |
+| App G Delete collaboration | ARM DELETE | `collaboration delete` | Pending |
 
 ---
 

@@ -33,7 +33,6 @@ resource testAppReaderRoleAssignment 'Microsoft.Authorization/roleAssignments@20
 	scope: resourceGroup()
 	properties: {
 		principalId: testApplicationOid
-		principalType: 'ServicePrincipal'
 		roleDefinitionId: readerRoleDefinition.id
 		description: 'Reader role assignment for managed cleanroom test application identity'
 	}
