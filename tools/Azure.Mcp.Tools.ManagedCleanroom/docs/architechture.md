@@ -141,7 +141,7 @@ Legend: ✅ implemented | ❌ not yet implemented
 | 03 Accept invitation | `invitations accept` | `invitations accept` | Completed |
 | 05 Fetch JWKS | `oidc keys` | `oidc keys` | Completed |
 | 05 Verify OIDC issuer | `oidc issuer-info` | `oidc issuer-info` | Completed |
-| 05 Register issuer URL | `oidc set-issuer-url` | `oidc set-issuer-url` | Pending |
+| 05 Register issuer URL | `oidc set-issuer-url` | `oidc set-issuer-url` | Completed |
 | 06 Publish input/output dataset | `datasets publish` | `datasets publish` | Pending |
 | 06 Verify dataset | `datasets get` | `datasets get` | Pending |
 | 06 Toggle execution consent | `consent put` | `consent put` | Pending |

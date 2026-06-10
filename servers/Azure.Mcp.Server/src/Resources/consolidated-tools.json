@@ -74,7 +74,8 @@
         "managedcleanroom_invitations_accept",
         "managedcleanroom_invitations_list",
         "managedcleanroom_oidc_issuer-info",
-        "managedcleanroom_oidc_keys"
+        "managedcleanroom_oidc_keys",
+        "managedcleanroom_oidc_set-issuer-url"
       ]
     },
     {

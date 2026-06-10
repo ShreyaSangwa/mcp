@@ -110,6 +110,29 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
     }
 
     [Fact]
+    public async Task Should_set_oidc_issuer_url()
+    {
+        var endpoint = GetEndpoint();
+        var collaborationId = GetCollaborationId();
+        var issuerUrl = Settings.DeploymentOutputs.TryGetValue("CLEANROOM_OIDC_ISSUER_URL", out var url) && !string.IsNullOrWhiteSpace(url)
+            ? url
+            : "https://issuer.example.com";
+
+        var result = await CallToolAsync(
+            "managedcleanroom_oidc_set-issuer-url",
+            new()
+            {
+                { "endpoint", endpoint },
+                { "collaboration-id", collaborationId },
+                { "issuer-url", issuerUrl },
+                { "allow-untrusted-cert", true }
+            });
+
+        Assert.NotNull(result);
+        Output.WriteLine($"Set OIDC issuer URL payload: {result.Value}");
+    }
+
+    [Fact]
     public async Task Should_add_collaborator()
     {
         var result = await CallToolAsync(

@@ -180,6 +180,38 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return ParseResponse(response);
     }
 
+    public async Task<JsonElement> SetOidcIssuerUrlAsync(
+        string endpoint,
+        string collaborationId,
+        string issuerUrl,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateRequiredParameters(
+            (nameof(collaborationId), collaborationId),
+            (nameof(issuerUrl), issuerUrl));
+
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+            .ConfigureAwait(false);
+
+        // Build the request body: {"issuerUrl": "<value>"}
+        var buffer = new ArrayBufferWriter<byte>();
+        using (var writer = new Utf8JsonWriter(buffer))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("issuerUrl", issuerUrl);
+            writer.WriteEndObject();
+            writer.Flush();
+        }
+
+        var content = RequestContent.Create(buffer.WrittenMemory);
+        var requestContext = new RequestContext { CancellationToken = cancellationToken };
+        Response response = await client.OidcSetIssuerUrlPostAsync(collaborationId, content, requestContext).ConfigureAwait(false);
+
+        return ParseResponse(response);
+    }
+
     public async Task<JsonElement> AddCollaboratorAsync(
         string name,
         string resourceGroup,

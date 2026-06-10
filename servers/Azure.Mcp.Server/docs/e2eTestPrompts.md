@@ -691,6 +691,8 @@ This file contains prompts used for end-to-end testing to ensure each tool is in
 | managedcleanroom_oidc_issuer-info | Show me the OIDC issuer configuration for cleanroom <collaboration-id> using endpoint <endpoint> |
 | managedcleanroom_oidc_keys | Get the OIDC JSON Web Key Set (JWKS) for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
 | managedcleanroom_oidc_keys | Show me the public keys used by the OIDC issuer of cleanroom <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_oidc_set-issuer-url | Register the OIDC issuer URL <issuer-url> for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_oidc_set-issuer-url | Set the OIDC issuer URL for cleanroom <collaboration-id> to <issuer-url> using endpoint <endpoint> |
 
 ## Azure Managed Lustre
 

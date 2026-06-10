@@ -2909,6 +2909,14 @@ azmcp managedcleanroom oidc keys --endpoint <endpoint> \
                                   [--allow-untrusted-cert] \
                                   [--tenant <tenant>]
 
+# Register an OIDC issuer URL for a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom oidc set-issuer-url --endpoint <endpoint> \
+                                           --collaboration-id <collaboration-id> \
+                                           --issuer-url <issuer-url> \
+                                           [--allow-untrusted-cert] \
+                                           [--tenant <tenant>]
+
 # Create an Azure Cleanroom collaboration ARM resource(provisions AKS cluster + CACI instances ~25 min)
 # ✅ Destructive | ✅ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
 azmcp managedcleanroom collaboration create --name <name> \
