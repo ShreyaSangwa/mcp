@@ -610,6 +610,39 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return SerializeCollaborationData(response.Value.Data);
     }
 
+    public async Task<JsonElement> GetCollaborationReadonlyKubeconfigAsync(
+        string name,
+        string resourceGroup,
+        string subscription,
+        string? tenant = null,
+        RetryPolicyOptions? retryPolicy = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateRequiredParameters(
+            (nameof(name), name),
+            (nameof(resourceGroup), resourceGroup),
+            (nameof(subscription), subscription));
+
+        var collaborationResource = await GetCollaborationResourceAsync(
+            name, resourceGroup, subscription, tenant, retryPolicy, cancellationToken)
+            .ConfigureAwait(false);
+
+        var response = await collaborationResource
+            .GetReadonlyKubeConfigAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        var buffer = new ArrayBufferWriter<byte>();
+        using (var writer = new Utf8JsonWriter(buffer))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("kubeconfig", response.Value.Kubeconfig);
+            writer.WriteEndObject();
+            writer.Flush();
+        }
+
+        return JsonSerializer.Deserialize(buffer.WrittenSpan, ManagedCleanroomSerializerContext.Default.JsonElement);
+    }
+
     public async Task<CollaborationCreateResult> CreateCollaborationArmResourceAsync(
         string name,
         string resourceGroup,

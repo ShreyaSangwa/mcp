@@ -28,26 +28,78 @@ Azure.Mcp.Tools.ManagedCleanroom/
 │   │   ├── Analytics/
 │   │   │   ├── AnalyticsGetCommand.cs
 │   │   │   └── AnalyticsSkrPolicyCommand.cs
+│   │   ├── AuditEvents/
+│   │   │   └── AuditEventsListCommand.cs
 │   │   ├── Collaboration/
-│   │   │   └── CollaborationCreateCommand.cs
+│   │   │   ├── CollaborationAddCollaboratorCommand.cs
+│   │   │   ├── CollaborationCreateCommand.cs
+│   │   │   ├── CollaborationEnableWorkloadCommand.cs
+│   │   │   ├── CollaborationGetCommand.cs
+│   │   │   └── CollaborationGetReadonlyKubeconfigCommand.cs
 │   │   ├── Collaborations/
 │   │   │   ├── CollaborationsListCommand.cs
 │   │   │   └── CollaborationsGetCommand.cs
-│   │   └── Oidc/
-│   │       └── OidcIssuerInfoCommand.cs
+│   │   ├── Consent/
+│   │   │   └── ConsentPutCommand.cs
+│   │   ├── Datasets/
+│   │   │   ├── DatasetsGetCommand.cs
+│   │   │   ├── DatasetsListCommand.cs
+│   │   │   └── DatasetsPublishCommand.cs
+│   │   ├── Invitations/
+│   │   │   ├── InvitationsAcceptCommand.cs
+│   │   │   └── InvitationsListCommand.cs
+│   │   ├── Oidc/
+│   │   │   ├── OidcIssuerInfoCommand.cs
+│   │   │   ├── OidcKeysCommand.cs
+│   │   │   └── OidcSetIssuerUrlCommand.cs
+│   │   ├── Queries/
+│   │   │   ├── QueriesGetCommand.cs
+│   │   │   ├── QueriesListCommand.cs
+│   │   │   ├── QueriesPublishCommand.cs
+│   │   │   ├── QueriesRunCommand.cs
+│   │   │   ├── QueriesRunsCommand.cs
+│   │   │   └── QueriesVoteCommand.cs
+│   │   └── Runs/
+│   │       └── RunsGetCommand.cs
 │   ├── Models/                            # Empty - responses use raw JsonElement
 │   ├── Options/
 │   │   ├── ManagedCleanroomOptionDescriptions.cs
 │   │   ├── Analytics/
 │   │   │   ├── AnalyticsGetOptions.cs
 │   │   │   └── AnalyticsSkrPolicyOptions.cs
+│   │   ├── AuditEvents/
+│   │   │   └── AuditEventsListOptions.cs
 │   │   ├── Collaboration/
-│   │   │   └── CollaborationCreateOptions.cs
+│   │   │   ├── CollaborationAddCollaboratorOptions.cs
+│   │   │   ├── CollaborationCreateOptions.cs
+│   │   │   ├── CollaborationEnableWorkloadOptions.cs
+│   │   │   ├── CollaborationGetOptions.cs
+│   │   │   └── CollaborationGetReadonlyKubeconfigOptions.cs
 │   │   ├── Collaborations/
 │   │   │   ├── CollaborationsListOptions.cs
 │   │   │   └── CollaborationsGetOptions.cs
-│   │   └── Oidc/
-│   │       └── OidcIssuerInfoOptions.cs
+│   │   ├── Consent/
+│   │   │   └── ConsentPutOptions.cs
+│   │   ├── Datasets/
+│   │   │   ├── DatasetsGetOptions.cs
+│   │   │   ├── DatasetsListOptions.cs
+│   │   │   └── DatasetsPublishOptions.cs
+│   │   ├── Invitations/
+│   │   │   ├── InvitationsAcceptOptions.cs
+│   │   │   └── InvitationsListOptions.cs
+│   │   ├── Oidc/
+│   │   │   ├── OidcIssuerInfoOptions.cs
+│   │   │   ├── OidcKeysOptions.cs
+│   │   │   └── OidcSetIssuerUrlOptions.cs
+│   │   ├── Queries/
+│   │   │   ├── QueriesGetOptions.cs
+│   │   │   ├── QueriesListOptions.cs
+│   │   │   ├── QueriesPublishOptions.cs
+│   │   │   ├── QueriesRunOptions.cs
+│   │   │   ├── QueriesRunsOptions.cs
+│   │   │   └── QueriesVoteOptions.cs
+│   │   └── Runs/
+│   │       └── RunsGetOptions.cs
 │   └── Services/
 │       ├── IManagedCleanroomService.cs
 │       ├── ManagedCleanroomService.cs     # Frontend client + ARM glue
@@ -64,13 +116,39 @@ Azure.Mcp.Tools.ManagedCleanroom/
         ├── Analytics/
         │   ├── AnalyticsGetCommandTests.cs
         │   └── AnalyticsSkrPolicyCommandTests.cs
+        ├── AuditEvents/
+        │   └── AuditEventsListCommandTests.cs
         ├── Collaboration/
-        │   └── CollaborationCreateCommandTests.cs
+        │   ├── CollaborationAddCollaboratorCommandTests.cs
+        │   ├── CollaborationCreateCommandTests.cs
+        │   ├── CollaborationEnableWorkloadCommandTests.cs
+        │   ├── CollaborationGetCommandTests.cs
+        │   └── CollaborationGetReadonlyKubeconfigCommandTests.cs
         ├── Collaborations/
         │   ├── CollaborationsListCommandTests.cs
         │   └── CollaborationsGetCommandTests.cs
-        └── Oidc/
-            └── OidcIssuerInfoCommandTests.cs
+        ├── Consent/
+        │   └── ConsentPutCommandTests.cs
+        ├── Datasets/
+        │   ├── DatasetsGetCommandTests.cs
+        │   ├── DatasetsListCommandTests.cs
+        │   └── DatasetsPublishCommandTests.cs
+        ├── Invitations/
+        │   ├── InvitationsAcceptCommandTests.cs
+        │   └── InvitationsListCommandTests.cs
+        ├── Oidc/
+        │   ├── OidcIssuerInfoCommandTests.cs
+        │   ├── OidcKeysCommandTests.cs
+        │   └── OidcSetIssuerUrlCommandTests.cs
+        ├── Queries/
+        │   ├── QueriesGetCommandTests.cs
+        │   ├── QueriesListCommandTests.cs
+        │   ├── QueriesPublishCommandTests.cs
+        │   ├── QueriesRunCommandTests.cs
+        │   ├── QueriesRunsCommandTests.cs
+        │   └── QueriesVoteCommandTests.cs
+        └── Runs/
+            └── RunsGetCommandTests.cs
 ```
 
 ---
@@ -91,15 +169,15 @@ IManagedCleanroomService (ManagedCleanroomService)
 ```
 
 - Data-plane commands extend `AuthenticatedCommand<TOptions, TResult>`.
-- The ARM `collaboration create` command extends `SubscriptionCommand<TOptions, TResult>`.
+- ARM commands (control plane) extend `SubscriptionCommand<TOptions, TResult>` and inject `ISubscriptionResolver`.
 - Responses are returned as **raw `JsonElement`** (no typed DTOs) - the generated client is protocol-method-only, so this keeps the toolset faithful to the upstream contract.
-- AOT safety: source-generated `JsonSerializerContext`, no reflection, manual JSON string for the ARM create payload.
+- AOT safety: source-generated `JsonSerializerContext`, no reflection, manual `Utf8JsonWriter` for ARM payloads.
 - Stateless: a new client is built per call; safe for multi-user remote HTTP mode.
 - Authentication: uses `BaseAzureResourceService.GetCredential` so stdio, hosting identity, and OBO all work transparently. Data-plane bearer token uses the **ARM default scope**.
 
 ---
 
-## Commands Implemented Today (6)
+## Commands Implemented (25)
 
 | Group | Command | Tool Name | What it does |
 |-------|---------|-----------|--------------|
@@ -108,7 +186,27 @@ IManagedCleanroomService (ManagedCleanroomService)
 | `analytics` | `get` | `managedcleanroom_analytics_get` | Get analytics workload config |
 | `analytics` | `skr-policy` | `managedcleanroom_analytics_skr-policy` | Get SKR policy for a key (`--kid`) |
 | `oidc` | `issuer-info` | `managedcleanroom_oidc_issuer-info` | Get OIDC issuer info |
+| `oidc` | `keys` | `managedcleanroom_oidc_keys` | Get OIDC JWKS public keys |
+| `oidc` | `set-issuer-url` | `managedcleanroom_oidc_set-issuer-url` | Register an OIDC issuer URL |
 | `collaboration` | `create` | `managedcleanroom_collaboration_create` | Create the ARM resource, poll provisioningState every 30s, return result + elapsed time (~25 min) |
+| `collaboration` | `get` | `managedcleanroom_collaboration_get` | Get ARM resource details (provisioningState, health, workloads) |
+| `collaboration` | `add-collaborator` | `managedcleanroom_collaboration_add-collaborator` | Add a user/SPN as a collaborator via ARM `addCollaborator` action |
+| `collaboration` | `enable-workload` | `managedcleanroom_collaboration_enable-workload` | Enable a workload type (e.g. Analytics) via ARM `enableWorkload` action |
+| `collaboration` | `get-readonly-kubeconfig` | `managedcleanroom_collaboration_get-readonly-kubeconfig` | Get a read-only kubeconfig for the backing AKS cluster via ARM `getReadonlyKubeConfig` action (`Secret = true`) |
+| `invitations` | `list` | `managedcleanroom_invitations_list` | List collaboration invitations |
+| `invitations` | `accept` | `managedcleanroom_invitations_accept` | Accept a collaboration invitation |
+| `datasets` | `publish` | `managedcleanroom_datasets_publish` | Publish an input/output dataset document |
+| `datasets` | `get` | `managedcleanroom_datasets_get` | Get a dataset document |
+| `datasets` | `list` | `managedcleanroom_datasets_list` | List all dataset documents |
+| `consent` | `put` | `managedcleanroom_consent_put` | Toggle execution consent for a document |
+| `queries` | `publish` | `managedcleanroom_queries_publish` | Publish a query document |
+| `queries` | `get` | `managedcleanroom_queries_get` | Get a query document |
+| `queries` | `list` | `managedcleanroom_queries_list` | List published queries |
+| `queries` | `vote` | `managedcleanroom_queries_vote` | Approve or reject a query |
+| `queries` | `run` | `managedcleanroom_queries_run` | Execute a query |
+| `queries` | `runs` | `managedcleanroom_queries_runs` | Get run history for a query |
+| `runs` | `get` | `managedcleanroom_runs_get` | Poll run state |
+| `auditevents` | `list` | `managedcleanroom_auditevents_list` | List audit events |
 
 > `collaborations` (plural) = data plane. `collaboration` (singular) = ARM control plane.
 
@@ -154,10 +252,10 @@ Legend: ✅ implemented | ❌ not yet implemented
 | 08 Vote on query | `queries vote` | `queries vote` | Completed |
 | 09 Run query | `queries run` | `queries run` | Completed |
 | 09 Check collaboration health | ARM GET | `collaboration get` | Completed |
+| 09 Get readonly kubeconfig | POST `/getReadonlyKubeConfig` | `collaboration get-readonly-kubeconfig` | Completed |
 | 10 Poll run state | `runs get` | `runs get` | Completed |
 | 11 Run history | `queries runs` | `queries runs` | Completed |
-| 11 Audit events | `audit-events list` | `audit-events list` | Completed |
-| 12 Get readonly kubeconfig | POST `/getReadonlyKubeConfig` | `collaboration get-readonly-kubeconfig` | Pending |
+| 11 Audit events | `auditevents list` | `auditevents list` | Completed |
 | App G Force recover | POST `/recover` | `collaboration recover` | Pending |
 | App G Delete collaboration | ARM DELETE | `collaboration delete` | Pending |
 
@@ -165,29 +263,18 @@ Legend: ✅ implemented | ❌ not yet implemented
 
 ## Missing Commands (Roadmap)
 
-**Total: 18 implemented out of ~34 surface-area commands.**
+**Total: 26 implemented out of ~28 surface-area commands.**
 
-### Data plane (frontend) - 11 missing
+### Control plane (ARM) - 2 remaining
 
-| Group | Commands |
-|-------|----------|
-| `datasets` (extend) | `queries` (list, get, publish, vote, run, runs) |
-| `invitations` (extend) | `get` |
-| `consent` (extend) | `get` |
-| `audit-events` | `list` (with `--from`, `--to`, `--type`) |
-| `analytics secrets` | `set` (mark `Secret = true`) |
-| `collaborations` (extend) | `report` (attestation report) |
-
-### Control plane (ARM) - 5 missing
-
-`collaboration` group needs: `list`, `update`, `delete`, `get-readonly-kubeconfig`, `recover`.
+`collaboration` group needs: `recover`, `delete`.
 
 ### Minimum viable end-to-end flow
 
-A minimum viable end-to-end agent flow needs at least these additions on top of what exists today:
+The toolset now covers the complete happy-path agent workflow end-to-end. Remaining gaps are cleanup/recovery operations:
 
-- **ARM:** `collaboration delete` / `recover` (for cleanup).
-- **Frontend:** `queries list/get/publish/vote/run/runs`, `runs get`, `audit-events list`.
+- **ARM:** `collaboration recover` (force-recover a faulted workload).
+- **ARM:** `collaboration delete` (clean up test/dev resources).
 
 ---
 

@@ -2955,6 +2955,13 @@ azmcp managedcleanroom collaboration get --name <name> \
                                          --subscription <subscription> \
                                          [--tenant <tenant>]
 
+# Get a read-only kubeconfig for the AKS cluster backing an Azure Cleanroom collaboration ARM resource
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ✅ Secret | ❌ LocalRequired
+azmcp managedcleanroom collaboration get-readonly-kubeconfig --name <name> \
+                                                             --resource-group <resource-group> \
+                                                             --subscription <subscription> \
+                                                             [--tenant <tenant>]
+
 # List invitations for an Azure Cleanroom collaboration via the Frontend service
 # ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
 azmcp managedcleanroom invitations list --endpoint <endpoint> \

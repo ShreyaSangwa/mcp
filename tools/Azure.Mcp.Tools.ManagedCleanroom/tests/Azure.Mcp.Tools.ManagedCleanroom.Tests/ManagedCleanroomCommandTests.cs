@@ -237,6 +237,28 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
     }
 
     [Fact]
+    public async Task Should_get_collaboration_readonly_kubeconfig()
+    {
+        var result = await CallToolAsync(
+            "managedcleanroom_collaboration_get-readonly-kubeconfig",
+            new()
+            {
+                { "name", Settings.ResourceBaseName },
+                { "resource-group", Settings.ResourceGroupName },
+                { "subscription", Settings.SubscriptionId }
+            });
+
+        Assert.NotNull(result);
+        var hasKubeconfig = result.Value.TryGetProperty("kubeconfig", out var kubeconfig);
+        var hasMessage = result.Value.TryGetProperty("message", out var message);
+
+        Assert.True(hasKubeconfig || hasMessage, $"Unexpected response payload: {result.Value}");
+        Output.WriteLine(hasKubeconfig
+            ? $"Collaboration readonly kubeconfig length: {kubeconfig.GetString()?.Length ?? 0}"
+            : $"Collaboration get-readonly-kubeconfig command returned message payload: {message}");
+    }
+
+    [Fact]
     public async Task Should_get_oidc_keys()
     {
         var endpoint = GetEndpoint();

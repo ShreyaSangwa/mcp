@@ -38,6 +38,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<CollaborationGetCommand>();
         services.AddSingleton<CollaborationAddCollaboratorCommand>();
         services.AddSingleton<CollaborationEnableWorkloadCommand>();
+        services.AddSingleton<CollaborationGetReadonlyKubeconfigCommand>();
         services.AddSingleton<InvitationsListCommand>();
         services.AddSingleton<InvitationsAcceptCommand>();
         services.AddSingleton<DatasetsPublishCommand>();
@@ -85,6 +86,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         collaboration.AddCommand<CollaborationGetCommand>(serviceProvider);
         collaboration.AddCommand<CollaborationAddCollaboratorCommand>(serviceProvider);
         collaboration.AddCommand<CollaborationEnableWorkloadCommand>(serviceProvider);
+        collaboration.AddCommand<CollaborationGetReadonlyKubeconfigCommand>(serviceProvider);
 
         var invitations = new CommandGroup("invitations", "Cleanroom invitation operations - Commands for listing and inspecting cleanroom collaboration invitations.");
         root.AddSubGroup(invitations);
