@@ -687,6 +687,8 @@ This file contains prompts used for end-to-end testing to ensure each tool is in
 | managedcleanroom_consent_put | Put consent for document <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
 | managedcleanroom_datasets_get | Get dataset document <document-id> for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
 | managedcleanroom_datasets_get | Show me the dataset <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_datasets_list | List all datasets for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_datasets_list | Show me the datasets in cleanroom <collaboration-id> using endpoint <endpoint> |
 | managedcleanroom_datasets_publish | Publish dataset document <document-id> for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
 | managedcleanroom_datasets_publish | Publish the dataset <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
 | managedcleanroom_invitations_accept | Accept the invitation <invitation-id> to join cleanroom collaboration <collaboration-id> at endpoint <endpoint> |

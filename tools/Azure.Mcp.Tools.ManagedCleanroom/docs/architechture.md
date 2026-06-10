@@ -144,10 +144,10 @@ Legend: ✅ implemented | ❌ not yet implemented
 | 05 Register issuer URL | `oidc set-issuer-url` | `oidc set-issuer-url` | Completed |
 | 06 Publish input/output dataset | `datasets publish` | `datasets publish` | Completed |
 | 06 Verify dataset | `datasets get` | `datasets get` | Completed |
-| 06 Toggle execution consent | `consent put` | `consent put` | ✅ Completed |
+| 06 Toggle execution consent | `consent put` | `consent put` | Completed |
 | 06 Fetch SKR policy (CPK) | `analytics skr-policy` | `analytics skr-policy` | Completed |
 | 06 Inspect analytics workload config | `analytics get` | `analytics get` | Completed |
-| 07 Look up partner dataset id | `datasets list` | `datasets list` | Pending |
+| 07 Look up partner dataset id | `datasets list` | `datasets list` | ✅ Completed |
 | 07 Publish query | `queries publish` | `queries publish` | Pending |
 | 08 Inspect query + proposal ID | `queries get` | `queries get` | Pending |
 | 08 List published queries | `queries list` | `queries list` | Pending |
@@ -165,31 +165,30 @@ Legend: ✅ implemented | ❌ not yet implemented
 
 ## Missing Commands (Roadmap)
 
-**Total: 6 implemented out of ~31 surface-area commands.**
+**Total: 17 implemented out of ~34 surface-area commands.**
 
-### Data plane (frontend) - 21 missing
+### Data plane (frontend) - 12 missing
 
 | Group | Commands |
 |-------|----------|
-| `datasets` | `list`, `get`, `publish`, `queries` |
+| `datasets` (extend) | `queries` (list, get, publish, vote, run, runs) |
 | `runs`     | `get` |
-| `invitations` | `list`, `get`, `accept` |
-| `consent` | `get` |
-| `oidc` (extend) | `keys`, `set-issuer-url` |
+| `invitations` (extend) | `get` |
+| `consent` (extend) | `get` |
 | `audit-events` | `list` (with `--from`, `--to`, `--type`) |
 | `analytics secrets` | `set` (mark `Secret = true`) |
 | `collaborations` (extend) | `report` (attestation report) |
 
-### Control plane (ARM) - 8 missing
+### Control plane (ARM) - 5 missing
 
-`collaboration` group needs: `get`, `list`, `update`, `delete`, `enable-workload`, `add-collaborator`, `get-readonly-kubeconfig`, `recover`.
+`collaboration` group needs: `list`, `update`, `delete`, `get-readonly-kubeconfig`, `recover`.
 
 ### Minimum viable end-to-end flow
 
 A minimum viable end-to-end agent flow needs at least these additions on top of what exists today:
 
-- **ARM:** `collaboration get`, `enable-workload`, `add-collaborator` (and `delete` / `recover` for cleanup).
-- **Frontend:** `invitations list/accept`, `oidc keys`, `oidc set-issuer-url`, `datasets list/get/publish`, `queries list/get/publish/vote/run/runs`, `runs get`, `audit-events list`.
+- **ARM:** `collaboration delete` / `recover` (for cleanup).
+- **Frontend:** `queries list/get/publish/vote/run/runs`, `runs get`, `audit-events list`.
 
 ---
 

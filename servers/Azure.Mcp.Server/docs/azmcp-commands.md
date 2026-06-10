@@ -2987,7 +2987,14 @@ azmcp managedcleanroom datasets get --endpoint <endpoint> \
                                     [--allow-untrusted-cert] \
                                     [--tenant <tenant>]
 
-# Create or update a consent document for a cleanroom collaboration
+# List dataset documents for a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom datasets list --endpoint <endpoint> \
+                                     --collaboration-id <collaboration-id> \
+                                     [--allow-untrusted-cert] \
+                                     [--tenant <tenant>]
+
+# Create or update a consent documentfor a cleanroom collaboration
 # ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
 azmcp managedcleanroom consent put --endpoint <endpoint> \
                                    --collaboration-id <collaboration-id> \

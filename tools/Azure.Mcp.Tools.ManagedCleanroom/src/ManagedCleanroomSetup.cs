@@ -39,6 +39,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<InvitationsAcceptCommand>();
         services.AddSingleton<DatasetsPublishCommand>();
         services.AddSingleton<DatasetsGetCommand>();
+        services.AddSingleton<DatasetsListCommand>();
         services.AddSingleton<ConsentPutCommand>();
     }
 
@@ -85,6 +86,7 @@ public class ManagedCleanroomSetup : IAreaSetup
 
         datasets.AddCommand<DatasetsPublishCommand>(serviceProvider);
         datasets.AddCommand<DatasetsGetCommand>(serviceProvider);
+        datasets.AddCommand<DatasetsListCommand>(serviceProvider);
 
         var consent = new CommandGroup("consent", "Cleanroom consent operations - Commands for creating and managing consent documents in a cleanroom collaboration.");
         root.AddSubGroup(consent);

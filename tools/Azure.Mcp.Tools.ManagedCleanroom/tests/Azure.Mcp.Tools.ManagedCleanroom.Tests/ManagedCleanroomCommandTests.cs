@@ -323,5 +323,24 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
         Assert.NotNull(result);
         Output.WriteLine($"Consent put payload: {result.Value}");
     }
+
+    [Fact]
+    public async Task Should_list_datasets()
+    {
+        var endpoint = GetEndpoint();
+        var collaborationId = GetCollaborationId();
+
+        var result = await CallToolAsync(
+            "managedcleanroom_datasets_list",
+            new()
+            {
+                { "endpoint", endpoint },
+                { "collaboration-id", collaborationId },
+                { "allow-untrusted-cert", true }
+            });
+
+        Assert.NotNull(result);
+        Output.WriteLine($"Datasets list payload: {result.Value}");
+    }
 }
 
