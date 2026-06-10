@@ -38,6 +38,14 @@ public interface IManagedCleanroomService
         string? tenant = null,
         CancellationToken cancellationToken = default);
 
+    Task<JsonElement> ListInvitationsAsync(
+        string endpoint,
+        string collaborationId,
+        bool? pendingOnly = null,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
+        CancellationToken cancellationToken = default);
+
     Task<JsonElement> GetOidcIssuerInfoAsync(
         string endpoint,
         string collaborationId,

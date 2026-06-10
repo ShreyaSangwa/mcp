@@ -70,6 +70,7 @@
         "managedcleanroom_analytics_skr-policy",
         "managedcleanroom_collaborations_get",
         "managedcleanroom_collaborations_list",
+        "managedcleanroom_invitations_list",
         "managedcleanroom_oidc_issuer-info"
       ]
     },

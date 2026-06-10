@@ -2913,7 +2913,8 @@ azmcp managedcleanroom collaboration create --name <name> \
                                             [--tenant <tenant>]
 ```
 
-
+
+
 # Add a collaborator (user) to an Azure Cleanroom collaboration
 # ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
 azmcp managedcleanroom collaboration add-collaborator --name <name> \
@@ -2931,6 +2932,14 @@ azmcp managedcleanroom collaboration enable-workload --name <name> \
                                                     --resource-group <resource-group> \
                                                     --subscription <subscription> \
                                                     [--tenant <tenant>]
+
+# List invitations for an Azure Cleanroom collaboration via the Frontend service
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom invitations list --endpoint <endpoint> \
+                                        --collaboration-id <collaboration-id> \
+                                        [--pending-only <true/false>] \
+                                        [--allow-untrusted-cert] \
+                                        [--tenant <tenant>]
 ```
 
 ### Azure Marketplace Operations

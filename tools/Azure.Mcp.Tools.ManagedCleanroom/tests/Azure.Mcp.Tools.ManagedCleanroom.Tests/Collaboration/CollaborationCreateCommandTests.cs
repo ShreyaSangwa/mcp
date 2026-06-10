@@ -113,5 +113,6 @@ public sealed class CollaborationCreateCommandTests
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.Status);
         Assert.Contains("Test error", response.Message);
+        Assert.Contains("troubleshooting", response.Message, StringComparison.OrdinalIgnoreCase);
     }
 }

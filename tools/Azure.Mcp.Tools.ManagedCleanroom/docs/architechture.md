@@ -134,10 +134,10 @@ Legend: ✅ implemented | ❌ not yet implemented
 |------|-----------|---------|:------:|
 | 02 Create collaboration (ARM) | PUT (waits for completion) | `collaboration create` | Completed |
 | 02 Enable Analytics workload | POST `/enableWorkload` | `collaboration enable-workload` | Completed |
-| 02 Add more collaborators | POST `/addCollaborator` | `collaboration add-collaborator` | Pending |
+| 02 Add more collaborators | POST `/addCollaborator` | `collaboration add-collaborator` | Completed |
 | 03 Discover collaboration UUID | `collaborations list` | `collaborations list` | Completed |
 | 03 Inspect a single collaboration | `collaborations get` | `collaborations get` | Completed |
-| 03 List invitations | `invitations list` | `invitations list` | Pending |
+| 03 List invitations | `invitations list` | `invitations list` | ✅ Completed |
 | 03 Accept invitation | `invitations accept` | `invitations accept` | Pending |
 | 05 Fetch JWKS | `oidc keys` | `oidc keys` | Pending |
 | 05 Verify OIDC issuer | `oidc issuer-info` | `oidc issuer-info` | Completed |

@@ -681,6 +681,8 @@ This file contains prompts used for end-to-end testing to ensure each tool is in
 | managedcleanroom_collaborations_list | List my Azure Cleanroom collaborations from endpoint <endpoint> |
 | managedcleanroom_collaborations_list | Show me the cleanroom collaborations I participate in using endpoint <endpoint> |
 | managedcleanroom_collaborations_list | List active cleanroom collaborations from <endpoint> |
+| managedcleanroom_invitations_list | List the invitations for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_invitations_list | Show me pending invitations for cleanroom <collaboration-id> using endpoint <endpoint> |
 | managedcleanroom_oidc_issuer-info | Get the OIDC issuer info for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
 | managedcleanroom_oidc_issuer-info | Show me the OIDC issuer configuration for cleanroom <collaboration-id> using endpoint <endpoint> |
 

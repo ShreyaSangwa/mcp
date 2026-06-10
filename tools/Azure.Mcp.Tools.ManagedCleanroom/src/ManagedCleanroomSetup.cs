@@ -5,6 +5,7 @@ using Azure.Mcp.Core.Services.Azure.Subscription;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Analytics;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaboration;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaborations;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.Invitations;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Oidc;
 using Azure.Mcp.Tools.ManagedCleanroom.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<CollaborationCreateCommand>();
         services.AddSingleton<CollaborationAddCollaboratorCommand>();
         services.AddSingleton<CollaborationEnableWorkloadCommand>();
+        services.AddSingleton<InvitationsListCommand>();
     }
 
     public CommandGroup RegisterCommands(IServiceProvider serviceProvider)
@@ -60,6 +62,11 @@ public class ManagedCleanroomSetup : IAreaSetup
         collaboration.AddCommand<CollaborationCreateCommand>(serviceProvider);
         collaboration.AddCommand<CollaborationAddCollaboratorCommand>(serviceProvider);
         collaboration.AddCommand<CollaborationEnableWorkloadCommand>(serviceProvider);
+
+        var invitations = new CommandGroup("invitations", "Cleanroom invitation operations - Commands for listing and inspecting cleanroom collaboration invitations.");
+        root.AddSubGroup(invitations);
+
+        invitations.AddCommand<InvitationsListCommand>(serviceProvider);
 
         return root;
     }

@@ -142,5 +142,30 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
         Assert.NotNull(result);
         Output.WriteLine($"Enable workload payload: {result.Value}");
     }
+
+    [Fact]
+    public async Task Should_list_invitations()
+    {
+        var endpoint = GetEndpoint();
+        var collaborationId = GetCollaborationId();
+
+        var result = await CallToolAsync(
+            "managedcleanroom_invitations_list",
+            new()
+            {
+                { "endpoint", endpoint },
+                { "collaboration-id", collaborationId },
+                { "allow-untrusted-cert", true }
+            });
+
+        Assert.NotNull(result);
+        var hasInvitations = result.Value.TryGetProperty("invitations", out var invitations);
+        var hasMessage = result.Value.TryGetProperty("message", out var message);
+
+        Assert.True(hasInvitations || hasMessage, $"Unexpected response payload: {result.Value}");
+        Output.WriteLine(hasInvitations
+            ? $"Invitations payload: {invitations}"
+            : $"Invitations command returned message payload: {message}");
+    }
 }
 

@@ -101,6 +101,25 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return ParseResponse(response);
     }
 
+    public async Task<JsonElement> ListInvitationsAsync(
+        string endpoint,
+        string collaborationId,
+        bool? pendingOnly = null,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateRequiredParameters((nameof(collaborationId), collaborationId));
+
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+            .ConfigureAwait(false);
+
+        var requestContext = new RequestContext { CancellationToken = cancellationToken };
+        Response response = await client.InvitationsGetAsync(collaborationId, pendingOnly, requestContext).ConfigureAwait(false);
+
+        return ParseResponse(response);
+    }
+
     public async Task<JsonElement> GetOidcIssuerInfoAsync(
         string endpoint,
         string collaborationId,
@@ -169,6 +188,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         var httpClient = _httpClientFactory.CreateClient();
         using var request = new HttpRequestMessage(HttpMethod.Post, actionUrl);
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token.Token);
+        request.Headers.Add("x-ms-client-request-id", Guid.NewGuid().ToString());
         request.Content = new ByteArrayContent(bodyBuffer.WrittenSpan.ToArray());
         request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
 
@@ -223,6 +243,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         var httpClient = _httpClientFactory.CreateClient();
         using var request = new HttpRequestMessage(HttpMethod.Post, actionUrl);
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token.Token);
+        request.Headers.Add("x-ms-client-request-id", Guid.NewGuid().ToString());
         request.Content = new ByteArrayContent(bodyBuffer.WrittenSpan.ToArray());
         request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
 
