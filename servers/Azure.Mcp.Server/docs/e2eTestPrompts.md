@@ -701,6 +701,8 @@ This file contains prompts used for end-to-end testing to ensure each tool is in
 | managedcleanroom_oidc_keys | Show me the public keys used by the OIDC issuer of cleanroom <collaboration-id> at endpoint <endpoint> |
 | managedcleanroom_oidc_set-issuer-url | Register the OIDC issuer URL <issuer-url> for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
 | managedcleanroom_oidc_set-issuer-url | Set the OIDC issuer URL for cleanroom <collaboration-id> to <issuer-url> using endpoint <endpoint> |
+| managedcleanroom_queries_get | Get query document <document-id> for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_queries_get | Show me the query <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
 | managedcleanroom_queries_publish | Publish query document <document-id> for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
 | managedcleanroom_queries_publish | Publish the query <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
 
