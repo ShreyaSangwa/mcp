@@ -48,6 +48,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<QueriesListCommand>();
         services.AddSingleton<QueriesVoteCommand>();
         services.AddSingleton<QueriesRunCommand>();
+        services.AddSingleton<QueriesRunsCommand>();
         services.AddSingleton<RunsGetCommand>();
     }
 
@@ -109,6 +110,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         queries.AddCommand<QueriesListCommand>(serviceProvider);
         queries.AddCommand<QueriesVoteCommand>(serviceProvider);
         queries.AddCommand<QueriesRunCommand>(serviceProvider);
+        queries.AddCommand<QueriesRunsCommand>(serviceProvider);
 
         var runs = new CommandGroup("runs", "Cleanroom run operations - Commands for polling and inspecting query run state in a cleanroom collaboration.");
         root.AddSubGroup(runs);

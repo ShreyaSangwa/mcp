@@ -709,6 +709,8 @@ This file contains prompts used for end-to-end testing to ensure each tool is in
 | managedcleanroom_queries_publish | Publish the query <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
 | managedcleanroom_queries_run | Run query <document-id> for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
 | managedcleanroom_queries_run | Execute the query <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_queries_runs | Get the run history for query <document-id> in cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_queries_runs | Show me the run history for query <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
 | managedcleanroom_queries_vote | Approve query <document-id> in cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
 | managedcleanroom_queries_vote | Reject query <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
 | managedcleanroom_runs_get | Get the run history for query <document-id> in cleanroom collaboration <collaboration-id> at endpoint <endpoint> |

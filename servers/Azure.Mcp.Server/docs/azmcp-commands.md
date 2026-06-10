@@ -3041,6 +3041,14 @@ azmcp managedcleanroom queries run --endpoint <endpoint> \
                                    --document-id <document-id> \
                                    [--allow-untrusted-cert] \
                                    [--tenant <tenant>]
+
+# Get the run history for a query document via the queries command group
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom queries runs --endpoint <endpoint> \
+                                    --collaboration-id <collaboration-id> \
+                                    --document-id <document-id> \
+                                    [--allow-untrusted-cert] \
+                                    [--tenant <tenant>]
 ```
 
 # Get the run history for a query document in a cleanroom collaboration

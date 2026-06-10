@@ -80,6 +80,7 @@
         "managedcleanroom_oidc_set-issuer-url",
         "managedcleanroom_queries_get",
         "managedcleanroom_queries_list",
+        "managedcleanroom_queries_runs",
         "managedcleanroom_runs_get"
       ]
     },
