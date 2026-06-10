@@ -139,7 +139,7 @@ Legend: ✅ implemented | ❌ not yet implemented
 | 03 Inspect a single collaboration | `collaborations get` | `collaborations get` | Completed |
 | 03 List invitations | `invitations list` | `invitations list` | Completed |
 | 03 Accept invitation | `invitations accept` | `invitations accept` | Completed |
-| 05 Fetch JWKS | `oidc keys` | `oidc keys` | Pending |
+| 05 Fetch JWKS | `oidc keys` | `oidc keys` | Completed |
 | 05 Verify OIDC issuer | `oidc issuer-info` | `oidc issuer-info` | Completed |
 | 05 Register issuer URL | `oidc set-issuer-url` | `oidc set-issuer-url` | Pending |
 | 06 Publish input/output dataset | `datasets publish` | `datasets publish` | Pending |
@@ -153,7 +153,7 @@ Legend: ✅ implemented | ❌ not yet implemented
 | 08 List published queries | `queries list` | `queries list` | Pending |
 | 08 Vote on query | `queries vote` | `queries vote` | Pending |
 | 09 Run query | `queries run` | `queries run` | Pending |
-| 09 Check collaboration health | ARM GET | `collaboration get` | ✅ Completed |
+| 09 Check collaboration health | ARM GET | `collaboration get` | Completed |
 | 10 Poll run state | `runs get` | `runs get` | Pending |
 | 11 Run history | `queries runs` | `queries runs` | Pending |
 | 11 Audit events | `audit-events list` | `audit-events list` | Pending |

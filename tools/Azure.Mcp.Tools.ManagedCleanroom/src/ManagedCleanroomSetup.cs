@@ -28,6 +28,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<AnalyticsGetCommand>();
         services.AddSingleton<AnalyticsSkrPolicyCommand>();
         services.AddSingleton<OidcIssuerInfoCommand>();
+        services.AddSingleton<OidcKeysCommand>();
         services.AddSingleton<CollaborationCreateCommand>();
         services.AddSingleton<CollaborationGetCommand>();
         services.AddSingleton<CollaborationAddCollaboratorCommand>();
@@ -57,6 +58,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         root.AddSubGroup(oidc);
 
         oidc.AddCommand<OidcIssuerInfoCommand>(serviceProvider);
+        oidc.AddCommand<OidcKeysCommand>(serviceProvider);
 
         var collaboration = new CommandGroup("collaboration", "Cleanroom ARM management operations - Commands for creating and managing Azure Cleanroom collaboration ARM resources.");
         root.AddSubGroup(collaboration);

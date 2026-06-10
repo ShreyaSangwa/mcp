@@ -212,5 +212,24 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
             ? $"Collaboration ARM provisioningState: {provisioningState}"
             : $"Collaboration get command returned message payload: {message}");
     }
+
+    [Fact]
+    public async Task Should_get_oidc_keys()
+    {
+        var endpoint = GetEndpoint();
+        var collaborationId = GetCollaborationId();
+
+        var result = await CallToolAsync(
+            "managedcleanroom_oidc_keys",
+            new()
+            {
+                { "endpoint", endpoint },
+                { "collaboration-id", collaborationId },
+                { "allow-untrusted-cert", true }
+            });
+
+        Assert.NotNull(result);
+        Output.WriteLine($"OIDC keys payload: {result.Value}");
+    }
 }
 
