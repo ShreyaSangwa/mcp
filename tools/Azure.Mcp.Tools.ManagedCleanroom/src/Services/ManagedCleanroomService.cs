@@ -195,12 +195,12 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
             .ConfigureAwait(false);
 
-        // Build the request body: {"issuerUrl": "<value>"}
+        // Build the request body expected by the frontend API: {"url": "<value>"}
         var buffer = new ArrayBufferWriter<byte>();
         using (var writer = new Utf8JsonWriter(buffer))
         {
             writer.WriteStartObject();
-            writer.WriteString("issuerUrl", issuerUrl);
+            writer.WriteString("url", issuerUrl);
             writer.WriteEndObject();
             writer.Flush();
         }
@@ -208,6 +208,30 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         var content = RequestContent.Create(buffer.WrittenMemory);
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
         Response response = await client.OidcSetIssuerUrlPostAsync(collaborationId, content, requestContext).ConfigureAwait(false);
+
+        return ParseResponse(response);
+    }
+
+    public async Task<JsonElement> PublishDatasetAsync(
+        string endpoint,
+        string collaborationId,
+        string documentId,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateRequiredParameters(
+            (nameof(collaborationId), collaborationId),
+            (nameof(documentId), documentId));
+
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+            .ConfigureAwait(false);
+
+        // The publish POST body is empty — the document ID in the URL path identifies the dataset.
+        var content = RequestContent.Create(BinaryData.FromBytes("{}"u8.ToArray()));
+        var requestContext = new RequestContext { CancellationToken = cancellationToken };
+        Response response = await client.AnalyticsDatasetsDocumentIdPublishPostAsync(
+            collaborationId, documentId, content, requestContext).ConfigureAwait(false);
 
         return ParseResponse(response);
     }

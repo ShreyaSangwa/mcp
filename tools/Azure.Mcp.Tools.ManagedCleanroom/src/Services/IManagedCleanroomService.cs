@@ -69,6 +69,14 @@ public interface IManagedCleanroomService
         string? tenant = null,
         CancellationToken cancellationToken = default);
 
+    Task<JsonElement> PublishDatasetAsync(
+        string endpoint,
+        string collaborationId,
+        string documentId,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
+        CancellationToken cancellationToken = default);
+
     Task<JsonElement> GetOidcKeysAsync(
         string endpoint,
         string collaborationId,

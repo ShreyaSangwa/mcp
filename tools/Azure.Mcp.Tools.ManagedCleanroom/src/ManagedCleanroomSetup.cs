@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Azure.Mcp.Core.Services.Azure.Subscription;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Analytics;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaboration;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaborations;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.Datasets;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Invitations;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Oidc;
 using Azure.Mcp.Tools.ManagedCleanroom.Services;
@@ -36,6 +36,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<CollaborationEnableWorkloadCommand>();
         services.AddSingleton<InvitationsListCommand>();
         services.AddSingleton<InvitationsAcceptCommand>();
+        services.AddSingleton<DatasetsPublishCommand>();
     }
 
     public CommandGroup RegisterCommands(IServiceProvider serviceProvider)
@@ -75,6 +76,11 @@ public class ManagedCleanroomSetup : IAreaSetup
 
         invitations.AddCommand<InvitationsListCommand>(serviceProvider);
         invitations.AddCommand<InvitationsAcceptCommand>(serviceProvider);
+
+        var datasets = new CommandGroup("datasets", "Cleanroom dataset operations - Commands for publishing and inspecting datasets in a cleanroom collaboration.");
+        root.AddSubGroup(datasets);
+
+        datasets.AddCommand<DatasetsPublishCommand>(serviceProvider);
 
         return root;
     }

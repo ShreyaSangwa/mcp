@@ -2970,6 +2970,14 @@ azmcp managedcleanroom invitations accept --endpoint <endpoint> \
                                           --invitation-id <invitation-id> \
                                           [--allow-untrusted-cert] \
                                           [--tenant <tenant>]
+
+# Publish a dataset document for a cleanroom collaboration
+# ❌ Destructive | ❌ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom datasets publish --endpoint <endpoint> \
+                                        --collaboration-id <collaboration-id> \
+                                        --document-id <document-id> \
+                                        [--allow-untrusted-cert] \
+                                        [--tenant <tenant>]
 ```
 
 ### Azure Marketplace Operations
