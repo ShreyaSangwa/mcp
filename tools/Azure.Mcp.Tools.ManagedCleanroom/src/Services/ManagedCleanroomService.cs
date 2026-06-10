@@ -345,6 +345,24 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return ParseResponse(response);
     }
 
+    public async Task<JsonElement> ListQueriesAsync(
+        string endpoint,
+        string collaborationId,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateRequiredParameters((nameof(collaborationId), collaborationId));
+
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+            .ConfigureAwait(false);
+
+        var requestContext = new RequestContext { CancellationToken = cancellationToken };
+        Response response = await client.AnalyticsQueriesListGetAsync(collaborationId, requestContext).ConfigureAwait(false);
+
+        return ParseResponse(response);
+    }
+
     public async Task<JsonElement> AddCollaboratorAsync(
         string name,
         string resourceGroup,

@@ -388,5 +388,24 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
         Assert.NotNull(result);
         Output.WriteLine($"Query get payload: {result.Value}");
     }
+
+    [Fact]
+    public async Task Should_list_queries()
+    {
+        var endpoint = GetEndpoint();
+        var collaborationId = GetCollaborationId();
+
+        var result = await CallToolAsync(
+            "managedcleanroom_queries_list",
+            new()
+            {
+                { "endpoint", endpoint },
+                { "collaboration-id", collaborationId },
+                { "allow-untrusted-cert", true }
+            });
+
+        Assert.NotNull(result);
+        Output.WriteLine($"Queries list payload: {result.Value}");
+    }
 }
 

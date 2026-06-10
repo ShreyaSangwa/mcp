@@ -149,8 +149,8 @@ Legend: ✅ implemented | ❌ not yet implemented
 | 06 Inspect analytics workload config | `analytics get` | `analytics get` | Completed |
 | 07 Look up partner dataset id | `datasets list` | `datasets list` | Completed |
 | 07 Publish query | `queries publish` | `queries publish` | Completed |
-| 08 Inspect query + proposal ID | `queries get` | `queries get` | ✅ Completed |
-| 08 List published queries | `queries list` | `queries list` | Pending |
+| 08 Inspect query + proposal ID | `queries get` | `queries get` | Completed |
+| 08 List published queries | `queries list` | `queries list` | Completed |
 | 08 Vote on query | `queries vote` | `queries vote` | Pending |
 | 09 Run query | `queries run` | `queries run` | Pending |
 | 09 Check collaboration health | ARM GET | `collaboration get` | Completed |
