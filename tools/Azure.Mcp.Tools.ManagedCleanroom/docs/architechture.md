@@ -147,8 +147,8 @@ Legend: ✅ implemented | ❌ not yet implemented
 | 06 Toggle execution consent | `consent put` | `consent put` | Completed |
 | 06 Fetch SKR policy (CPK) | `analytics skr-policy` | `analytics skr-policy` | Completed |
 | 06 Inspect analytics workload config | `analytics get` | `analytics get` | Completed |
-| 07 Look up partner dataset id | `datasets list` | `datasets list` | ✅ Completed |
-| 07 Publish query | `queries publish` | `queries publish` | Pending |
+| 07 Look up partner dataset id | `datasets list` | `datasets list` | Completed |
+| 07 Publish query | `queries publish` | `queries publish` | Completed |
 | 08 Inspect query + proposal ID | `queries get` | `queries get` | Pending |
 | 08 List published queries | `queries list` | `queries list` | Pending |
 | 08 Vote on query | `queries vote` | `queries vote` | Pending |

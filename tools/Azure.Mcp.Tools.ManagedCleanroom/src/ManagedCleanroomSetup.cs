@@ -6,6 +6,7 @@ using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaboration;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaborations;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Consent;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Datasets;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.Queries;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Invitations;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Oidc;
 using Azure.Mcp.Tools.ManagedCleanroom.Services;
@@ -41,6 +42,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<DatasetsGetCommand>();
         services.AddSingleton<DatasetsListCommand>();
         services.AddSingleton<ConsentPutCommand>();
+        services.AddSingleton<QueriesPublishCommand>();
     }
 
     public CommandGroup RegisterCommands(IServiceProvider serviceProvider)
@@ -92,6 +94,11 @@ public class ManagedCleanroomSetup : IAreaSetup
         root.AddSubGroup(consent);
 
         consent.AddCommand<ConsentPutCommand>(serviceProvider);
+
+        var queries = new CommandGroup("queries", "Cleanroom query operations - Commands for publishing, inspecting, and running analytics queries on a cleanroom collaboration.");
+        root.AddSubGroup(queries);
+
+        queries.AddCommand<QueriesPublishCommand>(serviceProvider);
 
         return root;
     }

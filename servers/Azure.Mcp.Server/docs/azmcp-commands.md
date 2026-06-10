@@ -3001,6 +3001,14 @@ azmcp managedcleanroom consent put --endpoint <endpoint> \
                                    --document-id <document-id> \
                                    [--allow-untrusted-cert] \
                                    [--tenant <tenant>]
+
+# Publish a query document for a cleanroom collaboration
+# ❌ Destructive | ❌ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom queries publish --endpoint <endpoint> \
+                                       --collaboration-id <collaboration-id> \
+                                       --document-id <document-id> \
+                                       [--allow-untrusted-cert] \
+                                       [--tenant <tenant>]
 ```
 
 ### Azure Marketplace Operations

@@ -342,5 +342,28 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
         Assert.NotNull(result);
         Output.WriteLine($"Datasets list payload: {result.Value}");
     }
+
+    [Fact]
+    public async Task Should_publish_query()
+    {
+        var endpoint = GetEndpoint();
+        var collaborationId = GetCollaborationId();
+        var documentId = Settings.DeploymentOutputs.TryGetValue("CLEANROOM_QUERY_DOCUMENT_ID", out var docId) && !string.IsNullOrWhiteSpace(docId)
+            ? docId
+            : "00000000-0000-0000-0000-000000000000";
+
+        var result = await CallToolAsync(
+            "managedcleanroom_queries_publish",
+            new()
+            {
+                { "endpoint", endpoint },
+                { "collaboration-id", collaborationId },
+                { "document-id", documentId },
+                { "allow-untrusted-cert", true }
+            });
+
+        Assert.NotNull(result);
+        Output.WriteLine($"Query publish payload: {result.Value}");
+    }
 }
 
