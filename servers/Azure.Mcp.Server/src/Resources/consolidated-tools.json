@@ -79,7 +79,8 @@
         "managedcleanroom_oidc_keys",
         "managedcleanroom_oidc_set-issuer-url",
         "managedcleanroom_queries_get",
-        "managedcleanroom_queries_list"
+        "managedcleanroom_queries_list",
+        "managedcleanroom_runs_get"
       ]
     },
     {

@@ -7,6 +7,7 @@ using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaborations;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Consent;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Datasets;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Queries;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.Runs;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Invitations;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Oidc;
 using Azure.Mcp.Tools.ManagedCleanroom.Services;
@@ -47,6 +48,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<QueriesListCommand>();
         services.AddSingleton<QueriesVoteCommand>();
         services.AddSingleton<QueriesRunCommand>();
+        services.AddSingleton<RunsGetCommand>();
     }
 
     public CommandGroup RegisterCommands(IServiceProvider serviceProvider)
@@ -107,6 +109,11 @@ public class ManagedCleanroomSetup : IAreaSetup
         queries.AddCommand<QueriesListCommand>(serviceProvider);
         queries.AddCommand<QueriesVoteCommand>(serviceProvider);
         queries.AddCommand<QueriesRunCommand>(serviceProvider);
+
+        var runs = new CommandGroup("runs", "Cleanroom run operations - Commands for polling and inspecting query run state in a cleanroom collaboration.");
+        root.AddSubGroup(runs);
+
+        runs.AddCommand<RunsGetCommand>(serviceProvider);
 
         return root;
     }

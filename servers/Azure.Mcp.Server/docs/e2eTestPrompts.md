@@ -711,6 +711,8 @@ This file contains prompts used for end-to-end testing to ensure each tool is in
 | managedcleanroom_queries_run | Execute the query <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
 | managedcleanroom_queries_vote | Approve query <document-id> in cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
 | managedcleanroom_queries_vote | Reject query <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_runs_get | Get the run history for query <document-id> in cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_runs_get | Show me the runs for query <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
 
 ## Azure Managed Lustre
 

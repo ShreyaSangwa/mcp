@@ -3043,6 +3043,15 @@ azmcp managedcleanroom queries run --endpoint <endpoint> \
                                    [--tenant <tenant>]
 ```
 
+# Get the run history for a query document in a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom runs get --endpoint <endpoint> \
+                                --collaboration-id <collaboration-id> \
+                                --document-id <document-id> \
+                                [--allow-untrusted-cert] \
+                                [--tenant <tenant>]
+```
+
 ### Azure Marketplace Operations
 
 ```bash

@@ -154,7 +154,7 @@ Legend: ✅ implemented | ❌ not yet implemented
 | 08 Vote on query | `queries vote` | `queries vote` | Completed |
 | 09 Run query | `queries run` | `queries run` | Completed |
 | 09 Check collaboration health | ARM GET | `collaboration get` | Completed |
-| 10 Poll run state | `runs get` | `runs get` | Pending |
+| 10 Poll run state | `runs get` | `runs get` | Completed |
 | 11 Run history | `queries runs` | `queries runs` | Pending |
 | 11 Audit events | `audit-events list` | `audit-events list` | Pending |
 | 12 Get readonly kubeconfig | POST `/getReadonlyKubeConfig` | `collaboration get-readonly-kubeconfig` | Pending |
@@ -165,14 +165,13 @@ Legend: ✅ implemented | ❌ not yet implemented
 
 ## Missing Commands (Roadmap)
 
-**Total: 17 implemented out of ~34 surface-area commands.**
+**Total: 18 implemented out of ~34 surface-area commands.**
 
-### Data plane (frontend) - 12 missing
+### Data plane (frontend) - 11 missing
 
 | Group | Commands |
 |-------|----------|
 | `datasets` (extend) | `queries` (list, get, publish, vote, run, runs) |
-| `runs`     | `get` |
 | `invitations` (extend) | `get` |
 | `consent` (extend) | `get` |
 | `audit-events` | `list` (with `--from`, `--to`, `--type`) |
