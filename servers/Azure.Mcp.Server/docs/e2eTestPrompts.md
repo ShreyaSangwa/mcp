@@ -670,8 +670,12 @@ This file contains prompts used for end-to-end testing to ensure each tool is in
 | managedcleanroom_analytics_get | Show me the analytics config for cleanroom <collaboration-id> using endpoint <endpoint> |
 | managedcleanroom_analytics_skr-policy | Get the SKR policy for key <kid> on cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
 | managedcleanroom_analytics_skr-policy | Show me the Secure Key Release policy for key <kid> in cleanroom <collaboration-id> |
+| managedcleanroom_collaboration_add-collaborator | Add collaborator alice@contoso.com to cleanroom collaboration <name> in resource group <resource-group> |
+| managedcleanroom_collaboration_add-collaborator | Add service principal <spn-id> as a collaborator to cleanroom collaboration <name> |
 | managedcleanroom_collaboration_create | Create an Azure Cleanroom collaboration named <name> in resource group <resource-group> in location <location> |
 | managedcleanroom_collaboration_create | Create a new cleanroom collaboration called <name> in <resource-group> in subscription <subscription> |
+| managedcleanroom_collaboration_enable-workload | Enable the Analytics workload on cleanroom collaboration <name> in resource group <resource-group> |
+| managedcleanroom_collaboration_enable-workload | Enable workload type Analytics on cleanroom collaboration <name> in subscription <subscription> |
 | managedcleanroom_collaborations_get | Get details for cleanroom collaboration <collaboration-id> from endpoint <endpoint> |
 | managedcleanroom_collaborations_get | Show me the cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
 | managedcleanroom_collaborations_list | List my Azure Cleanroom collaborations from endpoint <endpoint> |

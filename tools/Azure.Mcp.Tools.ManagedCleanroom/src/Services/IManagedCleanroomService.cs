@@ -45,6 +45,26 @@ public interface IManagedCleanroomService
         string? tenant = null,
         CancellationToken cancellationToken = default);
 
+    Task<JsonElement> AddCollaboratorAsync(
+        string name,
+        string resourceGroup,
+        string subscription,
+        string collaboratorUserIdentifier,
+        string? collaboratorObjectId = null,
+        string? collaboratorTenantId = null,
+        string? tenant = null,
+        RetryPolicyOptions? retryPolicy = null,
+        CancellationToken cancellationToken = default);
+
+    Task<JsonElement> EnableWorkloadAsync(
+        string name,
+        string resourceGroup,
+        string subscription,
+        string workloadType,
+        string? tenant = null,
+        RetryPolicyOptions? retryPolicy = null,
+        CancellationToken cancellationToken = default);
+
     Task<CollaborationCreateResult> CreateCollaborationArmResourceAsync(
         string name,
         string resourceGroup,

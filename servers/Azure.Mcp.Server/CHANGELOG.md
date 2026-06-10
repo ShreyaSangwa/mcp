@@ -6,6 +6,9 @@ The Azure MCP Server updates automatically by default whenever a new release com
 
 ### Features Added
 
+- Added `managedcleanroom collaboration add-collaborator` command to add a user or service principal as a collaborator to an Azure Cleanroom collaboration via the ARM `addCollaborator` action.
+- Added `managedcleanroom collaboration enable-workload` command to enable a workload type (e.g., Analytics) on an Azure Cleanroom collaboration via the ARM `enableWorkload` action.
+
 ### Breaking Changes
 
 ### Bugs Fixed

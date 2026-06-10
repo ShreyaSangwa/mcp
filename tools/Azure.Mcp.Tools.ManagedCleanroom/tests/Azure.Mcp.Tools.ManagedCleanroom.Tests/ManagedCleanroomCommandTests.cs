@@ -108,5 +108,39 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
         Assert.NotNull(result);
         Output.WriteLine($"OIDC issuer info payload: {result.Value}");
     }
+
+    [Fact]
+    public async Task Should_add_collaborator()
+    {
+        var result = await CallToolAsync(
+            "managedcleanroom_collaboration_add-collaborator",
+            new()
+            {
+                { "name", Settings.ResourceBaseName },
+                { "collaborator-user-identifier", "alice@contoso.com" },
+                { "resource-group", Settings.ResourceGroupName },
+                { "subscription", Settings.SubscriptionId }
+            });
+
+        Assert.NotNull(result);
+        Output.WriteLine($"Add collaborator payload: {result.Value}");
+    }
+
+    [Fact]
+    public async Task Should_enable_workload()
+    {
+        var result = await CallToolAsync(
+            "managedcleanroom_collaboration_enable-workload",
+            new()
+            {
+                { "name", Settings.ResourceBaseName },
+                { "workload-type", "Analytics" },
+                { "resource-group", Settings.ResourceGroupName },
+                { "subscription", Settings.SubscriptionId }
+            });
+
+        Assert.NotNull(result);
+        Output.WriteLine($"Enable workload payload: {result.Value}");
+    }
 }
 

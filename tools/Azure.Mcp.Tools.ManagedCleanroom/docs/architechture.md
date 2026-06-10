@@ -133,7 +133,7 @@ Legend: ✅ implemented | ❌ not yet implemented
 | Step | Operation | Command | Status |
 |------|-----------|---------|:------:|
 | 02 Create collaboration (ARM) | PUT (waits for completion) | `collaboration create` | Completed |
-| 02 Enable Analytics workload | POST `/enableWorkload` | `collaboration enable-workload` | Pending |
+| 02 Enable Analytics workload | POST `/enableWorkload` | `collaboration enable-workload` | Completed |
 | 02 Add more collaborators | POST `/addCollaborator` | `collaboration add-collaborator` | Pending |
 | 03 Discover collaboration UUID | `collaborations list` | `collaborations list` | Completed |
 | 03 Inspect a single collaboration | `collaborations get` | `collaborations get` | Completed |

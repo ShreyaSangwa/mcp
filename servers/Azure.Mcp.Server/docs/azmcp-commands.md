@@ -2913,6 +2913,26 @@ azmcp managedcleanroom collaboration create --name <name> \
                                             [--tenant <tenant>]
 ```
 
+
+# Add a collaborator (user) to an Azure Cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom collaboration add-collaborator --name <name> \
+                                                     --collaborator-user-identifier <email-or-spn-id> \
+                                                     --resource-group <resource-group> \
+                                                     --subscription <subscription> \
+                                                     [--collaborator-object-id <object-id>] \
+                                                     [--collaborator-tenant-id <tenant-id>] \
+                                                     [--tenant <tenant>]
+
+# Enable a workload on an Azure Cleanroom collaboration (posts enableWorkload ARM action)
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom collaboration enable-workload --name <name> \
+                                                    --workload-type <workload-type> \
+                                                    --resource-group <resource-group> \
+                                                    --subscription <subscription> \
+                                                    [--tenant <tenant>]
+```
+
 ### Azure Marketplace Operations
 
 ```bash

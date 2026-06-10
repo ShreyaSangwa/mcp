@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using System.Buffers;
+using System.Text.Json;
 using AnalyticsFrontendAPI;
 using Azure;
 using Azure.Core;
@@ -117,6 +117,127 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         Response response = await client.OidcIssuerInfoGetAsync(collaborationId, requestContext).ConfigureAwait(false);
 
         return ParseResponse(response);
+    }
+
+    public async Task<JsonElement> AddCollaboratorAsync(
+        string name,
+        string resourceGroup,
+        string subscription,
+        string collaboratorUserIdentifier,
+        string? collaboratorObjectId = null,
+        string? collaboratorTenantId = null,
+        string? tenant = null,
+        RetryPolicyOptions? retryPolicy = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateRequiredParameters(
+            (nameof(name), name),
+            (nameof(resourceGroup), resourceGroup),
+            (nameof(subscription), subscription),
+            (nameof(collaboratorUserIdentifier), collaboratorUserIdentifier));
+
+        var subscriptionResource = await _subscriptionService
+            .GetSubscription(subscription, tenant, retryPolicy, cancellationToken)
+            .ConfigureAwait(false);
+
+        var token = await GetArmAccessTokenAsync(tenant, cancellationToken).ConfigureAwait(false);
+
+        var managementEndpoint = TenantService.CloudConfiguration.ArmEnvironment.Endpoint.ToString().TrimEnd('/');
+        var collaborationId = $"{subscriptionResource.Id}/resourceGroups/{resourceGroup}/providers/{CleanRoomResourceType}/{name}";
+        var actionUrl = $"{managementEndpoint}{collaborationId}/addCollaborator?api-version={CleanRoomApiVersion}";
+
+        var bodyBuffer = new ArrayBufferWriter<byte>();
+        using (var jsonWriter = new Utf8JsonWriter(bodyBuffer))
+        {
+            jsonWriter.WriteStartObject();
+            jsonWriter.WritePropertyName("collaborator");
+            jsonWriter.WriteStartObject();
+            jsonWriter.WriteString("userIdentifier", collaboratorUserIdentifier);
+            if (!string.IsNullOrWhiteSpace(collaboratorObjectId))
+            {
+                jsonWriter.WriteString("objectId", collaboratorObjectId);
+            }
+            if (!string.IsNullOrWhiteSpace(collaboratorTenantId))
+            {
+                jsonWriter.WriteString("tenantId", collaboratorTenantId);
+            }
+            jsonWriter.WriteEndObject();
+            jsonWriter.WriteEndObject();
+            jsonWriter.Flush();
+        }
+
+        var httpClient = _httpClientFactory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Post, actionUrl);
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token.Token);
+        request.Content = new ByteArrayContent(bodyBuffer.WrittenSpan.ToArray());
+        request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+        using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        var responseBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMessage = responseBytes.Length > 0
+                ? System.Text.Encoding.UTF8.GetString(responseBytes)
+                : $"ARM action 'addCollaborator' failed with status {(int)response.StatusCode}.";
+            throw new Azure.RequestFailedException((int)response.StatusCode, errorMessage, null, null);
+        }
+
+        return ParseArmActionResponse(responseBytes, (int)response.StatusCode, "addCollaborator");
+    }
+
+    public async Task<JsonElement> EnableWorkloadAsync(
+        string name,
+        string resourceGroup,
+        string subscription,
+        string workloadType,
+        string? tenant = null,
+        RetryPolicyOptions? retryPolicy = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateRequiredParameters(
+            (nameof(name), name),
+            (nameof(resourceGroup), resourceGroup),
+            (nameof(subscription), subscription),
+            (nameof(workloadType), workloadType));
+
+        var subscriptionResource = await _subscriptionService
+            .GetSubscription(subscription, tenant, retryPolicy, cancellationToken)
+            .ConfigureAwait(false);
+
+        var token = await GetArmAccessTokenAsync(tenant, cancellationToken).ConfigureAwait(false);
+
+        var managementEndpoint = TenantService.CloudConfiguration.ArmEnvironment.Endpoint.ToString().TrimEnd('/');
+        var collaborationId = $"{subscriptionResource.Id}/resourceGroups/{resourceGroup}/providers/{CleanRoomResourceType}/{name}";
+        var actionUrl = $"{managementEndpoint}{collaborationId}/enableWorkload?api-version={CleanRoomApiVersion}";
+
+        var bodyBuffer = new ArrayBufferWriter<byte>();
+        using (var jsonWriter = new Utf8JsonWriter(bodyBuffer))
+        {
+            jsonWriter.WriteStartObject();
+            jsonWriter.WriteString("workloadType", workloadType);
+            jsonWriter.WriteEndObject();
+            jsonWriter.Flush();
+        }
+
+        var httpClient = _httpClientFactory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Post, actionUrl);
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token.Token);
+        request.Content = new ByteArrayContent(bodyBuffer.WrittenSpan.ToArray());
+        request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+        using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        var responseBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMessage = responseBytes.Length > 0
+                ? System.Text.Encoding.UTF8.GetString(responseBytes)
+                : $"ARM action 'enableWorkload' failed with status {(int)response.StatusCode}.";
+            throw new Azure.RequestFailedException((int)response.StatusCode, errorMessage, null, null);
+        }
+
+        return ParseArmActionResponse(responseBytes, (int)response.StatusCode, "enableWorkload");
     }
 
     public async Task<CollaborationCreateResult> CreateCollaborationArmResourceAsync(
@@ -272,5 +393,36 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return JsonSerializer.Deserialize(
             response.Content.ToMemory().Span,
             ManagedCleanroomSerializerContext.Default.JsonElement);
+    }
+
+    /// <summary>
+    /// Parses the response bytes from an ARM action POST, throwing if the service returned
+    /// an error payload despite a 2xx HTTP status (e.g. HTTP 200 with ErrorCode: InternalError).
+    /// </summary>
+    private static JsonElement ParseArmActionResponse(byte[] responseBytes, int httpStatusCode, string actionName)
+    {
+        if (responseBytes.Length == 0)
+        {
+            return default;
+        }
+
+        var element = JsonSerializer.Deserialize(responseBytes, ManagedCleanroomSerializerContext.Default.JsonElement);
+
+        if (element.ValueKind == JsonValueKind.Object &&
+            element.TryGetProperty("error", out var errorProp) &&
+            errorProp.TryGetProperty("code", out var codeProp))
+        {
+            var code = codeProp.GetString() ?? "UnknownError";
+            var message = errorProp.TryGetProperty("message", out var msgProp)
+                ? msgProp.GetString() ?? string.Empty
+                : string.Empty;
+            throw new Azure.RequestFailedException(
+                httpStatusCode,
+                $"ARM action '{actionName}' returned an error: [{code}] {message}",
+                code,
+                null);
+        }
+
+        return element;
     }
 }
