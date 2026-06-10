@@ -152,7 +152,7 @@ Legend: ✅ implemented | ❌ not yet implemented
 | 08 Inspect query + proposal ID | `queries get` | `queries get` | Completed |
 | 08 List published queries | `queries list` | `queries list` | Completed |
 | 08 Vote on query | `queries vote` | `queries vote` | Completed |
-| 09 Run query | `queries run` | `queries run` | Pending |
+| 09 Run query | `queries run` | `queries run` | Completed |
 | 09 Check collaboration health | ARM GET | `collaboration get` | Completed |
 | 10 Poll run state | `runs get` | `runs get` | Pending |
 | 11 Run history | `queries runs` | `queries runs` | Pending |
