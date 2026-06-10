@@ -3024,6 +3024,15 @@ azmcp managedcleanroom queries list --endpoint <endpoint> \
                                     --collaboration-id <collaboration-id> \
                                     [--allow-untrusted-cert] \
                                     [--tenant <tenant>]
+
+# Vote (Approve or Reject) on a query document for a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom queries vote --endpoint <endpoint> \
+                                    --collaboration-id <collaboration-id> \
+                                    --document-id <document-id> \
+                                    --vote <Approve|Reject> \
+                                    [--allow-untrusted-cert] \
+                                    [--tenant <tenant>]
 ```
 
 ### Azure Marketplace Operations

@@ -45,6 +45,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<QueriesPublishCommand>();
         services.AddSingleton<QueriesGetCommand>();
         services.AddSingleton<QueriesListCommand>();
+        services.AddSingleton<QueriesVoteCommand>();
     }
 
     public CommandGroup RegisterCommands(IServiceProvider serviceProvider)
@@ -103,6 +104,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         queries.AddCommand<QueriesPublishCommand>(serviceProvider);
         queries.AddCommand<QueriesGetCommand>(serviceProvider);
         queries.AddCommand<QueriesListCommand>(serviceProvider);
+        queries.AddCommand<QueriesVoteCommand>(serviceProvider);
 
         return root;
     }

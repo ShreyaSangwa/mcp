@@ -115,6 +115,15 @@ public interface IManagedCleanroomService
         string? tenant = null,
         CancellationToken cancellationToken = default);
 
+    Task<JsonElement> VoteOnQueryAsync(
+        string endpoint,
+        string collaborationId,
+        string documentId,
+        string vote,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
+        CancellationToken cancellationToken = default);
+
     Task<JsonElement> PutConsentAsync(
         string endpoint,
         string collaborationId,

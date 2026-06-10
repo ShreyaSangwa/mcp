@@ -363,6 +363,41 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return ParseResponse(response);
     }
 
+    public async Task<JsonElement> VoteOnQueryAsync(
+        string endpoint,
+        string collaborationId,
+        string documentId,
+        string vote,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateRequiredParameters(
+            (nameof(collaborationId), collaborationId),
+            (nameof(documentId), documentId),
+            (nameof(vote), vote));
+
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+            .ConfigureAwait(false);
+
+        // Build the request body: {"vote": "<value>"}
+        var buffer = new ArrayBufferWriter<byte>();
+        using (var writer = new Utf8JsonWriter(buffer))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("vote", vote);
+            writer.WriteEndObject();
+            writer.Flush();
+        }
+
+        var content = RequestContent.Create(buffer.WrittenMemory);
+        var requestContext = new RequestContext { CancellationToken = cancellationToken };
+        Response response = await client.AnalyticsQueriesDocumentIdVotePostAsync(
+            collaborationId, documentId, content, requestContext).ConfigureAwait(false);
+
+        return ParseResponse(response);
+    }
+
     public async Task<JsonElement> AddCollaboratorAsync(
         string name,
         string resourceGroup,
