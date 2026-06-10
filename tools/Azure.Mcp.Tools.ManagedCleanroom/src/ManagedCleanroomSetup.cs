@@ -37,6 +37,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<InvitationsListCommand>();
         services.AddSingleton<InvitationsAcceptCommand>();
         services.AddSingleton<DatasetsPublishCommand>();
+        services.AddSingleton<DatasetsGetCommand>();
     }
 
     public CommandGroup RegisterCommands(IServiceProvider serviceProvider)
@@ -81,6 +82,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         root.AddSubGroup(datasets);
 
         datasets.AddCommand<DatasetsPublishCommand>(serviceProvider);
+        datasets.AddCommand<DatasetsGetCommand>(serviceProvider);
 
         return root;
     }

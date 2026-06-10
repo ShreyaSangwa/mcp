@@ -143,7 +143,7 @@ Legend: ✅ implemented | ❌ not yet implemented
 | 05 Verify OIDC issuer | `oidc issuer-info` | `oidc issuer-info` | Completed |
 | 05 Register issuer URL | `oidc set-issuer-url` | `oidc set-issuer-url` | Completed |
 | 06 Publish input/output dataset | `datasets publish` | `datasets publish` | Completed |
-| 06 Verify dataset | `datasets get` | `datasets get` | Pending |
+| 06 Verify dataset | `datasets get` | `datasets get` | Completed |
 | 06 Toggle execution consent | `consent put` | `consent put` | Pending |
 | 06 Fetch SKR policy (CPK) | `analytics skr-policy` | `analytics skr-policy` | Completed |
 | 06 Inspect analytics workload config | `analytics get` | `analytics get` | Completed |

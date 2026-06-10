@@ -71,6 +71,7 @@
         "managedcleanroom_collaboration_get",
         "managedcleanroom_collaborations_get",
         "managedcleanroom_collaborations_list",
+        "managedcleanroom_datasets_get",
         "managedcleanroom_invitations_accept",
         "managedcleanroom_invitations_list",
         "managedcleanroom_oidc_issuer-info",

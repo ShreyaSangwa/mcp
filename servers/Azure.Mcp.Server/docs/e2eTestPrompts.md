@@ -683,6 +683,8 @@ This file contains prompts used for end-to-end testing to ensure each tool is in
 | managedcleanroom_collaborations_list | List my Azure Cleanroom collaborations from endpoint <endpoint> |
 | managedcleanroom_collaborations_list | Show me the cleanroom collaborations I participate in using endpoint <endpoint> |
 | managedcleanroom_collaborations_list | List active cleanroom collaborations from <endpoint> |
+| managedcleanroom_datasets_get | Get dataset document <document-id> for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_datasets_get | Show me the dataset <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
 | managedcleanroom_datasets_publish | Publish dataset document <document-id> for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
 | managedcleanroom_datasets_publish | Publish the dataset <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
 | managedcleanroom_invitations_accept | Accept the invitation <invitation-id> to join cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
