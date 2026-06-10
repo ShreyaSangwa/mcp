@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Net;
+using System.Text.Json;
 using Azure.Mcp.Core.Commands.Subscription;
 using Azure.Mcp.Core.Services.Azure.Subscription;
 using Azure.Mcp.Tools.ManagedCleanroom.Options.Collaboration;
@@ -57,9 +58,29 @@ public sealed class CollaborationEnableWorkloadCommand(
             context.Response.Results = ResponseResult.Create(
                 result,
                 ManagedCleanroomJsonContext.Default.JsonElement);
-            context.Response.Message = $"Workload '{options.WorkloadType}' has been enabled on collaboration '{options.Name}'. " +
-                "The workload endpoint typically takes about 7 minutes to become available. " +
-                "Use 'managedcleanroom analytics get' to check when the endpoint is ready.";
+
+            // Extract workload endpoint from polled result for a helpful message.
+            string? endpoint = null;
+            if (result.ValueKind == JsonValueKind.Object &&
+                result.TryGetProperty("workloads", out var workloads) &&
+                workloads.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var wl in workloads.EnumerateArray())
+                {
+                    if (wl.TryGetProperty("workloadType", out var wlType) &&
+                        string.Equals(wlType.GetString(), options.WorkloadType, StringComparison.OrdinalIgnoreCase) &&
+                        wl.TryGetProperty("endpoint", out var ep) &&
+                        ep.ValueKind != JsonValueKind.Null)
+                    {
+                        endpoint = ep.GetString();
+                        break;
+                    }
+                }
+            }
+
+            context.Response.Message = endpoint is not null
+                ? $"Workload '{options.WorkloadType}' is active on collaboration '{options.Name}'. Endpoint: {endpoint}"
+                : $"Workload '{options.WorkloadType}' has been enabled on collaboration '{options.Name}'. The workload endpoint typically takes about 7 minutes to become available. Use 'managedcleanroom analytics get' to check when the endpoint is ready.";
         }
         catch (Exception ex)
         {

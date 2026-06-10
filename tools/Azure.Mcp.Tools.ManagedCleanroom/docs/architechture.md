@@ -137,8 +137,8 @@ Legend: ✅ implemented | ❌ not yet implemented
 | 02 Add more collaborators | POST `/addCollaborator` | `collaboration add-collaborator` | Completed |
 | 03 Discover collaboration UUID | `collaborations list` | `collaborations list` | Completed |
 | 03 Inspect a single collaboration | `collaborations get` | `collaborations get` | Completed |
-| 03 List invitations | `invitations list` | `invitations list` | ✅ Completed |
-| 03 Accept invitation | `invitations accept` | `invitations accept` | Pending |
+| 03 List invitations | `invitations list` | `invitations list` | Completed |
+| 03 Accept invitation | `invitations accept` | `invitations accept` | Completed |
 | 05 Fetch JWKS | `oidc keys` | `oidc keys` | Pending |
 | 05 Verify OIDC issuer | `oidc issuer-info` | `oidc issuer-info` | Completed |
 | 05 Register issuer URL | `oidc set-issuer-url` | `oidc set-issuer-url` | Pending |

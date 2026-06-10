@@ -11,10 +11,10 @@ using Azure.Mcp.Core.Services.Azure;
 using Azure.Mcp.Core.Services.Azure.Subscription;
 using Azure.Mcp.Core.Services.Azure.Tenant;
 using Azure.ResourceManager;
+using Azure.ResourceManager.CleanRoom;
 using Azure.ResourceManager.Resources;
 using Azure.ResourceManager.Resources.Models;
 using Microsoft.Mcp.Core.Options;
-
 namespace Azure.Mcp.Tools.ManagedCleanroom.Services;
 
 public class ManagedCleanroomService(ISubscriptionService subscriptionService, ITenantService tenantService, IHttpClientFactory httpClientFactory)
@@ -26,6 +26,9 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
     private const string CleanRoomResourceType = "Microsoft.CleanRoom/Collaborations";
     private static readonly TimeSpan ProvisioningPollInterval = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan ProvisioningTimeout = TimeSpan.FromMinutes(40);
+    private static readonly TimeSpan WorkloadPollInterval = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan WorkloadEndpointTimeout = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan WorkloadHealthTimeout = TimeSpan.FromMinutes(10);
 
     public async Task<JsonElement> ListCollaborationsAsync(
         string endpoint,
@@ -120,6 +123,27 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return ParseResponse(response);
     }
 
+    public async Task<JsonElement> AcceptInvitationAsync(
+        string endpoint,
+        string collaborationId,
+        string invitationId,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateRequiredParameters(
+            (nameof(collaborationId), collaborationId),
+            (nameof(invitationId), invitationId));
+
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+            .ConfigureAwait(false);
+
+        var requestContext = new RequestContext { CancellationToken = cancellationToken };
+        Response response = await client.InvitationIdAcceptPostAsync(collaborationId, invitationId, requestContext).ConfigureAwait(false);
+
+        return ParseResponse(response);
+    }
+
     public async Task<JsonElement> GetOidcIssuerInfoAsync(
         string endpoint,
         string collaborationId,
@@ -155,55 +179,24 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             (nameof(subscription), subscription),
             (nameof(collaboratorUserIdentifier), collaboratorUserIdentifier));
 
-        var subscriptionResource = await _subscriptionService
-            .GetSubscription(subscription, tenant, retryPolicy, cancellationToken)
+        var collaborationResource = await GetCollaborationResourceAsync(
+            name, resourceGroup, subscription, tenant, retryPolicy, cancellationToken)
             .ConfigureAwait(false);
 
-        var token = await GetArmAccessTokenAsync(tenant, cancellationToken).ConfigureAwait(false);
-
-        var managementEndpoint = TenantService.CloudConfiguration.ArmEnvironment.Endpoint.ToString().TrimEnd('/');
-        var collaborationId = $"{subscriptionResource.Id}/resourceGroups/{resourceGroup}/providers/{CleanRoomResourceType}/{name}";
-        var actionUrl = $"{managementEndpoint}{collaborationId}/addCollaborator?api-version={CleanRoomApiVersion}";
-
-        var bodyBuffer = new ArrayBufferWriter<byte>();
-        using (var jsonWriter = new Utf8JsonWriter(bodyBuffer))
+        var content = new Azure.ResourceManager.CleanRoom.Models.AddCollaboratorContent
         {
-            jsonWriter.WriteStartObject();
-            jsonWriter.WritePropertyName("collaborator");
-            jsonWriter.WriteStartObject();
-            jsonWriter.WriteString("userIdentifier", collaboratorUserIdentifier);
-            if (!string.IsNullOrWhiteSpace(collaboratorObjectId))
-            {
-                jsonWriter.WriteString("objectId", collaboratorObjectId);
-            }
-            if (!string.IsNullOrWhiteSpace(collaboratorTenantId))
-            {
-                jsonWriter.WriteString("tenantId", collaboratorTenantId);
-            }
-            jsonWriter.WriteEndObject();
-            jsonWriter.WriteEndObject();
-            jsonWriter.Flush();
-        }
+            UserIdentifier = collaboratorUserIdentifier,
+            ObjectId = collaboratorObjectId,
+            TenantId = collaboratorTenantId
+        };
 
-        var httpClient = _httpClientFactory.CreateClient();
-        using var request = new HttpRequestMessage(HttpMethod.Post, actionUrl);
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token.Token);
-        request.Headers.Add("x-ms-client-request-id", Guid.NewGuid().ToString());
-        request.Content = new ByteArrayContent(bodyBuffer.WrittenSpan.ToArray());
-        request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+        await collaborationResource
+            .AddCollaboratorAsync(WaitUntil.Completed, content, cancellationToken)
+            .ConfigureAwait(false);
 
-        using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        var responseBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorMessage = responseBytes.Length > 0
-                ? System.Text.Encoding.UTF8.GetString(responseBytes)
-                : $"ARM action 'addCollaborator' failed with status {(int)response.StatusCode}.";
-            throw new Azure.RequestFailedException((int)response.StatusCode, errorMessage, null, null);
-        }
-
-        return ParseArmActionResponse(responseBytes, (int)response.StatusCode, "addCollaborator");
+        // Re-fetch and return latest collaboration state as JSON.
+        var refreshed = await collaborationResource.GetAsync(cancellationToken).ConfigureAwait(false);
+        return SerializeCollaborationData(refreshed.Value.Data);
     }
 
     public async Task<JsonElement> EnableWorkloadAsync(
@@ -221,44 +214,76 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             (nameof(subscription), subscription),
             (nameof(workloadType), workloadType));
 
+        var collaborationResource = await GetCollaborationResourceAsync(
+            name, resourceGroup, subscription, tenant, retryPolicy, cancellationToken)
+            .ConfigureAwait(false);
+
+        var wlType = (Azure.ResourceManager.CleanRoom.Models.WorkloadType)Enum.Parse(
+            typeof(Azure.ResourceManager.CleanRoom.Models.WorkloadType), workloadType, ignoreCase: true);
+
+        var content = new Azure.ResourceManager.CleanRoom.Models.EnableWorkloadContent(wlType);
+
+        // WaitUntil.Completed — SDK polls the LRO until the workload endpoint is ready (~7 min).
+        await collaborationResource
+            .EnableWorkloadAsync(WaitUntil.Completed, content, cancellationToken)
+            .ConfigureAwait(false);
+
+        // Re-fetch and return the final collaboration state (with workload endpoint populated).
+        var refreshed = await collaborationResource.GetAsync(cancellationToken).ConfigureAwait(false);
+        return SerializeCollaborationData(refreshed.Value.Data);
+    }
+
+    private async Task<CollaborationResource> GetCollaborationResourceAsync(
+        string name,
+        string resourceGroup,
+        string subscription,
+        string? tenant,
+        RetryPolicyOptions? retryPolicy,
+        CancellationToken cancellationToken)
+    {
+        var armClient = await CreateArmClientAsync(tenant, retryPolicy, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
         var subscriptionResource = await _subscriptionService
             .GetSubscription(subscription, tenant, retryPolicy, cancellationToken)
             .ConfigureAwait(false);
 
-        var token = await GetArmAccessTokenAsync(tenant, cancellationToken).ConfigureAwait(false);
+        var resourceId = CollaborationResource.CreateResourceIdentifier(
+            subscriptionResource.Id.SubscriptionId!, resourceGroup, name);
 
-        var managementEndpoint = TenantService.CloudConfiguration.ArmEnvironment.Endpoint.ToString().TrimEnd('/');
-        var collaborationId = $"{subscriptionResource.Id}/resourceGroups/{resourceGroup}/providers/{CleanRoomResourceType}/{name}";
-        var actionUrl = $"{managementEndpoint}{collaborationId}/enableWorkload?api-version={CleanRoomApiVersion}";
+        return armClient.GetCollaborationResource(resourceId);
+    }
 
-        var bodyBuffer = new ArrayBufferWriter<byte>();
-        using (var jsonWriter = new Utf8JsonWriter(bodyBuffer))
+    private static JsonElement SerializeCollaborationData(CollaborationData data)
+    {
+        // Serialize via Utf8JsonWriter for AOT safety — no reflection.
+        var buffer = new ArrayBufferWriter<byte>();
+        using var writer = new Utf8JsonWriter(buffer);
+        writer.WriteStartObject();
+        writer.WriteString("collaborationState", data.CollaborationState?.ToString());
+        writer.WriteString("provisioningState", data.ProvisioningState?.ToString());
+        if (data.Health is not null)
         {
-            jsonWriter.WriteStartObject();
-            jsonWriter.WriteString("workloadType", workloadType);
-            jsonWriter.WriteEndObject();
-            jsonWriter.Flush();
+            writer.WritePropertyName("health");
+            writer.WriteStartObject();
+            writer.WriteString("healthState", data.Health.HealthState.ToString());
+            writer.WriteEndObject();
         }
-
-        var httpClient = _httpClientFactory.CreateClient();
-        using var request = new HttpRequestMessage(HttpMethod.Post, actionUrl);
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token.Token);
-        request.Headers.Add("x-ms-client-request-id", Guid.NewGuid().ToString());
-        request.Content = new ByteArrayContent(bodyBuffer.WrittenSpan.ToArray());
-        request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-
-        using var response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        var responseBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
-
-        if (!response.IsSuccessStatusCode)
+        writer.WritePropertyName("workloads");
+        writer.WriteStartArray();
+        foreach (var wl in data.Workloads ?? [])
         {
-            var errorMessage = responseBytes.Length > 0
-                ? System.Text.Encoding.UTF8.GetString(responseBytes)
-                : $"ARM action 'enableWorkload' failed with status {(int)response.StatusCode}.";
-            throw new Azure.RequestFailedException((int)response.StatusCode, errorMessage, null, null);
+            writer.WriteStartObject();
+            writer.WriteString("workloadType", wl.WorkloadType.ToString());
+            writer.WriteString("endpoint", wl.Endpoint?.ToString());
+            writer.WriteString("namespace", wl.Namespace);
+            writer.WriteEndObject();
         }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+        writer.Flush();
 
-        return ParseArmActionResponse(responseBytes, (int)response.StatusCode, "enableWorkload");
+        return JsonSerializer.Deserialize(buffer.WrittenSpan, ManagedCleanroomSerializerContext.Default.JsonElement);
     }
 
     public async Task<CollaborationCreateResult> CreateCollaborationArmResourceAsync(

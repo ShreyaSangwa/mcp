@@ -2940,6 +2940,14 @@ azmcp managedcleanroom invitations list --endpoint <endpoint> \
                                         [--pending-only <true/false>] \
                                         [--allow-untrusted-cert] \
                                         [--tenant <tenant>]
+
+# Accept an invitation to join an Azure Cleanroom collaboration via the Frontend service
+# ❌ Destructive | ❌ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom invitations accept --endpoint <endpoint> \
+                                          --collaboration-id <collaboration-id> \
+                                          --invitation-id <invitation-id> \
+                                          [--allow-untrusted-cert] \
+                                          [--tenant <tenant>]
 ```
 
 ### Azure Marketplace Operations

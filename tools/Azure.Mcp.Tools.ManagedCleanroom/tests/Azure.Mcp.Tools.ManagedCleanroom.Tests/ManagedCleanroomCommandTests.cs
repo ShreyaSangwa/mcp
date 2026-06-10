@@ -167,5 +167,28 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
             ? $"Invitations payload: {invitations}"
             : $"Invitations command returned message payload: {message}");
     }
+
+    [Fact]
+    public async Task Should_accept_invitation()
+    {
+        var endpoint = GetEndpoint();
+        var collaborationId = GetCollaborationId();
+        var invitationId = Settings.DeploymentOutputs.TryGetValue("CLEANROOM_INVITATION_ID", out var id) && !string.IsNullOrWhiteSpace(id)
+            ? id
+            : "00000000-0000-0000-0000-000000000000";
+
+        var result = await CallToolAsync(
+            "managedcleanroom_invitations_accept",
+            new()
+            {
+                { "endpoint", endpoint },
+                { "collaboration-id", collaborationId },
+                { "invitation-id", invitationId },
+                { "allow-untrusted-cert", true }
+            });
+
+        Assert.NotNull(result);
+        Output.WriteLine($"Accept invitation payload: {result.Value}");
+    }
 }
 

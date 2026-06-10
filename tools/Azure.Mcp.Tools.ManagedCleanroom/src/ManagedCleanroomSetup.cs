@@ -32,6 +32,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<CollaborationAddCollaboratorCommand>();
         services.AddSingleton<CollaborationEnableWorkloadCommand>();
         services.AddSingleton<InvitationsListCommand>();
+        services.AddSingleton<InvitationsAcceptCommand>();
     }
 
     public CommandGroup RegisterCommands(IServiceProvider serviceProvider)
@@ -67,6 +68,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         root.AddSubGroup(invitations);
 
         invitations.AddCommand<InvitationsListCommand>(serviceProvider);
+        invitations.AddCommand<InvitationsAcceptCommand>(serviceProvider);
 
         return root;
     }
