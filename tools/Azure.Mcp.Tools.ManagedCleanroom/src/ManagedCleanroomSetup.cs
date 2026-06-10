@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Analytics;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.AuditEvents;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaboration;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaborations;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Consent;
@@ -50,6 +51,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<QueriesRunCommand>();
         services.AddSingleton<QueriesRunsCommand>();
         services.AddSingleton<RunsGetCommand>();
+        services.AddSingleton<AuditEventsListCommand>();
     }
 
     public CommandGroup RegisterCommands(IServiceProvider serviceProvider)
@@ -116,6 +118,11 @@ public class ManagedCleanroomSetup : IAreaSetup
         root.AddSubGroup(runs);
 
         runs.AddCommand<RunsGetCommand>(serviceProvider);
+
+        var auditevents = new CommandGroup("auditevents", "Cleanroom audit event operations - Commands for listing and inspecting audit events in a cleanroom collaboration.");
+        root.AddSubGroup(auditevents);
+
+        auditevents.AddCommand<AuditEventsListCommand>(serviceProvider);
 
         return root;
     }

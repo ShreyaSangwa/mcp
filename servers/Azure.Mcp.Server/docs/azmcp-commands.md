@@ -3060,6 +3060,18 @@ azmcp managedcleanroom runs get --endpoint <endpoint> \
                                 [--tenant <tenant>]
 ```
 
+# List audit events for a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+```bash
+azmcp managedcleanroom auditevents list --endpoint <endpoint> \
+                                        --collaboration-id <collaboration-id> \
+                                        [--scope <scope>] \
+                                        [--from-seqno <from-seqno>] \
+                                        [--to-seqno <to-seqno>] \
+                                        [--allow-untrusted-cert] \
+                                        [--tenant <tenant>]
+```
+
 ### Azure Marketplace Operations
 
 ```bash

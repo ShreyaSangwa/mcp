@@ -156,7 +156,7 @@ Legend: ✅ implemented | ❌ not yet implemented
 | 09 Check collaboration health | ARM GET | `collaboration get` | Completed |
 | 10 Poll run state | `runs get` | `runs get` | Completed |
 | 11 Run history | `queries runs` | `queries runs` | Completed |
-| 11 Audit events | `audit-events list` | `audit-events list` | Pending |
+| 11 Audit events | `audit-events list` | `audit-events list` | Completed |
 | 12 Get readonly kubeconfig | POST `/getReadonlyKubeConfig` | `collaboration get-readonly-kubeconfig` | Pending |
 | App G Force recover | POST `/recover` | `collaboration recover` | Pending |
 | App G Delete collaboration | ARM DELETE | `collaboration delete` | Pending |
