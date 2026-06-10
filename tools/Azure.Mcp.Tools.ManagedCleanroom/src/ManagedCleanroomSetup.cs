@@ -4,6 +4,7 @@
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Analytics;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaboration;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaborations;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.Consent;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Datasets;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Invitations;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Oidc;
@@ -38,6 +39,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<InvitationsAcceptCommand>();
         services.AddSingleton<DatasetsPublishCommand>();
         services.AddSingleton<DatasetsGetCommand>();
+        services.AddSingleton<ConsentPutCommand>();
     }
 
     public CommandGroup RegisterCommands(IServiceProvider serviceProvider)
@@ -83,6 +85,11 @@ public class ManagedCleanroomSetup : IAreaSetup
 
         datasets.AddCommand<DatasetsPublishCommand>(serviceProvider);
         datasets.AddCommand<DatasetsGetCommand>(serviceProvider);
+
+        var consent = new CommandGroup("consent", "Cleanroom consent operations - Commands for creating and managing consent documents in a cleanroom collaboration.");
+        root.AddSubGroup(consent);
+
+        consent.AddCommand<ConsentPutCommand>(serviceProvider);
 
         return root;
     }

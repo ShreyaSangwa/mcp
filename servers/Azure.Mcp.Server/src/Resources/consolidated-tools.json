@@ -210,6 +210,7 @@
         }
       },
       "mappedToolList": [
+        "managedcleanroom_consent_put",
         "managedcleanroom_datasets_publish"
       ]
     },

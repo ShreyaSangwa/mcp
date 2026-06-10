@@ -144,7 +144,7 @@ Legend: ✅ implemented | ❌ not yet implemented
 | 05 Register issuer URL | `oidc set-issuer-url` | `oidc set-issuer-url` | Completed |
 | 06 Publish input/output dataset | `datasets publish` | `datasets publish` | Completed |
 | 06 Verify dataset | `datasets get` | `datasets get` | Completed |
-| 06 Toggle execution consent | `consent put` | `consent put` | Pending |
+| 06 Toggle execution consent | `consent put` | `consent put` | ✅ Completed |
 | 06 Fetch SKR policy (CPK) | `analytics skr-policy` | `analytics skr-policy` | Completed |
 | 06 Inspect analytics workload config | `analytics get` | `analytics get` | Completed |
 | 07 Look up partner dataset id | `datasets list` | `datasets list` | Pending |
@@ -174,7 +174,7 @@ Legend: ✅ implemented | ❌ not yet implemented
 | `datasets` | `list`, `get`, `publish`, `queries` |
 | `runs`     | `get` |
 | `invitations` | `list`, `get`, `accept` |
-| `consent` | `get`, `put` |
+| `consent` | `get` |
 | `oidc` (extend) | `keys`, `set-issuer-url` |
 | `audit-events` | `list` (with `--from`, `--to`, `--type`) |
 | `analytics secrets` | `set` (mark `Secret = true`) |
@@ -189,7 +189,7 @@ Legend: ✅ implemented | ❌ not yet implemented
 A minimum viable end-to-end agent flow needs at least these additions on top of what exists today:
 
 - **ARM:** `collaboration get`, `enable-workload`, `add-collaborator` (and `delete` / `recover` for cleanup).
-- **Frontend:** `invitations list/accept`, `oidc keys`, `oidc set-issuer-url`, `datasets list/get/publish`, `consent put`, `queries list/get/publish/vote/run/runs`, `runs get`, `audit-events list`.
+- **Frontend:** `invitations list/accept`, `oidc keys`, `oidc set-issuer-url`, `datasets list/get/publish`, `queries list/get/publish/vote/run/runs`, `runs get`, `audit-events list`.
 
 ---
 

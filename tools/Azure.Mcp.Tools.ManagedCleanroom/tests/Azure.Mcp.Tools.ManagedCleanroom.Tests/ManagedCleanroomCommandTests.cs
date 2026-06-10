@@ -300,5 +300,28 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
         Assert.NotNull(result);
         Output.WriteLine($"Dataset get payload: {result.Value}");
     }
+
+    [Fact]
+    public async Task Should_put_consent()
+    {
+        var endpoint = GetEndpoint();
+        var collaborationId = GetCollaborationId();
+        var documentId = Settings.DeploymentOutputs.TryGetValue("CLEANROOM_CONSENT_DOCUMENT_ID", out var docId) && !string.IsNullOrWhiteSpace(docId)
+            ? docId
+            : "00000000-0000-0000-0000-000000000000";
+
+        var result = await CallToolAsync(
+            "managedcleanroom_consent_put",
+            new()
+            {
+                { "endpoint", endpoint },
+                { "collaboration-id", collaborationId },
+                { "document-id", documentId },
+                { "allow-untrusted-cert", true }
+            });
+
+        Assert.NotNull(result);
+        Output.WriteLine($"Consent put payload: {result.Value}");
+    }
 }
 

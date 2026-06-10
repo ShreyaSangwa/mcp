@@ -2986,6 +2986,14 @@ azmcp managedcleanroom datasets get --endpoint <endpoint> \
                                     --document-id <document-id> \
                                     [--allow-untrusted-cert] \
                                     [--tenant <tenant>]
+
+# Create or update a consent document for a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom consent put --endpoint <endpoint> \
+                                   --collaboration-id <collaboration-id> \
+                                   --document-id <document-id> \
+                                   [--allow-untrusted-cert] \
+                                   [--tenant <tenant>]
 ```
 
 ### Azure Marketplace Operations

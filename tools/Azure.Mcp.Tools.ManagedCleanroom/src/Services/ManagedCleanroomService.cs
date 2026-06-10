@@ -258,6 +258,30 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return ParseResponse(response);
     }
 
+    public async Task<JsonElement> PutConsentAsync(
+        string endpoint,
+        string collaborationId,
+        string documentId,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateRequiredParameters(
+            (nameof(collaborationId), collaborationId),
+            (nameof(documentId), documentId));
+
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+            .ConfigureAwait(false);
+
+        // The PUT body is empty — the document ID in the URL path identifies the consent document.
+        var content = RequestContent.Create(BinaryData.FromBytes("{}"u8.ToArray()));
+        var requestContext = new RequestContext { CancellationToken = cancellationToken };
+        Response response = await client.ConsentDocumentIdPutAsync(
+            collaborationId, documentId, content, requestContext).ConfigureAwait(false);
+
+        return ParseResponse(response);
+    }
+
     public async Task<JsonElement> AddCollaboratorAsync(
         string name,
         string resourceGroup,
