@@ -190,5 +190,27 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
         Assert.NotNull(result);
         Output.WriteLine($"Accept invitation payload: {result.Value}");
     }
+
+    [Fact]
+    public async Task Should_get_collaboration_arm_resource()
+    {
+        var result = await CallToolAsync(
+            "managedcleanroom_collaboration_get",
+            new()
+            {
+                { "name", Settings.ResourceBaseName },
+                { "resource-group", Settings.ResourceGroupName },
+                { "subscription", Settings.SubscriptionId }
+            });
+
+        Assert.NotNull(result);
+        var hasProvisioningState = result.Value.TryGetProperty("provisioningState", out var provisioningState);
+        var hasMessage = result.Value.TryGetProperty("message", out var message);
+
+        Assert.True(hasProvisioningState || hasMessage, $"Unexpected response payload: {result.Value}");
+        Output.WriteLine(hasProvisioningState
+            ? $"Collaboration ARM provisioningState: {provisioningState}"
+            : $"Collaboration get command returned message payload: {message}");
+    }
 }
 

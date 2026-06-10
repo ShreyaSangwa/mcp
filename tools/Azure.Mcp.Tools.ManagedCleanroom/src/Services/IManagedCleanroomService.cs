@@ -91,6 +91,14 @@ public interface IManagedCleanroomService
         string? tenant = null,
         RetryPolicyOptions? retryPolicy = null,
         CancellationToken cancellationToken = default);
+
+    Task<JsonElement> GetCollaborationArmResourceAsync(
+        string name,
+        string resourceGroup,
+        string subscription,
+        string? tenant = null,
+        RetryPolicyOptions? retryPolicy = null,
+        CancellationToken cancellationToken = default);
 }
 
 /// <summary>Result returned by <see cref="IManagedCleanroomService.CreateCollaborationArmResourceAsync"/>.</summary>

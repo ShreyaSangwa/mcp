@@ -2933,6 +2933,13 @@ azmcp managedcleanroom collaboration enable-workload --name <name> \
                                                     --subscription <subscription> \
                                                     [--tenant <tenant>]
 
+# Get details of an Azure Cleanroom collaboration ARM resource (provisioningState, health, workloads)
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom collaboration get --name <name> \
+                                         --resource-group <resource-group> \
+                                         --subscription <subscription> \
+                                         [--tenant <tenant>]
+
 # List invitations for an Azure Cleanroom collaboration via the Frontend service
 # ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
 azmcp managedcleanroom invitations list --endpoint <endpoint> \

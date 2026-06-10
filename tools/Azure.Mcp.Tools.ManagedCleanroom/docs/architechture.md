@@ -153,7 +153,7 @@ Legend: ✅ implemented | ❌ not yet implemented
 | 08 List published queries | `queries list` | `queries list` | Pending |
 | 08 Vote on query | `queries vote` | `queries vote` | Pending |
 | 09 Run query | `queries run` | `queries run` | Pending |
-| 09 Check collaboration health | ARM GET | `collaboration get` | Pending |
+| 09 Check collaboration health | ARM GET | `collaboration get` | ✅ Completed |
 | 10 Poll run state | `runs get` | `runs get` | Pending |
 | 11 Run history | `queries runs` | `queries runs` | Pending |
 | 11 Audit events | `audit-events list` | `audit-events list` | Pending |

@@ -29,6 +29,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<AnalyticsSkrPolicyCommand>();
         services.AddSingleton<OidcIssuerInfoCommand>();
         services.AddSingleton<CollaborationCreateCommand>();
+        services.AddSingleton<CollaborationGetCommand>();
         services.AddSingleton<CollaborationAddCollaboratorCommand>();
         services.AddSingleton<CollaborationEnableWorkloadCommand>();
         services.AddSingleton<InvitationsListCommand>();
@@ -61,6 +62,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         root.AddSubGroup(collaboration);
 
         collaboration.AddCommand<CollaborationCreateCommand>(serviceProvider);
+        collaboration.AddCommand<CollaborationGetCommand>(serviceProvider);
         collaboration.AddCommand<CollaborationAddCollaboratorCommand>(serviceProvider);
         collaboration.AddCommand<CollaborationEnableWorkloadCommand>(serviceProvider);
 

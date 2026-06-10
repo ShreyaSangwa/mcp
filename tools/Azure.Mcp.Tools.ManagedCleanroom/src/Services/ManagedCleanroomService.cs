@@ -286,6 +286,27 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return JsonSerializer.Deserialize(buffer.WrittenSpan, ManagedCleanroomSerializerContext.Default.JsonElement);
     }
 
+    public async Task<JsonElement> GetCollaborationArmResourceAsync(
+        string name,
+        string resourceGroup,
+        string subscription,
+        string? tenant = null,
+        RetryPolicyOptions? retryPolicy = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateRequiredParameters(
+            (nameof(name), name),
+            (nameof(resourceGroup), resourceGroup),
+            (nameof(subscription), subscription));
+
+        var collaborationResource = await GetCollaborationResourceAsync(
+            name, resourceGroup, subscription, tenant, retryPolicy, cancellationToken)
+            .ConfigureAwait(false);
+
+        var response = await collaborationResource.GetAsync(cancellationToken).ConfigureAwait(false);
+        return SerializeCollaborationData(response.Value.Data);
+    }
+
     public async Task<CollaborationCreateResult> CreateCollaborationArmResourceAsync(
         string name,
         string resourceGroup,
