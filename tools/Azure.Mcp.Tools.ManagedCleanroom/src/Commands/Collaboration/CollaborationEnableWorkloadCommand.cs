@@ -19,7 +19,8 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaboration;
     Title = "Enable Cleanroom Workload",
     Description = """
         Enables a workload on an Azure Cleanroom collaboration ARM resource via the Microsoft.CleanRoom ARM API.
-        Posts an enableWorkload action to the collaboration with the specified workload type (e.g., Analytics).
+        Submits an enableWorkload action to the collaboration with the specified workload type (e.g., Analytics).
+        Returns immediately after the request is accepted. Workload endpoint readiness typically takes about 7 minutes.
         Required options:
         - --name: the collaboration ARM resource name
         - --workload-type: type of workload to enable (e.g., Analytics)
@@ -59,28 +60,10 @@ public sealed class CollaborationEnableWorkloadCommand(
                 result,
                 ManagedCleanroomJsonContext.Default.JsonElement);
 
-            // Extract workload endpoint from polled result for a helpful message.
-            string? endpoint = null;
-            if (result.ValueKind == JsonValueKind.Object &&
-                result.TryGetProperty("workloads", out var workloads) &&
-                workloads.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var wl in workloads.EnumerateArray())
-                {
-                    if (wl.TryGetProperty("workloadType", out var wlType) &&
-                        string.Equals(wlType.GetString(), options.WorkloadType, StringComparison.OrdinalIgnoreCase) &&
-                        wl.TryGetProperty("endpoint", out var ep) &&
-                        ep.ValueKind != JsonValueKind.Null)
-                    {
-                        endpoint = ep.GetString();
-                        break;
-                    }
-                }
-            }
-
-            context.Response.Message = endpoint is not null
-                ? $"Workload '{options.WorkloadType}' is active on collaboration '{options.Name}'. Endpoint: {endpoint}"
-                : $"Workload '{options.WorkloadType}' has been enabled on collaboration '{options.Name}'. The workload endpoint typically takes about 7 minutes to become available. Use 'managedcleanroom analytics get' to check when the endpoint is ready.";
+            context.Response.Message =
+                $"Enable workload request accepted for '{options.WorkloadType}' on collaboration '{options.Name}'. " +
+                "The workload endpoint typically takes about 7 minutes to become available. " +
+                "Use 'managedcleanroom analytics get' to check when the endpoint is ready.";
         }
         catch (Exception ex)
         {

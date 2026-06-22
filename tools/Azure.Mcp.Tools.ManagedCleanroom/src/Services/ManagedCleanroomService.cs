@@ -12,8 +12,8 @@ using Azure.Mcp.Core.Services.Azure.Subscription;
 using Azure.Mcp.Core.Services.Azure.Tenant;
 using Azure.ResourceManager;
 using Azure.ResourceManager.CleanRoom;
+using Azure.ResourceManager.CleanRoom.Models;
 using Azure.ResourceManager.Resources;
-using Azure.ResourceManager.Resources.Models;
 using Microsoft.Mcp.Core.Options;
 namespace Azure.Mcp.Tools.ManagedCleanroom.Services;
 
@@ -22,11 +22,6 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
 {
     private readonly ISubscriptionService _subscriptionService = subscriptionService;
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
-    private const string CleanRoomApiVersion = "2026-04-30-preview";
-    private const string CleanRoomResourceType = "Microsoft.CleanRoom/Collaborations";
-    private static readonly TimeSpan ProvisioningPollInterval = TimeSpan.FromSeconds(30);
-    private static readonly TimeSpan ProvisioningTimeout = TimeSpan.FromMinutes(40);
-    private static readonly TimeSpan WorkloadPollInterval = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan WorkloadEndpointTimeout = TimeSpan.FromMinutes(15);
     private static readonly TimeSpan WorkloadHealthTimeout = TimeSpan.FromMinutes(10);
 
@@ -526,14 +521,23 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
 
         var content = new Azure.ResourceManager.CleanRoom.Models.EnableWorkloadContent(wlType);
 
-        // WaitUntil.Completed — SDK polls the LRO until the workload endpoint is ready (~7 min).
+        // WaitUntil.Started — return immediately after the request is accepted.
         await collaborationResource
-            .EnableWorkloadAsync(WaitUntil.Completed, content, cancellationToken)
+            .EnableWorkloadAsync(WaitUntil.Started, content, cancellationToken)
             .ConfigureAwait(false);
 
-        // Re-fetch and return the final collaboration state (with workload endpoint populated).
-        var refreshed = await collaborationResource.GetAsync(cancellationToken).ConfigureAwait(false);
-        return SerializeCollaborationData(refreshed.Value.Data);
+        var buffer = new ArrayBufferWriter<byte>();
+        using var writer = new Utf8JsonWriter(buffer);
+        writer.WriteStartObject();
+        writer.WriteString("name", name);
+        writer.WriteString("resourceGroup", resourceGroup);
+        writer.WriteString("subscription", subscription);
+        writer.WriteString("workloadType", workloadType);
+        writer.WriteString("provisioningState", "Accepted");
+        writer.WriteEndObject();
+        writer.Flush();
+
+        return JsonSerializer.Deserialize(buffer.WrittenSpan, ManagedCleanroomSerializerContext.Default.JsonElement);
     }
 
     private async Task<CollaborationResource> GetCollaborationResourceAsync(
@@ -580,6 +584,67 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             writer.WriteString("workloadType", wl.WorkloadType.ToString());
             writer.WriteString("endpoint", wl.Endpoint?.ToString());
             writer.WriteString("namespace", wl.Namespace);
+            writer.WriteEndObject();
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+        writer.Flush();
+
+        return JsonSerializer.Deserialize(buffer.WrittenSpan, ManagedCleanroomSerializerContext.Default.JsonElement);
+    }
+
+    /// <summary>
+    /// Extracts the calling user's email/UPN from the preferred_username or upn claim in the ARM access token.
+    /// </summary>
+    private async Task<string> GetCallerEmailAsync(string? tenant, CancellationToken cancellationToken)
+    {
+        var token = await GetArmAccessTokenAsync(tenant, cancellationToken).ConfigureAwait(false);
+
+        // JWT is three base64url-encoded segments separated by dots. Decode the payload (second segment).
+        var parts = token.Token.Split('.');
+        if (parts.Length < 2)
+            return string.Empty;
+
+        // Base64url decode: replace URL-safe chars and pad to a multiple of 4.
+        var payload = parts[1].Replace('-', '+').Replace('_', '/');
+        payload = payload.PadRight((payload.Length + 3) / 4 * 4, '=');
+        var bytes = Convert.FromBase64String(payload);
+
+        using var doc = JsonDocument.Parse(bytes);
+        var root = doc.RootElement;
+
+        if (root.TryGetProperty("preferred_username", out var pref) && pref.ValueKind == JsonValueKind.String)
+            return pref.GetString() ?? string.Empty;
+
+        if (root.TryGetProperty("upn", out var upn) && upn.ValueKind == JsonValueKind.String)
+            return upn.GetString() ?? string.Empty;
+
+        return string.Empty;
+    }
+
+    private static JsonElement BuildAcceptedCreateResult(
+        string name,
+        string resourceGroup,
+        string subscription,
+        string location,
+        string? resourceLocation,
+        string[]? collaborators)
+    {
+        var buffer = new ArrayBufferWriter<byte>();
+        using var writer = new Utf8JsonWriter(buffer);
+        writer.WriteStartObject();
+        writer.WriteString("name", name);
+        writer.WriteString("resourceGroup", resourceGroup);
+        writer.WriteString("subscription", subscription);
+        writer.WriteString("location", location);
+        writer.WriteString("resourceLocation", resourceLocation ?? location);
+        writer.WriteString("provisioningState", "Accepted");
+        writer.WritePropertyName("collaborators");
+        writer.WriteStartArray();
+        foreach (var collaborator in collaborators ?? [])
+        {
+            writer.WriteStartObject();
+            writer.WriteString("userIdentifier", collaborator);
             writer.WriteEndObject();
         }
         writer.WriteEndArray();
@@ -660,88 +725,60 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             (nameof(subscription), subscription),
             (nameof(location), location));
 
-        var armClient = await CreateArmClientWithApiVersionAsync(
-            CleanRoomResourceType, CleanRoomApiVersion, tenant, retryPolicy, cancellationToken)
+        var armClient = await CreateArmClientAsync(tenant, retryPolicy, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         var subscriptionResource = await _subscriptionService
             .GetSubscription(subscription, tenant, retryPolicy, cancellationToken)
             .ConfigureAwait(false);
 
-        var resourceId = new ResourceIdentifier(
-            $"{subscriptionResource.Id}/resourceGroups/{resourceGroup}/providers/{CleanRoomResourceType}/{name}");
+        var resourceGroupId = ResourceGroupResource.CreateResourceIdentifier(
+            subscriptionResource.Id.SubscriptionId!,
+            resourceGroup);
+        var resourceGroupResource = armClient.GetResourceGroupResource(resourceGroupId);
 
-        // Build properties JSON with Utf8JsonWriter for AOT safety and proper escaping.
-        var payloadBuffer = new ArrayBufferWriter<byte>();
-        using (var jsonWriter = new Utf8JsonWriter(payloadBuffer))
+        // Resolve the calling user's email from the ARM token and always include them as a collaborator.
+        var callerEmail = await GetCallerEmailAsync(tenant, cancellationToken).ConfigureAwait(false);
+
+        // Merge caller with any explicitly provided collaborators, deduplicating by email (case-insensitive).
+        var allCollaborators = (collaborators ?? [])
+            .Append(callerEmail)
+            .Where(c => !string.IsNullOrWhiteSpace(c))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var collaborationData = new CollaborationData(new Azure.Core.AzureLocation(location))
         {
-            jsonWriter.WriteStartObject();
-            jsonWriter.WritePropertyName("collaborators");
-            jsonWriter.WriteStartArray();
-
-            foreach (var collaborator in collaborators ?? [])
-            {
-                jsonWriter.WriteStartObject();
-                jsonWriter.WriteString("userIdentifier", collaborator);
-                jsonWriter.WriteEndObject();
-            }
-
-            jsonWriter.WriteEndArray();
-            jsonWriter.WriteString("resourceLocation", resourceLocation ?? location);
-            jsonWriter.WriteEndObject();
-            jsonWriter.Flush();
-        }
-
-        var resourceData = new GenericResourceData(new Azure.Core.AzureLocation(location))
-        {
-            Properties = BinaryData.FromBytes(payloadBuffer.WrittenSpan.ToArray())
+            ResourceLocation = new Azure.Core.AzureLocation(resourceLocation ?? location)
         };
 
+        foreach (var collaborator in allCollaborators)
+        {
+            collaborationData.Collaborators.Add(new Collaborator
+            {
+                UserIdentifier = collaborator
+            });
+        }
+
         // Fire the ARM PUT without blocking — provisioning takes ~25 minutes.
-        await armClient.GetGenericResources()
+        await resourceGroupResource.GetCollaborations()
             .CreateOrUpdateAsync(
-                Azure.WaitUntil.Started,
-                resourceId,
-                resourceData,
+                WaitUntil.Started,
+                name,
+                collaborationData,
                 cancellationToken)
             .ConfigureAwait(false);
 
-        // Poll provisioningState until terminal state, but stop waiting after timeout.
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        var timeoutAt = DateTimeOffset.UtcNow + ProvisioningTimeout;
-        var resource = armClient.GetGenericResource(resourceId);
-        var provisioningState = "Accepted";
-        JsonElement properties = default;
+        var acceptedResult = BuildAcceptedCreateResult(
+            name,
+            resourceGroup,
+            subscription,
+            location,
+            resourceLocation,
+            allCollaborators);
 
-        while (provisioningState is not ("Succeeded" or "Failed" or "Canceled"))
-        {
-            if (DateTimeOffset.UtcNow >= timeoutAt)
-            {
-                throw new TimeoutException(
-                    $"Timed out waiting for collaboration provisioning to reach a terminal state. Last known state: '{provisioningState}'.");
-            }
-
-            await Task.Delay(ProvisioningPollInterval, cancellationToken).ConfigureAwait(false);
-
-            var getResponse = await resource.GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-            var propsBytes = getResponse.Value.Data.Properties?.ToArray() ?? [];
-
-            if (propsBytes.Length > 0)
-            {
-                properties = JsonSerializer.Deserialize(propsBytes, ManagedCleanroomSerializerContext.Default.JsonElement);
-                provisioningState = properties.TryGetProperty("provisioningState", out var ps)
-                    ? ps.GetString() ?? "Unknown"
-                    : "Unknown";
-            }
-        }
-
-        stopwatch.Stop();
-        var elapsed = stopwatch.Elapsed;
-        var message = $"Collaboration provisioning {provisioningState.ToLower()} after " +
-            $"{(int)elapsed.TotalMinutes}m {elapsed.Seconds}s " +
-            $"(expected ~25 minutes).";
-
-        return new CollaborationCreateResult(properties, message);
+        const string acceptedMessage = "Collaboration create request accepted. Provisioning typically takes about 25 minutes.";
+        return new CollaborationCreateResult(acceptedResult, acceptedMessage);
     }
 
     private async Task<CollaborationClient> BuildClientAsync(

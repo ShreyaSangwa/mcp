@@ -23,6 +23,7 @@ public sealed class CollaborationCreateCommandTests
     private const string TestLocation = "eastus";
     private const string TestResourceGroup = "my-rg";
     private const string TestSubscription = "test-sub";
+    private const string AcceptedMessage = "Collaboration create request accepted. Provisioning typically takes about 25 minutes.";
 
     [Fact]
     public void Constructor_InitializesCommandCorrectly()
@@ -43,11 +44,12 @@ public sealed class CollaborationCreateCommandTests
     {
         if (shouldSucceed)
         {
+            var accepted = JsonDocument.Parse("""{"provisioningState":"Accepted"}""").RootElement;
             Service.CreateCollaborationArmResourceAsync(
                 Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(),
                 Arg.Any<string?>(), Arg.Any<string[]?>(), Arg.Any<string?>(),
                 Arg.Any<Microsoft.Mcp.Core.Options.RetryPolicyOptions?>(), Arg.Any<CancellationToken>())
-                .Returns(new CollaborationCreateResult(default, string.Empty));
+                .Returns(new CollaborationCreateResult(accepted, AcceptedMessage));
         }
 
         var response = await ExecuteCommandAsync(args);
@@ -62,12 +64,12 @@ public sealed class CollaborationCreateCommandTests
     [Fact]
     public async Task ExecuteAsync_DeserializationValidation()
     {
-        var expected = JsonDocument.Parse("""{"name":"my-collab","properties":{"provisioningState":"Succeeded"}}""").RootElement;
+        var expected = JsonDocument.Parse("""{"name":"my-collab","provisioningState":"Accepted"}""").RootElement;
         Service.CreateCollaborationArmResourceAsync(
             Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(),
             Arg.Any<string?>(), Arg.Any<string[]?>(), Arg.Any<string?>(),
             Arg.Any<Microsoft.Mcp.Core.Options.RetryPolicyOptions?>(), Arg.Any<CancellationToken>())
-            .Returns(new CollaborationCreateResult(expected, "Collaboration provisioning succeeded after 24m 0s (expected ~25 minutes)."));
+            .Returns(new CollaborationCreateResult(expected, AcceptedMessage));
 
         var response = await ExecuteCommandAsync(
             "--name", TestName, "--location", TestLocation,
@@ -76,23 +78,25 @@ public sealed class CollaborationCreateCommandTests
         var result = ValidateAndDeserializeResponse(response, ManagedCleanroomJsonContext.Default.JsonElement);
         Assert.Equal(JsonValueKind.Object, result.ValueKind);
         result.AssertProperty("name");
+        result.AssertProperty("provisioningState");
     }
 
     [Fact]
     public async Task ExecuteAsync_ReturnsServiceResponse()
     {
+        var accepted = JsonDocument.Parse("""{"provisioningState":"Accepted"}""").RootElement;
         Service.CreateCollaborationArmResourceAsync(
             Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(),
             Arg.Any<string?>(), Arg.Any<string[]?>(), Arg.Any<string?>(),
             Arg.Any<Microsoft.Mcp.Core.Options.RetryPolicyOptions?>(), Arg.Any<CancellationToken>())
-            .Returns(new CollaborationCreateResult(default, "Collaboration provisioning succeeded after 24m 0s (expected ~25 minutes)."));
+            .Returns(new CollaborationCreateResult(accepted, AcceptedMessage));
 
         var response = await ExecuteCommandAsync(
             "--name", TestName, "--location", TestLocation,
             "--resource-group", TestResourceGroup, "--subscription", TestSubscription);
 
         Assert.Equal(HttpStatusCode.OK, response.Status);
-        Assert.Contains("succeeded", response.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("accepted", response.Message, StringComparison.OrdinalIgnoreCase);
         await Service.Received(1).CreateCollaborationArmResourceAsync(
             TestName, TestResourceGroup, TestSubscription, TestLocation,
             null, null, null, Arg.Any<Microsoft.Mcp.Core.Options.RetryPolicyOptions?>(), Arg.Any<CancellationToken>());
