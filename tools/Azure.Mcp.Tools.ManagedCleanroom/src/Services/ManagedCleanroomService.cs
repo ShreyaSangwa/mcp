@@ -211,6 +211,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         string endpoint,
         string collaborationId,
         string documentId,
+        string? body = null,
         bool allowUntrustedCert = false,
         string? tenant = null,
         CancellationToken cancellationToken = default)
@@ -222,13 +223,35 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
             .ConfigureAwait(false);
 
-        // The publish POST body is empty — the document ID in the URL path identifies the dataset.
-        var content = RequestContent.Create(BinaryData.FromBytes("{}"u8.ToArray()));
+        var requestBody = await ResolveBodyContentAsync(body, cancellationToken).ConfigureAwait(false);
+        var content = RequestContent.Create(BinaryData.FromString(requestBody));
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
         Response response = await client.AnalyticsDatasetsDocumentIdPublishPostAsync(
             collaborationId, documentId, content, requestContext).ConfigureAwait(false);
 
         return ParseResponse(response);
+    }
+
+    private static async Task<string> ResolveBodyContentAsync(string? body, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(body))
+            return "{}";
+
+        // Match CLI behavior where @path reads content from a file.
+        if (body.StartsWith("@@", StringComparison.Ordinal))
+            return body[1..];
+
+        if (!body.StartsWith("@", StringComparison.Ordinal))
+            return body;
+
+        var filePath = body[1..].Trim();
+        if (string.IsNullOrWhiteSpace(filePath))
+            throw new ArgumentException("Body file path cannot be empty when using @file syntax.", nameof(body));
+
+        if (!File.Exists(filePath))
+            throw new FileNotFoundException($"Body file '{filePath}' was not found.", filePath);
+
+        return await File.ReadAllTextAsync(filePath, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<JsonElement> GetDatasetAsync(
@@ -489,12 +512,21 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         };
 
         await collaborationResource
-            .AddCollaboratorAsync(WaitUntil.Completed, content, cancellationToken)
+            .AddCollaboratorAsync(WaitUntil.Started, content, cancellationToken)
             .ConfigureAwait(false);
 
-        // Re-fetch and return latest collaboration state as JSON.
-        var refreshed = await collaborationResource.GetAsync(cancellationToken).ConfigureAwait(false);
-        return SerializeCollaborationData(refreshed.Value.Data);
+        var buffer = new ArrayBufferWriter<byte>();
+        using var writer = new Utf8JsonWriter(buffer);
+        writer.WriteStartObject();
+        writer.WriteString("name", name);
+        writer.WriteString("resourceGroup", resourceGroup);
+        writer.WriteString("subscription", subscription);
+        writer.WriteString("collaboratorUserIdentifier", collaboratorUserIdentifier);
+        writer.WriteString("provisioningState", "Accepted");
+        writer.WriteEndObject();
+        writer.Flush();
+
+        return JsonSerializer.Deserialize(buffer.WrittenSpan, ManagedCleanroomSerializerContext.Default.JsonElement);
     }
 
     public async Task<JsonElement> EnableWorkloadAsync(

@@ -18,6 +18,7 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaboration;
     Title = "Add Cleanroom Collaborator",
     Description = """
         Adds a collaborator to an Azure Cleanroom collaboration ARM resource via the Microsoft.CleanRoom ARM API.
+        Returns immediately after the add-collaborator request is accepted.
         For a user collaborator, provide --collaborator-user-identifier as an email address.
         For a service principal collaborator, provide --collaborator-user-identifier as the SPN application (client) ID
         and also specify --collaborator-object-id and --collaborator-tenant-id.
@@ -61,7 +62,7 @@ public sealed class CollaborationAddCollaboratorCommand(
             context.Response.Results = ResponseResult.Create(
                 result,
                 ManagedCleanroomJsonContext.Default.JsonElement);
-            context.Response.Message = $"Collaborator '{options.CollaboratorUserIdentifier}' has been added to collaboration '{options.Name}'.";
+            context.Response.Message = $"Add collaborator request accepted for '{options.CollaboratorUserIdentifier}' on collaboration '{options.Name}'.";
         }
         catch (Exception ex)
         {

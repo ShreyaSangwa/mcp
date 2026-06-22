@@ -36,6 +36,7 @@ public sealed class DatasetsPublishCommand(ILogger<DatasetsPublishCommand> logge
                 options.Endpoint,
                 options.CollaborationId,
                 options.DocumentId,
+                options.Body,
                 options.AllowUntrustedCert,
                 options.Tenant,
                 cancellationToken).ConfigureAwait(false);
