@@ -36,7 +36,7 @@ public sealed class InvitationsAcceptCommand(ILogger<InvitationsAcceptCommand> l
                 options.Endpoint,
                 options.CollaborationId,
                 options.InvitationId,
-                options.AllowUntrustedCert,
+                options.AllowUntrustedCert ?? false,
                 options.Tenant,
                 cancellationToken).ConfigureAwait(false);
 
@@ -57,3 +57,5 @@ public sealed class InvitationsAcceptCommand(ILogger<InvitationsAcceptCommand> l
 
     public record InvitationsAcceptCommandResult;
 }
+
+

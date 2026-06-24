@@ -15,9 +15,10 @@ public static class ManagedCleanroomOptionDescriptions
     public const string CollaborationId =
         "The unique identifier (UUID) of the cleanroom collaboration.";
 
-    public const string AllowUntrustedCert =
-        "When true, skips TLS certificate validation for the cleanroom endpoint. Use only for dev/test endpoints with self-signed certificates.";
-
     public const string DocumentId =
         "The unique identifier (UUID) of the dataset document to publish.";
+
+    public const string AllowUntrustedCert =
+        "When true, skips TLS certificate validation for the cleanroom endpoint. Use only for dev/test endpoints with self-signed certificates.";
 }
+

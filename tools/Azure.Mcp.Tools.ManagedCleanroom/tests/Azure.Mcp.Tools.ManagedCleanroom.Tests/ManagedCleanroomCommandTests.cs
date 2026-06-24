@@ -33,7 +33,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
             new()
             {
                 { "endpoint", endpoint },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -58,7 +57,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
             {
                 { "endpoint", endpoint },
                 { "collaboration-id", collaborationId },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -83,7 +81,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
             {
                 { "endpoint", endpoint },
                 { "collaboration-id", collaborationId },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -102,7 +99,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
             {
                 { "endpoint", endpoint },
                 { "collaboration-id", collaborationId },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -125,7 +121,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
                 { "endpoint", endpoint },
                 { "collaboration-id", collaborationId },
                 { "issuer-url", issuerUrl },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -178,7 +173,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
             {
                 { "endpoint", endpoint },
                 { "collaboration-id", collaborationId },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -207,7 +201,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
                 { "endpoint", endpoint },
                 { "collaboration-id", collaborationId },
                 { "invitation-id", invitationId },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -270,7 +263,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
             {
                 { "endpoint", endpoint },
                 { "collaboration-id", collaborationId },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -293,7 +285,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
                 { "endpoint", endpoint },
                 { "collaboration-id", collaborationId },
                 { "document-id", documentId },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -316,7 +307,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
                 { "endpoint", endpoint },
                 { "collaboration-id", collaborationId },
                 { "document-id", documentId },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -339,7 +329,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
                 { "endpoint", endpoint },
                 { "collaboration-id", collaborationId },
                 { "document-id", documentId },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -358,7 +347,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
             {
                 { "endpoint", endpoint },
                 { "collaboration-id", collaborationId },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -381,7 +369,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
                 { "endpoint", endpoint },
                 { "collaboration-id", collaborationId },
                 { "document-id", documentId },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -404,7 +391,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
                 { "endpoint", endpoint },
                 { "collaboration-id", collaborationId },
                 { "document-id", documentId },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -423,7 +409,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
             {
                 { "endpoint", endpoint },
                 { "collaboration-id", collaborationId },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -447,7 +432,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
                 { "collaboration-id", collaborationId },
                 { "document-id", documentId },
                 { "vote", "Approve" },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -470,7 +454,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
                 { "endpoint", endpoint },
                 { "collaboration-id", collaborationId },
                 { "document-id", documentId },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -493,7 +476,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
                 { "endpoint", endpoint },
                 { "collaboration-id", collaborationId },
                 { "document-id", documentId },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -516,7 +498,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
                 { "endpoint", endpoint },
                 { "collaboration-id", collaborationId },
                 { "document-id", documentId },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);
@@ -535,7 +516,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
             {
                 { "endpoint", endpoint },
                 { "collaboration-id", collaborationId },
-                { "allow-untrusted-cert", true }
             });
 
         Assert.NotNull(result);

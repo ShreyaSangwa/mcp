@@ -108,6 +108,24 @@ public sealed class DatasetsPublishCommandTests : CommandUnitTestsBase<DatasetsP
     }
 
     [Fact]
+    public async Task ExecuteAsync_WithAllowUntrustedCertTrue_PassesTrueToService()
+    {
+        Service.PublishDatasetAsync(
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(default(JsonElement));
+
+        var response = await ExecuteCommandAsync(
+            "--endpoint", TestEndpoint,
+            "--collaboration-id", TestCollaborationId,
+            "--document-id", TestDocumentId,
+            "--allow-untrusted-cert", "true");
+
+        Assert.Equal(HttpStatusCode.OK, response.Status);
+        await Service.Received(1).PublishDatasetAsync(
+            TestEndpoint, TestCollaborationId, TestDocumentId, null, true, null, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task ExecuteAsync_HandlesServiceErrors()
     {
         Service.PublishDatasetAsync(

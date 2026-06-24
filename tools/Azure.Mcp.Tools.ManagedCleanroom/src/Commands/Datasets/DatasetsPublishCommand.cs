@@ -41,6 +41,13 @@ public sealed class DatasetsPublishCommand(ILogger<DatasetsPublishCommand> logge
                 options.Tenant,
                 cancellationToken).ConfigureAwait(false);
 
+            // Guard: an empty/non-JSON service response returns Undefined; replace with {} so
+            // ResponseResult.Create can serialize it without throwing.
+            if (result.ValueKind == System.Text.Json.JsonValueKind.Undefined)
+            {
+                result = System.Text.Json.JsonDocument.Parse("{}").RootElement.Clone();
+            }
+
             context.Response.Results = ResponseResult.Create(
                 result,
                 ManagedCleanroomJsonContext.Default.JsonElement);
@@ -58,3 +65,5 @@ public sealed class DatasetsPublishCommand(ILogger<DatasetsPublishCommand> logge
 
     public record DatasetsPublishCommandResult;
 }
+
+

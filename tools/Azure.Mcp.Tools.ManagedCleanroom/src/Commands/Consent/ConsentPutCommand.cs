@@ -32,11 +32,22 @@ public sealed class ConsentPutCommand(ILogger<ConsentPutCommand> logger, IManage
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(options.Body))
+            {
+                throw new CommandValidationException(
+                    "Body is required for consent put.",
+                    System.Net.HttpStatusCode.BadRequest,
+                    missingOptions: ["--body"]);
+            }
+
+            var allowUntrustedCert = options.AllowUntrustedCert ?? false;
+
             var result = await _service.PutConsentAsync(
                 options.Endpoint,
                 options.CollaborationId,
                 options.DocumentId,
-                options.AllowUntrustedCert,
+                options.Body,
+                allowUntrustedCert,
                 options.Tenant,
                 cancellationToken).ConfigureAwait(false);
 
@@ -57,3 +68,5 @@ public sealed class ConsentPutCommand(ILogger<ConsentPutCommand> logger, IManage
 
     public record ConsentPutCommandResult;
 }
+
+

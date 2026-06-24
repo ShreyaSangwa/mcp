@@ -23,6 +23,10 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
     private readonly ISubscriptionService _subscriptionService = subscriptionService;
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
     private static readonly TimeSpan WorkloadEndpointTimeout = TimeSpan.FromMinutes(15);
+
+    // A stable empty-object JsonElement to return when the service returns an empty/non-JSON body.
+    private static readonly JsonElement EmptyObjectElement =
+        JsonDocument.Parse("{}").RootElement.Clone();
     private static readonly TimeSpan WorkloadHealthTimeout = TimeSpan.FromMinutes(10);
 
     public async Task<JsonElement> ListCollaborationsAsync(
@@ -280,6 +284,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         string endpoint,
         string collaborationId,
         string documentId,
+        string? body = null,
         bool allowUntrustedCert = false,
         string? tenant = null,
         CancellationToken cancellationToken = default)
@@ -291,8 +296,8 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
             .ConfigureAwait(false);
 
-        // The PUT body is empty — the document ID in the URL path identifies the consent document.
-        var content = RequestContent.Create(BinaryData.FromBytes("{}"u8.ToArray()));
+        var requestBody = await ResolveBodyContentAsync(body, cancellationToken).ConfigureAwait(false);
+        var content = RequestContent.Create(BinaryData.FromString(requestBody));
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
         Response response = await client.ConsentDocumentIdPutAsync(
             collaborationId, documentId, content, requestContext).ConfigureAwait(false);
@@ -322,6 +327,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         string endpoint,
         string collaborationId,
         string documentId,
+        string? body = null,
         bool allowUntrustedCert = false,
         string? tenant = null,
         CancellationToken cancellationToken = default)
@@ -333,7 +339,8 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
             .ConfigureAwait(false);
 
-        var content = RequestContent.Create(BinaryData.FromBytes("{}"u8.ToArray()));
+        var requestBody = await ResolveBodyContentAsync(body, cancellationToken).ConfigureAwait(false);
+        var content = RequestContent.Create(BinaryData.FromString(requestBody));
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
         Response response = await client.AnalyticsQueriesDocumentIdPublishPostAsync(
             collaborationId, documentId, content, requestContext).ConfigureAwait(false);
@@ -385,30 +392,49 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         string endpoint,
         string collaborationId,
         string documentId,
-        string vote,
+        string? body = null,
+        string? vote = null,
         bool allowUntrustedCert = false,
         string? tenant = null,
         CancellationToken cancellationToken = default)
     {
         ValidateRequiredParameters(
             (nameof(collaborationId), collaborationId),
-            (nameof(documentId), documentId),
-            (nameof(vote), vote));
+            (nameof(documentId), documentId));
+
+        if (string.IsNullOrWhiteSpace(body) && string.IsNullOrWhiteSpace(vote))
+        {
+            throw new ArgumentException("Either body or vote must be provided for query vote.");
+        }
 
         var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
             .ConfigureAwait(false);
 
-        // Build the request body: {"vote": "<value>"}
-        var buffer = new ArrayBufferWriter<byte>();
-        using (var writer = new Utf8JsonWriter(buffer))
+        string requestBody;
+        if (!string.IsNullOrWhiteSpace(body))
         {
-            writer.WriteStartObject();
-            writer.WriteString("vote", vote);
-            writer.WriteEndObject();
-            writer.Flush();
+            requestBody = await ResolveBodyContentAsync(body, cancellationToken).ConfigureAwait(false);
+        }
+        else if (!string.IsNullOrWhiteSpace(vote))
+        {
+            // Backward compatibility for legacy --vote input.
+            var buffer = new ArrayBufferWriter<byte>();
+            using (var writer = new Utf8JsonWriter(buffer))
+            {
+                writer.WriteStartObject();
+                writer.WriteString("vote", vote);
+                writer.WriteEndObject();
+                writer.Flush();
+            }
+
+            requestBody = BinaryData.FromBytes(buffer.WrittenMemory.ToArray()).ToString();
+        }
+        else
+        {
+            requestBody = "{}";
         }
 
-        var content = RequestContent.Create(buffer.WrittenMemory);
+        var content = RequestContent.Create(BinaryData.FromString(requestBody));
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
         Response response = await client.AnalyticsQueriesDocumentIdVotePostAsync(
             collaborationId, documentId, content, requestContext).ConfigureAwait(false);
@@ -420,6 +446,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         string endpoint,
         string collaborationId,
         string documentId,
+        string? body = null,
         bool allowUntrustedCert = false,
         string? tenant = null,
         CancellationToken cancellationToken = default)
@@ -431,7 +458,8 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
             .ConfigureAwait(false);
 
-        var content = RequestContent.Create(BinaryData.FromBytes("{}"u8.ToArray()));
+        var requestBody = await ResolveBodyContentAsync(body, cancellationToken).ConfigureAwait(false);
+        var content = RequestContent.Create(BinaryData.FromString(requestBody));
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
         Response response = await client.AnalyticsQueriesDocumentIdRunPostAsync(
             collaborationId, documentId, content, requestContext).ConfigureAwait(false);
@@ -511,22 +539,11 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             TenantId = collaboratorTenantId
         };
 
-        await collaborationResource
+        var operation = await collaborationResource
             .AddCollaboratorAsync(WaitUntil.Started, content, cancellationToken)
             .ConfigureAwait(false);
 
-        var buffer = new ArrayBufferWriter<byte>();
-        using var writer = new Utf8JsonWriter(buffer);
-        writer.WriteStartObject();
-        writer.WriteString("name", name);
-        writer.WriteString("resourceGroup", resourceGroup);
-        writer.WriteString("subscription", subscription);
-        writer.WriteString("collaboratorUserIdentifier", collaboratorUserIdentifier);
-        writer.WriteString("provisioningState", "Accepted");
-        writer.WriteEndObject();
-        writer.Flush();
-
-        return JsonSerializer.Deserialize(buffer.WrittenSpan, ManagedCleanroomSerializerContext.Default.JsonElement);
+        return ParseResponse(operation.GetRawResponse());
     }
 
     public async Task<JsonElement> EnableWorkloadAsync(
@@ -548,28 +565,22 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             name, resourceGroup, subscription, tenant, retryPolicy, cancellationToken)
             .ConfigureAwait(false);
 
+        if (string.Equals(workloadType, "Analytics", StringComparison.OrdinalIgnoreCase))
+        {
+            workloadType = "AnalyticsStrict";
+        }
+
         var wlType = (Azure.ResourceManager.CleanRoom.Models.WorkloadType)Enum.Parse(
             typeof(Azure.ResourceManager.CleanRoom.Models.WorkloadType), workloadType, ignoreCase: true);
 
         var content = new Azure.ResourceManager.CleanRoom.Models.EnableWorkloadContent(wlType);
 
         // WaitUntil.Started — return immediately after the request is accepted.
-        await collaborationResource
+        var operation = await collaborationResource
             .EnableWorkloadAsync(WaitUntil.Started, content, cancellationToken)
             .ConfigureAwait(false);
 
-        var buffer = new ArrayBufferWriter<byte>();
-        using var writer = new Utf8JsonWriter(buffer);
-        writer.WriteStartObject();
-        writer.WriteString("name", name);
-        writer.WriteString("resourceGroup", resourceGroup);
-        writer.WriteString("subscription", subscription);
-        writer.WriteString("workloadType", workloadType);
-        writer.WriteString("provisioningState", "Accepted");
-        writer.WriteEndObject();
-        writer.Flush();
-
-        return JsonSerializer.Deserialize(buffer.WrittenSpan, ManagedCleanroomSerializerContext.Default.JsonElement);
+        return ParseResponse(operation.GetRawResponse());
     }
 
     private async Task<CollaborationResource> GetCollaborationResourceAsync(
@@ -591,38 +602,6 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             subscriptionResource.Id.SubscriptionId!, resourceGroup, name);
 
         return armClient.GetCollaborationResource(resourceId);
-    }
-
-    private static JsonElement SerializeCollaborationData(CollaborationData data)
-    {
-        // Serialize via Utf8JsonWriter for AOT safety — no reflection.
-        var buffer = new ArrayBufferWriter<byte>();
-        using var writer = new Utf8JsonWriter(buffer);
-        writer.WriteStartObject();
-        writer.WriteString("collaborationState", data.CollaborationState?.ToString());
-        writer.WriteString("provisioningState", data.ProvisioningState?.ToString());
-        if (data.Health is not null)
-        {
-            writer.WritePropertyName("health");
-            writer.WriteStartObject();
-            writer.WriteString("healthState", data.Health.HealthState.ToString());
-            writer.WriteEndObject();
-        }
-        writer.WritePropertyName("workloads");
-        writer.WriteStartArray();
-        foreach (var wl in data.Workloads ?? [])
-        {
-            writer.WriteStartObject();
-            writer.WriteString("workloadType", wl.WorkloadType.ToString());
-            writer.WriteString("endpoint", wl.Endpoint?.ToString());
-            writer.WriteString("namespace", wl.Namespace);
-            writer.WriteEndObject();
-        }
-        writer.WriteEndArray();
-        writer.WriteEndObject();
-        writer.Flush();
-
-        return JsonSerializer.Deserialize(buffer.WrittenSpan, ManagedCleanroomSerializerContext.Default.JsonElement);
     }
 
     /// <summary>
@@ -654,38 +633,6 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return string.Empty;
     }
 
-    private static JsonElement BuildAcceptedCreateResult(
-        string name,
-        string resourceGroup,
-        string subscription,
-        string location,
-        string? resourceLocation,
-        string[]? collaborators)
-    {
-        var buffer = new ArrayBufferWriter<byte>();
-        using var writer = new Utf8JsonWriter(buffer);
-        writer.WriteStartObject();
-        writer.WriteString("name", name);
-        writer.WriteString("resourceGroup", resourceGroup);
-        writer.WriteString("subscription", subscription);
-        writer.WriteString("location", location);
-        writer.WriteString("resourceLocation", resourceLocation ?? location);
-        writer.WriteString("provisioningState", "Accepted");
-        writer.WritePropertyName("collaborators");
-        writer.WriteStartArray();
-        foreach (var collaborator in collaborators ?? [])
-        {
-            writer.WriteStartObject();
-            writer.WriteString("userIdentifier", collaborator);
-            writer.WriteEndObject();
-        }
-        writer.WriteEndArray();
-        writer.WriteEndObject();
-        writer.Flush();
-
-        return JsonSerializer.Deserialize(buffer.WrittenSpan, ManagedCleanroomSerializerContext.Default.JsonElement);
-    }
-
     public async Task<JsonElement> GetCollaborationArmResourceAsync(
         string name,
         string resourceGroup,
@@ -704,7 +651,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             .ConfigureAwait(false);
 
         var response = await collaborationResource.GetAsync(cancellationToken).ConfigureAwait(false);
-        return SerializeCollaborationData(response.Value.Data);
+        return ParseResponse(response.GetRawResponse());
     }
 
     public async Task<JsonElement> GetCollaborationReadonlyKubeconfigAsync(
@@ -728,16 +675,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             .GetReadonlyKubeConfigAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        var buffer = new ArrayBufferWriter<byte>();
-        using (var writer = new Utf8JsonWriter(buffer))
-        {
-            writer.WriteStartObject();
-            writer.WriteString("kubeconfig", response.Value.Kubeconfig);
-            writer.WriteEndObject();
-            writer.Flush();
-        }
-
-        return JsonSerializer.Deserialize(buffer.WrittenSpan, ManagedCleanroomSerializerContext.Default.JsonElement);
+        return ParseResponse(response.GetRawResponse());
     }
 
     public async Task<CollaborationCreateResult> CreateCollaborationArmResourceAsync(
@@ -793,7 +731,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         }
 
         // Fire the ARM PUT without blocking — provisioning takes ~25 minutes.
-        await resourceGroupResource.GetCollaborations()
+        var operation = await resourceGroupResource.GetCollaborations()
             .CreateOrUpdateAsync(
                 WaitUntil.Started,
                 name,
@@ -801,13 +739,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
                 cancellationToken)
             .ConfigureAwait(false);
 
-        var acceptedResult = BuildAcceptedCreateResult(
-            name,
-            resourceGroup,
-            subscription,
-            location,
-            resourceLocation,
-            allCollaborators);
+        var acceptedResult = ParseResponse(operation.GetRawResponse());
 
         const string acceptedMessage = "Collaboration create request accepted. Provisioning typically takes about 25 minutes.";
         return new CollaborationCreateResult(acceptedResult, acceptedMessage);
@@ -855,16 +787,47 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return new CollaborationClient(endpointUri, options);
     }
 
-    private static JsonElement ParseResponse(Response response)
+    internal static JsonElement ParseResponse(Response response)
     {
         if (response.Content is null)
         {
-            return default;
+            return EmptyObjectElement;
         }
 
-        return JsonSerializer.Deserialize(
-            response.Content.ToMemory().Span,
-            ManagedCleanroomSerializerContext.Default.JsonElement);
+        var content = response.Content.ToMemory();
+        if (content.IsEmpty)
+        {
+            return EmptyObjectElement;
+        }
+
+        try
+        {
+            var element = JsonSerializer.Deserialize(
+                content.Span,
+                ManagedCleanroomSerializerContext.Default.JsonElement);
+            // Guard against Undefined (e.g. deserializing a null JSON token).
+            return element.ValueKind == JsonValueKind.Undefined ? EmptyObjectElement : element;
+        }
+        catch (JsonException)
+        {
+            // Some endpoints may return non-JSON payloads; return the raw payload as a JSON string value.
+            var rawResponse = response.Content.ToString();
+            if (string.IsNullOrWhiteSpace(rawResponse))
+            {
+                return EmptyObjectElement;
+            }
+
+            var buffer = new ArrayBufferWriter<byte>();
+            using (var writer = new Utf8JsonWriter(buffer))
+            {
+                writer.WriteStringValue(rawResponse);
+                writer.Flush();
+            }
+
+            return JsonSerializer.Deserialize(
+                buffer.WrittenSpan,
+                ManagedCleanroomSerializerContext.Default.JsonElement);
+        }
     }
 
     /// <summary>

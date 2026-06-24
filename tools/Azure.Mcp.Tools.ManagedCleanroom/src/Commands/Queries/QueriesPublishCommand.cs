@@ -36,6 +36,7 @@ public sealed class QueriesPublishCommand(ILogger<QueriesPublishCommand> logger,
                 options.Endpoint,
                 options.CollaborationId,
                 options.DocumentId,
+                options.Body,
                 options.AllowUntrustedCert,
                 options.Tenant,
                 cancellationToken).ConfigureAwait(false);
@@ -57,3 +58,5 @@ public sealed class QueriesPublishCommand(ILogger<QueriesPublishCommand> logger,
 
     public record QueriesPublishCommandResult;
 }
+
+

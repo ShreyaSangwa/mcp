@@ -18,8 +18,11 @@ public class ConsentPutOptions
     [Option("The unique identifier (UUID) of the consent document to create or update.")]
     public required string DocumentId { get; set; }
 
+    [Option("JSON request body for consent put. Supports CLI-style @file input to load JSON from disk. Use @@ to send a literal value starting with '@'.")]
+    public string? Body { get; set; }
+
     [Option(ManagedCleanroomOptionDescriptions.AllowUntrustedCert)]
-    public bool AllowUntrustedCert { get; set; }
+    public bool? AllowUntrustedCert { get; set; }
 
     [Option(OptionDescriptions.Tenant)]
     public string? Tenant { get; set; }

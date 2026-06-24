@@ -35,7 +35,7 @@ public sealed class OidcKeysCommand(ILogger<OidcKeysCommand> logger, IManagedCle
             var result = await _service.GetOidcKeysAsync(
                 options.Endpoint,
                 options.CollaborationId,
-                options.AllowUntrustedCert,
+                options.AllowUntrustedCert ?? false,
                 options.Tenant,
                 cancellationToken).ConfigureAwait(false);
 
@@ -56,3 +56,5 @@ public sealed class OidcKeysCommand(ILogger<OidcKeysCommand> logger, IManagedCle
 
     public record OidcKeysCommandResult;
 }
+
+

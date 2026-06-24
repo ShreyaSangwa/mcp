@@ -18,6 +18,9 @@ public class QueriesPublishOptions
     [Option("The unique identifier (UUID) of the query document to publish.")]
     public required string DocumentId { get; set; }
 
+    [Option("JSON request body for query publish. Supports CLI-style @file input to load JSON from disk. Use @@ to send a literal value starting with '@'. If omitted, an empty JSON object '{}' is sent.")]
+    public string? Body { get; set; }
+
     [Option(ManagedCleanroomOptionDescriptions.AllowUntrustedCert)]
     public bool AllowUntrustedCert { get; set; }
 

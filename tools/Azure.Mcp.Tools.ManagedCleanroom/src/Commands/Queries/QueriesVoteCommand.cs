@@ -32,10 +32,16 @@ public sealed class QueriesVoteCommand(ILogger<QueriesVoteCommand> logger, IMana
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(options.Body) && string.IsNullOrWhiteSpace(options.Vote))
+            {
+                throw new ArgumentException("Either --body or --vote must be provided for query vote.");
+            }
+
             var result = await _service.VoteOnQueryAsync(
                 options.Endpoint,
                 options.CollaborationId,
                 options.DocumentId,
+                options.Body,
                 options.Vote,
                 options.AllowUntrustedCert,
                 options.Tenant,
@@ -58,3 +64,5 @@ public sealed class QueriesVoteCommand(ILogger<QueriesVoteCommand> logger, IMana
 
     public record QueriesVoteCommandResult;
 }
+
+

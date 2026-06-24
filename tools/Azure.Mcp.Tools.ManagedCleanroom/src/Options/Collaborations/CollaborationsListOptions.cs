@@ -14,7 +14,7 @@ public class CollaborationsListOptions
     [Option("When true, returns only active collaborations (email-only lookup). When omitted, returns all collaborations.")]
     public bool? ActiveOnly { get; set; }
 
-    [Option("When true, skips TLS certificate validation for the cleanroom endpoint. Use only for dev/test endpoints with self-signed certificates.")]
+    [Option(ManagedCleanroomOptionDescriptions.AllowUntrustedCert)]
     public bool AllowUntrustedCert { get; set; }
 
     [Option(OptionDescriptions.Tenant)]

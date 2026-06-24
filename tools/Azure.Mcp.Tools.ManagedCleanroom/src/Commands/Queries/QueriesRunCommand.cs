@@ -36,6 +36,7 @@ public sealed class QueriesRunCommand(ILogger<QueriesRunCommand> logger, IManage
                 options.Endpoint,
                 options.CollaborationId,
                 options.DocumentId,
+                options.Body,
                 options.AllowUntrustedCert,
                 options.Tenant,
                 cancellationToken).ConfigureAwait(false);
@@ -57,3 +58,5 @@ public sealed class QueriesRunCommand(ILogger<QueriesRunCommand> logger, IManage
 
     public record QueriesRunCommandResult;
 }
+
+

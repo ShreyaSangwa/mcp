@@ -18,14 +18,8 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaboration;
     Name = "enable-workload",
     Title = "Enable Cleanroom Workload",
     Description = """
-        Enables a workload on an Azure Cleanroom collaboration ARM resource via the Microsoft.CleanRoom ARM API.
-        Submits an enableWorkload action to the collaboration with the specified workload type (e.g., Analytics).
-        Returns immediately after the request is accepted. Workload endpoint readiness typically takes about 7 minutes.
-        Required options:
-        - --name: the collaboration ARM resource name
-        - --workload-type: type of workload to enable (e.g., Analytics)
-        - --resource-group: resource group containing the collaboration
-        - --subscription: Azure subscription
+        Enable a workload on your Azure Cleanroom collaboration. The request returns immediately after Azure accepts it; endpoint readiness typically takes about 7 minutes. 
+        You'll need to provide: collaboration name, workload type (Analytics or AnalyticsStrict), resource group, and subscription.
         """,
     Destructive = false,
     Idempotent = true,
@@ -63,7 +57,8 @@ public sealed class CollaborationEnableWorkloadCommand(
             context.Response.Message =
                 $"Enable workload request accepted for '{options.WorkloadType}' on collaboration '{options.Name}'. " +
                 "The workload endpoint typically takes about 7 minutes to become available. " +
-                "Use 'managedcleanroom analytics get' to check when the endpoint is ready.";
+                $"To check provisioning status, run: managedcleanroom collaboration get --name {options.Name} --resource-group {options.ResourceGroup} --subscription {options.Subscription}. " +
+                "If provisioning is delayed or fails, check for quota limits or network issues.";
         }
         catch (Exception ex)
         {
@@ -99,4 +94,6 @@ public sealed class CollaborationEnableWorkloadCommand(
 
     public record CollaborationEnableWorkloadCommandResult;
 }
+
+
 

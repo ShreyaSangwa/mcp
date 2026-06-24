@@ -87,3 +87,5 @@ public sealed class CollaborationGetCommand(
 
     public record CollaborationGetCommandResult;
 }
+
+

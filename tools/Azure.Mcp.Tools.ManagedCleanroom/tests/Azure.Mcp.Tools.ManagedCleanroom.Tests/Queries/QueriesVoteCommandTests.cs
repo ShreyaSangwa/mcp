@@ -19,6 +19,7 @@ public sealed class QueriesVoteCommandTests : CommandUnitTestsBase<QueriesVoteCo
     private const string TestCollaborationId = "9d8fa4d3-2808-4067-9c20-db26e2a9ec2f";
     private const string TestDocumentId = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
     private const string TestVote = "Approve";
+    private const string TestBody = "{\"voteAction\":\"accept\",\"proposalId\":\"p-001\"}";
 
     [Fact]
     public void Constructor_InitializesCommandCorrectly()
@@ -31,6 +32,7 @@ public sealed class QueriesVoteCommandTests : CommandUnitTestsBase<QueriesVoteCo
 
     [Theory]
     [InlineData("--endpoint https://my-cleanroom.cloudapp.azure.net --collaboration-id 9d8fa4d3-2808-4067-9c20-db26e2a9ec2f --document-id a1b2c3d4-e5f6-7890-abcd-ef1234567890 --vote Approve", true)]
+    [InlineData("--endpoint https://my-cleanroom.cloudapp.azure.net --collaboration-id 9d8fa4d3-2808-4067-9c20-db26e2a9ec2f --document-id a1b2c3d4-e5f6-7890-abcd-ef1234567890 --body {\"voteAction\":\"accept\",\"proposalId\":\"p-001\"}", true)]
     [InlineData("--endpoint https://my-cleanroom.cloudapp.azure.net --collaboration-id 9d8fa4d3-2808-4067-9c20-db26e2a9ec2f --document-id a1b2c3d4-e5f6-7890-abcd-ef1234567890", false)]
     [InlineData("--endpoint https://my-cleanroom.cloudapp.azure.net --collaboration-id 9d8fa4d3-2808-4067-9c20-db26e2a9ec2f --vote Approve", false)]
     [InlineData("", false)]
@@ -39,7 +41,7 @@ public sealed class QueriesVoteCommandTests : CommandUnitTestsBase<QueriesVoteCo
         if (shouldSucceed)
         {
             Service.VoteOnQueryAsync(
-                Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+                Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
                 .Returns(default(JsonElement));
         }
 
@@ -57,7 +59,7 @@ public sealed class QueriesVoteCommandTests : CommandUnitTestsBase<QueriesVoteCo
     {
         var expected = JsonDocument.Parse("""{"documentId":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","vote":"Approve","status":"Voted"}""").RootElement;
         Service.VoteOnQueryAsync(
-            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(expected);
 
         var response = await ExecuteCommandAsync(
@@ -75,7 +77,7 @@ public sealed class QueriesVoteCommandTests : CommandUnitTestsBase<QueriesVoteCo
     public async Task ExecuteAsync_ReturnsServiceResponse()
     {
         Service.VoteOnQueryAsync(
-            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(default(JsonElement));
 
         var response = await ExecuteCommandAsync(
@@ -86,14 +88,32 @@ public sealed class QueriesVoteCommandTests : CommandUnitTestsBase<QueriesVoteCo
 
         Assert.Equal(HttpStatusCode.OK, response.Status);
         await Service.Received(1).VoteOnQueryAsync(
-            TestEndpoint, TestCollaborationId, TestDocumentId, TestVote, false, null, Arg.Any<CancellationToken>());
+            TestEndpoint, TestCollaborationId, TestDocumentId, null, TestVote, false, null, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithBody_PassesBodyToService()
+    {
+        Service.VoteOnQueryAsync(
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(default(JsonElement));
+
+        var response = await ExecuteCommandAsync(
+            "--endpoint", TestEndpoint,
+            "--collaboration-id", TestCollaborationId,
+            "--document-id", TestDocumentId,
+            "--body", TestBody);
+
+        Assert.Equal(HttpStatusCode.OK, response.Status);
+        await Service.Received(1).VoteOnQueryAsync(
+            TestEndpoint, TestCollaborationId, TestDocumentId, TestBody, null, false, null, Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task ExecuteAsync_HandlesServiceErrors()
     {
         Service.VoteOnQueryAsync(
-            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new Exception("Test error"));
 
         var response = await ExecuteCommandAsync(

@@ -98,3 +98,5 @@ public sealed class CollaborationAddCollaboratorCommand(
 
     public record CollaborationAddCollaboratorCommandResult;
 }
+
+

@@ -97,6 +97,7 @@ public interface IManagedCleanroomService
         string endpoint,
         string collaborationId,
         string documentId,
+        string? body = null,
         bool allowUntrustedCert = false,
         string? tenant = null,
         CancellationToken cancellationToken = default);
@@ -120,7 +121,8 @@ public interface IManagedCleanroomService
         string endpoint,
         string collaborationId,
         string documentId,
-        string vote,
+        string? body = null,
+        string? vote = null,
         bool allowUntrustedCert = false,
         string? tenant = null,
         CancellationToken cancellationToken = default);
@@ -129,6 +131,7 @@ public interface IManagedCleanroomService
         string endpoint,
         string collaborationId,
         string documentId,
+        string? body = null,
         bool allowUntrustedCert = false,
         string? tenant = null,
         CancellationToken cancellationToken = default);
@@ -155,6 +158,7 @@ public interface IManagedCleanroomService
         string endpoint,
         string collaborationId,
         string documentId,
+        string? body = null,
         bool allowUntrustedCert = false,
         string? tenant = null,
         CancellationToken cancellationToken = default);

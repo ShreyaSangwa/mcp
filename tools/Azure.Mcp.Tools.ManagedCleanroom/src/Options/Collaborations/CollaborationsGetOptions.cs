@@ -17,7 +17,7 @@ public class CollaborationsGetOptions
     [Option("When true, includes soft-deleted records in the response.")]
     public bool? IncludeDeleted { get; set; }
 
-    [Option("When true, skips TLS certificate validation for the cleanroom endpoint. Use only for dev/test endpoints with self-signed certificates.")]
+    [Option(ManagedCleanroomOptionDescriptions.AllowUntrustedCert)]
     public bool AllowUntrustedCert { get; set; }
 
     [Option(OptionDescriptions.Tenant)]

@@ -18,6 +18,7 @@ public sealed class QueriesRunCommandTests : CommandUnitTestsBase<QueriesRunComm
     private const string TestEndpoint = "https://my-cleanroom.cloudapp.azure.net";
     private const string TestCollaborationId = "9d8fa4d3-2808-4067-9c20-db26e2a9ec2f";
     private const string TestDocumentId = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
+    private const string TestBody = "{\"runId\":\"run-001\"}";
 
     [Fact]
     public void Constructor_InitializesCommandCorrectly()
@@ -38,7 +39,7 @@ public sealed class QueriesRunCommandTests : CommandUnitTestsBase<QueriesRunComm
         if (shouldSucceed)
         {
             Service.RunQueryAsync(
-                Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+                Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
                 .Returns(default(JsonElement));
         }
 
@@ -56,7 +57,7 @@ public sealed class QueriesRunCommandTests : CommandUnitTestsBase<QueriesRunComm
     {
         var expected = JsonDocument.Parse("""{"runId":"run-001","status":"Running","documentId":"a1b2c3d4-e5f6-7890-abcd-ef1234567890"}""").RootElement;
         Service.RunQueryAsync(
-            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(expected);
 
         var response = await ExecuteCommandAsync(
@@ -73,7 +74,7 @@ public sealed class QueriesRunCommandTests : CommandUnitTestsBase<QueriesRunComm
     public async Task ExecuteAsync_ReturnsServiceResponse()
     {
         Service.RunQueryAsync(
-            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(default(JsonElement));
 
         var response = await ExecuteCommandAsync(
@@ -83,14 +84,32 @@ public sealed class QueriesRunCommandTests : CommandUnitTestsBase<QueriesRunComm
 
         Assert.Equal(HttpStatusCode.OK, response.Status);
         await Service.Received(1).RunQueryAsync(
-            TestEndpoint, TestCollaborationId, TestDocumentId, false, null, Arg.Any<CancellationToken>());
+            TestEndpoint, TestCollaborationId, TestDocumentId, null, false, null, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithBody_PassesBodyToService()
+    {
+        Service.RunQueryAsync(
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(default(JsonElement));
+
+        var response = await ExecuteCommandAsync(
+            "--endpoint", TestEndpoint,
+            "--collaboration-id", TestCollaborationId,
+            "--document-id", TestDocumentId,
+            "--body", TestBody);
+
+        Assert.Equal(HttpStatusCode.OK, response.Status);
+        await Service.Received(1).RunQueryAsync(
+            TestEndpoint, TestCollaborationId, TestDocumentId, TestBody, false, null, Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task ExecuteAsync_HandlesServiceErrors()
     {
         Service.RunQueryAsync(
-            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new Exception("Test error"));
 
         var response = await ExecuteCommandAsync(

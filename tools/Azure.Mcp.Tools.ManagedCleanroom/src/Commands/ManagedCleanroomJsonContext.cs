@@ -14,3 +14,5 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands;
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 internal partial class ManagedCleanroomJsonContext : JsonSerializerContext;
 
+
+

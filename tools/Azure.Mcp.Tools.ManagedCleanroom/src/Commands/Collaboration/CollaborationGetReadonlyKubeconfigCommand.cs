@@ -88,3 +88,5 @@ public sealed class CollaborationGetReadonlyKubeconfigCommand(
 
     public record CollaborationGetReadonlyKubeconfigCommandResult;
 }
+
+

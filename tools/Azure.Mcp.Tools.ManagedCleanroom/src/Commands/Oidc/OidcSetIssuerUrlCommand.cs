@@ -36,7 +36,7 @@ public sealed class OidcSetIssuerUrlCommand(ILogger<OidcSetIssuerUrlCommand> log
                 options.Endpoint,
                 options.CollaborationId,
                 options.IssuerUrl,
-                options.AllowUntrustedCert,
+                options.AllowUntrustedCert ?? false,
                 options.Tenant,
                 cancellationToken).ConfigureAwait(false);
 
@@ -57,3 +57,5 @@ public sealed class OidcSetIssuerUrlCommand(ILogger<OidcSetIssuerUrlCommand> log
 
     public record OidcSetIssuerUrlCommandResult;
 }
+
+

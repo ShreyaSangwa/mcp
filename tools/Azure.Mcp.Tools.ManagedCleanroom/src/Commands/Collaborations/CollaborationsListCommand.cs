@@ -14,7 +14,7 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaborations;
     Id = "0d6a0a0e-7a3a-4a7c-8e3f-2c0d2cfb91a1",
     Name = "list",
     Title = "List Cleanroom Collaborations",
-    Description = "Lists Azure Cleanroom collaborations the calling user participates in via the Cleanroom Analytics Frontend service. Returns the full collaboration details from the service.",
+    Description = "List all your Azure Cleanroom collaborations. Shows details and status for all collaborations you participate in.",
     Destructive = false,
     Idempotent = true,
     OpenWorld = false,
@@ -56,4 +56,6 @@ public sealed class CollaborationsListCommand(ILogger<CollaborationsListCommand>
 
     public record CollaborationsListCommandResult;
 }
+
+
 

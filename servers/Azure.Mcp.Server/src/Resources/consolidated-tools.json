@@ -65,7 +65,39 @@
         }
       },
       "mappedToolList": [
-        "functionapp_get",
+        "functionapp_get"
+      ]
+    },
+    {
+      "name": "get_azure_managed_cleanroom_details",
+      "description": "Get details about Azure Managed Cleanroom collaborations and analytics data-plane resources, including collaborations, datasets, queries, runs, OIDC configuration, invitations, and audit events.",
+      "toolMetadata": {
+        "destructive": {
+          "value": false,
+          "description": "This tool performs only additive updates without deleting or modifying existing resources."
+        },
+        "idempotent": {
+          "value": true,
+          "description": "Running this operation multiple times with the same arguments produces the same result without additional effects."
+        },
+        "openWorld": {
+          "value": false,
+          "description": "This tool's domain of interaction is closed and well-defined, limited to a specific set of entities."
+        },
+        "readOnly": {
+          "value": true,
+          "description": "This tool only performs read operations without modifying any state or data."
+        },
+        "secret": {
+          "value": false,
+          "description": "This tool does not handle sensitive or secret information."
+        },
+        "localRequired": {
+          "value": false,
+          "description": "This tool is available in both local and remote server modes."
+        }
+      },
+      "mappedToolList": [
         "managedcleanroom_analytics_get",
         "managedcleanroom_analytics_skr-policy",
         "managedcleanroom_collaboration_get",
@@ -73,11 +105,9 @@
         "managedcleanroom_collaborations_list",
         "managedcleanroom_datasets_get",
         "managedcleanroom_datasets_list",
-        "managedcleanroom_invitations_accept",
         "managedcleanroom_invitations_list",
         "managedcleanroom_oidc_issuer-info",
         "managedcleanroom_oidc_keys",
-        "managedcleanroom_oidc_set-issuer-url",
         "managedcleanroom_queries_get",
         "managedcleanroom_queries_list",
         "managedcleanroom_queries_runs",
@@ -155,15 +185,15 @@
     },
     {
       "name": "create_azure_managed_cleanroom_collaborations",
-      "description": "Create Azure Managed Cleanroom collaboration ARM resources.",
+      "description": "Create and manage Azure Managed Cleanroom collaboration ARM resources, including onboarding collaborators and enabling workloads.",
       "toolMetadata": {
         "destructive": {
-          "value": true,
-          "description": "This tool may delete or modify existing resources in its environment."
+          "value": false,
+          "description": "This tool may create or update resources but does not delete resources."
         },
         "idempotent": {
-          "value": true,
-          "description": "Running this operation multiple times with the same arguments produces the same result without additional effects."
+          "value": false,
+          "description": "Running this operation multiple times with the same arguments may have additional effects or produce different results."
         },
         "openWorld": {
           "value": false,
@@ -183,7 +213,76 @@
         }
       },
       "mappedToolList": [
-        "managedcleanroom_collaboration_create"
+        "managedcleanroom_collaboration_add-collaborator",
+        "managedcleanroom_collaboration_create",
+        "managedcleanroom_collaboration_enable-workload"
+      ]
+    },
+    {
+      "name": "manage_azure_managed_cleanroom_collaboration_settings",
+      "description": "Manage Azure Managed Cleanroom collaboration settings in the data-plane service, including invitation acceptance and OIDC issuer URL updates.",
+      "toolMetadata": {
+        "destructive": {
+          "value": false,
+          "description": "This tool may create or update settings but does not delete resources."
+        },
+        "idempotent": {
+          "value": false,
+          "description": "Running this operation multiple times with the same arguments may have additional effects or produce different results."
+        },
+        "openWorld": {
+          "value": false,
+          "description": "This tool's domain of interaction is closed and well-defined, limited to a specific set of entities."
+        },
+        "readOnly": {
+          "value": false,
+          "description": "This tool may modify its environment by creating, updating, or deleting data."
+        },
+        "secret": {
+          "value": false,
+          "description": "This tool does not handle sensitive or secret information."
+        },
+        "localRequired": {
+          "value": false,
+          "description": "This tool is available in both local and remote server modes."
+        }
+      },
+      "mappedToolList": [
+        "managedcleanroom_invitations_accept",
+        "managedcleanroom_oidc_set-issuer-url"
+      ]
+    },
+    {
+      "name": "retrieve_azure_cleanroom_readonly_kubeconfig",
+      "description": "Retrieve read-only Kubernetes kubeconfig for Azure Managed Cleanroom collaboration workloads.",
+      "toolMetadata": {
+        "destructive": {
+          "value": false,
+          "description": "This tool performs only additive updates without deleting or modifying existing resources."
+        },
+        "idempotent": {
+          "value": true,
+          "description": "Running this operation multiple times with the same arguments produces the same result without additional effects."
+        },
+        "openWorld": {
+          "value": false,
+          "description": "This tool's domain of interaction is closed and well-defined, limited to a specific set of entities."
+        },
+        "readOnly": {
+          "value": true,
+          "description": "This tool only performs read operations without modifying any state or data."
+        },
+        "secret": {
+          "value": true,
+          "description": "This tool may handle sensitive secret material such as bearer tokens or credentials."
+        },
+        "localRequired": {
+          "value": false,
+          "description": "This tool is available in both local and remote server modes."
+        }
+      },
+      "mappedToolList": [
+        "managedcleanroom_collaboration_get-readonly-kubeconfig"
       ]
     },
     {

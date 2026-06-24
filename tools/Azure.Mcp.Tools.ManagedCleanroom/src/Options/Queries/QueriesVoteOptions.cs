@@ -18,8 +18,11 @@ public class QueriesVoteOptions
     [Option("The unique identifier (UUID) of the query document to vote on.")]
     public required string DocumentId { get; set; }
 
-    [Option("The vote to cast on the query. Accepted values: 'Approve', 'Reject'.")]
-    public required string Vote { get; set; }
+    [Option("JSON request body for query vote. Supports CLI-style @file input to load JSON from disk. Use @@ to send a literal value starting with '@'. If omitted and --vote is provided, a compatibility body is synthesized.")]
+    public string? Body { get; set; }
+
+    [Option("Optional compatibility vote value. Used only when --body is not provided.")]
+    public string? Vote { get; set; }
 
     [Option(ManagedCleanroomOptionDescriptions.AllowUntrustedCert)]
     public bool AllowUntrustedCert { get; set; }

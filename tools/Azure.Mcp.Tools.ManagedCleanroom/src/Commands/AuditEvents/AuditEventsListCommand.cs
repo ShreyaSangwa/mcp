@@ -38,7 +38,7 @@ public sealed class AuditEventsListCommand(ILogger<AuditEventsListCommand> logge
                 options.Scope,
                 options.FromSeqno,
                 options.ToSeqno,
-                options.AllowUntrustedCert,
+                options.AllowUntrustedCert ?? false,
                 options.Tenant,
                 cancellationToken).ConfigureAwait(false);
 
@@ -59,3 +59,5 @@ public sealed class AuditEventsListCommand(ILogger<AuditEventsListCommand> logge
 
     public record AuditEventsListCommandResult;
 }
+
+

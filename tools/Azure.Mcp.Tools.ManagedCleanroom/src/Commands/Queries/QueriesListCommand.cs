@@ -35,7 +35,7 @@ public sealed class QueriesListCommand(ILogger<QueriesListCommand> logger, IMana
             var result = await _service.ListQueriesAsync(
                 options.Endpoint,
                 options.CollaborationId,
-                options.AllowUntrustedCert,
+                options.AllowUntrustedCert ?? false,
                 options.Tenant,
                 cancellationToken).ConfigureAwait(false);
 
@@ -56,3 +56,5 @@ public sealed class QueriesListCommand(ILogger<QueriesListCommand> logger, IMana
 
     public record QueriesListCommandResult;
 }
+
+

@@ -17,7 +17,7 @@ public class AnalyticsSkrPolicyOptions
     [Option("The key identifier (kid) of the SKR (Secure Key Release) policy to retrieve.")]
     public required string Kid { get; set; }
 
-    [Option("When true, skips TLS certificate validation for the cleanroom endpoint. Use only for dev/test endpoints with self-signed certificates.")]
+    [Option(ManagedCleanroomOptionDescriptions.AllowUntrustedCert)]
     public bool AllowUntrustedCert { get; set; }
 
     [Option(OptionDescriptions.Tenant)]

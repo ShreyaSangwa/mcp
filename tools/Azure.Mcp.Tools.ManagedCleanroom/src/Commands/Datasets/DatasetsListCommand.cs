@@ -35,7 +35,7 @@ public sealed class DatasetsListCommand(ILogger<DatasetsListCommand> logger, IMa
             var result = await _service.ListDatasetsAsync(
                 options.Endpoint,
                 options.CollaborationId,
-                options.AllowUntrustedCert,
+                options.AllowUntrustedCert ?? false,
                 options.Tenant,
                 cancellationToken).ConfigureAwait(false);
 
@@ -56,3 +56,5 @@ public sealed class DatasetsListCommand(ILogger<DatasetsListCommand> logger, IMa
 
     public record DatasetsListCommandResult;
 }
+
+

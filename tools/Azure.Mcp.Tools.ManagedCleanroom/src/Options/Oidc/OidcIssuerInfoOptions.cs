@@ -14,7 +14,7 @@ public class OidcIssuerInfoOptions
     [Option("The unique identifier (UUID) of the cleanroom collaboration.")]
     public required string CollaborationId { get; set; }
 
-    [Option("When true, skips TLS certificate validation for the cleanroom endpoint. Use only for dev/test endpoints with self-signed certificates.")]
+    [Option(ManagedCleanroomOptionDescriptions.AllowUntrustedCert)]
     public bool AllowUntrustedCert { get; set; }
 
     [Option(OptionDescriptions.Tenant)]

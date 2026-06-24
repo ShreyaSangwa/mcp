@@ -36,7 +36,7 @@ public sealed class QueriesRunsCommand(ILogger<QueriesRunsCommand> logger, IMana
                 options.Endpoint,
                 options.CollaborationId,
                 options.DocumentId,
-                options.AllowUntrustedCert,
+                options.AllowUntrustedCert ?? false,
                 options.Tenant,
                 cancellationToken).ConfigureAwait(false);
 
@@ -57,3 +57,5 @@ public sealed class QueriesRunsCommand(ILogger<QueriesRunsCommand> logger, IMana
 
     public record QueriesRunsCommandResult;
 }
+
+

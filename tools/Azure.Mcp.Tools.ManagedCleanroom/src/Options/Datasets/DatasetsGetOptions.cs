@@ -19,7 +19,7 @@ public class DatasetsGetOptions
     public required string DocumentId { get; set; }
 
     [Option(ManagedCleanroomOptionDescriptions.AllowUntrustedCert)]
-    public bool AllowUntrustedCert { get; set; }
+    public bool? AllowUntrustedCert { get; set; }
 
     [Option(OptionDescriptions.Tenant)]
     public string? Tenant { get; set; }

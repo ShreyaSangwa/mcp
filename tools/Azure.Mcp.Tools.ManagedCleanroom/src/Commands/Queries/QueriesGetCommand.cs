@@ -36,7 +36,7 @@ public sealed class QueriesGetCommand(ILogger<QueriesGetCommand> logger, IManage
                 options.Endpoint,
                 options.CollaborationId,
                 options.DocumentId,
-                options.AllowUntrustedCert,
+                options.AllowUntrustedCert ?? false,
                 options.Tenant,
                 cancellationToken).ConfigureAwait(false);
 
@@ -57,3 +57,5 @@ public sealed class QueriesGetCommand(ILogger<QueriesGetCommand> logger, IManage
 
     public record QueriesGetCommandResult;
 }
+
+
