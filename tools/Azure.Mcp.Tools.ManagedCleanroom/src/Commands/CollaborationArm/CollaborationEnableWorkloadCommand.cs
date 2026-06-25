@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Net;
+using System.Text.Json;
 using Azure.Mcp.Core.Commands.Subscription;
 using Azure.Mcp.Core.Services.Azure.Subscription;
 using Azure.Mcp.Tools.ManagedCleanroom.Options.Collaboration;
@@ -10,23 +11,15 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Mcp.Core.Commands;
 using Microsoft.Mcp.Core.Models.Command;
 
-namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaboration;
+namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.CollaborationArm;
 
 [CommandMetadata(
-    Id = "c4e8f025-6a3d-4b2f-ad7e-8b9c0d1e2f3a",
-    Name = "add-collaborator",
-    Title = "Add Cleanroom Collaborator",
+    Id = "b3d7e914-5f2c-4a1e-9c6d-7a8b0c1d2e3f",
+    Name = "enable-workload",
+    Title = "Enable Cleanroom Workload",
     Description = """
-        Adds a collaborator to an Azure Cleanroom collaboration ARM resource via the Microsoft.CleanRoom ARM API.
-        Returns immediately after the add-collaborator request is accepted.
-        For a user collaborator, provide --collaborator-user-identifier as an email address.
-        For a service principal collaborator, provide --collaborator-user-identifier as the SPN application (client) ID
-        and also specify --collaborator-object-id and --collaborator-tenant-id.
-        Required options:
-        - --name: the collaboration ARM resource name
-        - --collaborator-user-identifier: email or SPN client ID of the collaborator to add
-        - --resource-group: resource group containing the collaboration
-        - --subscription: Azure subscription
+        Enable a workload on your Azure Cleanroom collaboration. The request returns immediately after Azure accepts it; endpoint readiness typically takes about 7 minutes. 
+        You'll need to provide: collaboration name, workload type (Analytics or AnalyticsStrict), resource group, and subscription.
         """,
     Destructive = false,
     Idempotent = true,
@@ -34,27 +27,25 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaboration;
     ReadOnly = false,
     Secret = false,
     LocalRequired = false)]
-public sealed class CollaborationAddCollaboratorCommand(
-    ILogger<CollaborationAddCollaboratorCommand> logger,
+public sealed class CollaborationEnableWorkloadCommand(
+    ILogger<CollaborationEnableWorkloadCommand> logger,
     IManagedCleanroomService service,
     ISubscriptionResolver subscriptionResolver)
-    : SubscriptionCommand<CollaborationAddCollaboratorOptions, CollaborationAddCollaboratorCommand.CollaborationAddCollaboratorCommandResult>(subscriptionResolver)
+    : SubscriptionCommand<CollaborationEnableWorkloadOptions, CollaborationEnableWorkloadCommand.CollaborationEnableWorkloadCommandResult>(subscriptionResolver)
 {
-    private readonly ILogger<CollaborationAddCollaboratorCommand> _logger = logger;
+    private readonly ILogger<CollaborationEnableWorkloadCommand> _logger = logger;
     private readonly IManagedCleanroomService _service = service;
 
     public override async Task<CommandResponse> ExecuteAsync(
-        CommandContext context, CollaborationAddCollaboratorOptions options, CancellationToken cancellationToken)
+        CommandContext context, CollaborationEnableWorkloadOptions options, CancellationToken cancellationToken)
     {
         try
         {
-            var result = await _service.AddCollaboratorAsync(
+            var result = await _service.EnableWorkloadAsync(
                 options.Name,
                 options.ResourceGroup,
                 options.Subscription!,
-                options.CollaboratorUserIdentifier,
-                options.CollaboratorObjectId,
-                options.CollaboratorTenantId,
+                options.WorkloadType,
                 options.Tenant,
                 options.RetryPolicy,
                 cancellationToken).ConfigureAwait(false);
@@ -62,13 +53,18 @@ public sealed class CollaborationAddCollaboratorCommand(
             context.Response.Results = ResponseResult.Create(
                 result,
                 ManagedCleanroomJsonContext.Default.JsonElement);
-            context.Response.Message = $"Add collaborator request accepted for '{options.CollaboratorUserIdentifier}' on collaboration '{options.Name}'.";
+
+            context.Response.Message =
+                $"Enable workload request accepted for '{options.WorkloadType}' on collaboration '{options.Name}'. " +
+                "The workload endpoint typically takes about 7 minutes to become available. " +
+                $"To check provisioning status, run: managedcleanroom collaborationarm get --name {options.Name} --resource-group {options.ResourceGroup} --subscription {options.Subscription}. " +
+                "If provisioning is delayed or fails, check for quota limits or network issues.";
         }
         catch (Exception ex)
         {
             _logger.LogError(ex,
-                "Error adding collaborator to cleanroom collaboration. Name: {Name}, ResourceGroup: {ResourceGroup}, Subscription: {Subscription}",
-                options.Name, options.ResourceGroup, options.Subscription);
+                "Error enabling workload on cleanroom collaboration. Name: {Name}, ResourceGroup: {ResourceGroup}, Subscription: {Subscription}, WorkloadType: {WorkloadType}",
+                options.Name, options.ResourceGroup, options.Subscription, options.WorkloadType);
             HandleException(context, ex);
         }
 
@@ -80,9 +76,9 @@ public sealed class CollaborationAddCollaboratorCommand(
         RequestFailedException reqEx when reqEx.Status == (int)HttpStatusCode.NotFound =>
             "Collaboration not found. Verify the collaboration name, resource group, and subscription.",
         RequestFailedException reqEx when reqEx.Status == (int)HttpStatusCode.Forbidden =>
-            $"Authorization failed adding collaborator. Details: {reqEx.Message}",
+            $"Authorization failed enabling the workload. Details: {reqEx.Message}",
         RequestFailedException reqEx when reqEx.Status == (int)HttpStatusCode.Conflict =>
-            "Collaborator is already a member of this collaboration.",
+            "Workload is already enabled or the collaboration is in a conflicting state.",
         RequestFailedException reqEx => reqEx.Message,
         _ => base.GetErrorMessage(ex)
     };
@@ -96,7 +92,8 @@ public sealed class CollaborationAddCollaboratorCommand(
         _ => base.GetStatusCode(ex)
     };
 
-    public record CollaborationAddCollaboratorCommandResult;
+    public record CollaborationEnableWorkloadCommandResult;
 }
+
 
 

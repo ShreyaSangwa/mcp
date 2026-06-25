@@ -3,7 +3,7 @@
 
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Analytics;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.AuditEvents;
-using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaboration;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.CollaborationArm;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaborations;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Consent;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Datasets;
@@ -79,14 +79,14 @@ public class ManagedCleanroomSetup : IAreaSetup
         oidc.AddCommand<OidcKeysCommand>(serviceProvider);
         oidc.AddCommand<OidcSetIssuerUrlCommand>(serviceProvider);
 
-        var collaboration = new CommandGroup("collaboration", "Cleanroom ARM management operations - Commands for creating and managing Azure Cleanroom collaboration ARM resources.");
-        root.AddSubGroup(collaboration);
+        var collaborationArm = new CommandGroup("collaborationarm", "Cleanroom ARM management operations - Commands for creating and managing Azure Cleanroom collaboration ARM resources.");
+        root.AddSubGroup(collaborationArm);
 
-        collaboration.AddCommand<CollaborationCreateCommand>(serviceProvider);
-        collaboration.AddCommand<CollaborationGetCommand>(serviceProvider);
-        collaboration.AddCommand<CollaborationAddCollaboratorCommand>(serviceProvider);
-        collaboration.AddCommand<CollaborationEnableWorkloadCommand>(serviceProvider);
-        collaboration.AddCommand<CollaborationGetReadonlyKubeconfigCommand>(serviceProvider);
+        collaborationArm.AddCommand<CollaborationCreateCommand>(serviceProvider);
+        collaborationArm.AddCommand<CollaborationGetCommand>(serviceProvider);
+        collaborationArm.AddCommand<CollaborationAddCollaboratorCommand>(serviceProvider);
+        collaborationArm.AddCommand<CollaborationEnableWorkloadCommand>(serviceProvider);
+        collaborationArm.AddCommand<CollaborationGetReadonlyKubeconfigCommand>(serviceProvider);
 
         var invitations = new CommandGroup("invitations", "Cleanroom invitation operations - Commands for listing and inspecting cleanroom collaboration invitations.");
         root.AddSubGroup(invitations);

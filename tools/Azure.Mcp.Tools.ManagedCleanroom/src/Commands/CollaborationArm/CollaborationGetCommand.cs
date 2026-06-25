@@ -10,16 +10,15 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Mcp.Core.Commands;
 using Microsoft.Mcp.Core.Models.Command;
 
-namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaboration;
+namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.CollaborationArm;
 
 [CommandMetadata(
-    Id = "32edf1c8-3511-48b6-9c1b-29e2af4c45cb",
-    Name = "get-readonly-kubeconfig",
-    Title = "Get Cleanroom Collaboration Read-only Kubeconfig",
+    Id = "d5c3a1e7-9f24-4b68-bc35-6e7f8a9b0c1d",
+    Name = "get",
+    Title = "Get Cleanroom Collaboration",
     Description = """
-        Gets a read-only kubeconfig for the AKS cluster backing an Azure Cleanroom collaboration ARM resource.
-        Returns the kubeconfig YAML payload (as a JSON string) that can be used to inspect the workload cluster
-        without granting write permissions.
+        Gets the ARM resource details for an Azure Cleanroom collaboration.
+        Returns the collaboration's provisioningState, collaborationState, health, and workload endpoints.
         Required options:
         - --name: the collaboration ARM resource name
         - --resource-group: resource group containing the collaboration
@@ -29,23 +28,23 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaboration;
     Idempotent = true,
     OpenWorld = false,
     ReadOnly = true,
-    Secret = true,
+    Secret = false,
     LocalRequired = false)]
-public sealed class CollaborationGetReadonlyKubeconfigCommand(
-    ILogger<CollaborationGetReadonlyKubeconfigCommand> logger,
+public sealed class CollaborationGetCommand(
+    ILogger<CollaborationGetCommand> logger,
     IManagedCleanroomService service,
     ISubscriptionResolver subscriptionResolver)
-    : SubscriptionCommand<CollaborationGetReadonlyKubeconfigOptions, CollaborationGetReadonlyKubeconfigCommand.CollaborationGetReadonlyKubeconfigCommandResult>(subscriptionResolver)
+    : SubscriptionCommand<CollaborationGetOptions, CollaborationGetCommand.CollaborationGetCommandResult>(subscriptionResolver)
 {
-    private readonly ILogger<CollaborationGetReadonlyKubeconfigCommand> _logger = logger;
+    private readonly ILogger<CollaborationGetCommand> _logger = logger;
     private readonly IManagedCleanroomService _service = service;
 
     public override async Task<CommandResponse> ExecuteAsync(
-        CommandContext context, CollaborationGetReadonlyKubeconfigOptions options, CancellationToken cancellationToken)
+        CommandContext context, CollaborationGetOptions options, CancellationToken cancellationToken)
     {
         try
         {
-            var result = await _service.GetCollaborationReadonlyKubeconfigAsync(
+            var result = await _service.GetCollaborationArmResourceAsync(
                 options.Name,
                 options.ResourceGroup,
                 options.Subscription!,
@@ -60,7 +59,7 @@ public sealed class CollaborationGetReadonlyKubeconfigCommand(
         catch (Exception ex)
         {
             _logger.LogError(ex,
-                "Error getting cleanroom collaboration readonly kubeconfig. Name: {Name}, ResourceGroup: {ResourceGroup}, Subscription: {Subscription}",
+                "Error getting cleanroom collaboration. Name: {Name}, ResourceGroup: {ResourceGroup}, Subscription: {Subscription}",
                 options.Name, options.ResourceGroup, options.Subscription);
             HandleException(context, ex);
         }
@@ -73,7 +72,7 @@ public sealed class CollaborationGetReadonlyKubeconfigCommand(
         RequestFailedException reqEx when reqEx.Status == (int)HttpStatusCode.NotFound =>
             "Collaboration not found. Verify the collaboration name, resource group, and subscription.",
         RequestFailedException reqEx when reqEx.Status == (int)HttpStatusCode.Forbidden =>
-            $"Authorization failed retrieving the readonly kubeconfig. Details: {reqEx.Message}",
+            $"Authorization failed accessing the collaboration. Details: {reqEx.Message}",
         RequestFailedException reqEx => reqEx.Message,
         _ => base.GetErrorMessage(ex)
     };
@@ -86,7 +85,7 @@ public sealed class CollaborationGetReadonlyKubeconfigCommand(
         _ => base.GetStatusCode(ex)
     };
 
-    public record CollaborationGetReadonlyKubeconfigCommandResult;
+    public record CollaborationGetCommandResult;
 }
 
 

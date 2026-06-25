@@ -5,7 +5,7 @@ using System.Net;
 using System.Text.Json;
 using Azure.Mcp.Tests.Commands;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands;
-using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaboration;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.CollaborationArm;
 using Azure.Mcp.Tools.ManagedCleanroom.Services;
 using Microsoft.Mcp.Tests;
 using Microsoft.Mcp.Tests.Client;
