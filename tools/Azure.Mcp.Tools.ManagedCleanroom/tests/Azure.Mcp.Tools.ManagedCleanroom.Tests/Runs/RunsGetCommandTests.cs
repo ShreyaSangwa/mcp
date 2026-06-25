@@ -17,7 +17,7 @@ public sealed class RunsGetCommandTests : CommandUnitTestsBase<RunsGetCommand, I
 {
     private const string TestEndpoint = "https://my-cleanroom.cloudapp.azure.net";
     private const string TestCollaborationId = "9d8fa4d3-2808-4067-9c20-db26e2a9ec2f";
-    private const string TestDocumentId = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
+    private const string TestJobId = "0d36c9ab-2898-4ebc-bf05-d52496147e37";
 
     [Fact]
     public void Constructor_InitializesCommandCorrectly()
@@ -29,15 +29,16 @@ public sealed class RunsGetCommandTests : CommandUnitTestsBase<RunsGetCommand, I
     }
 
     [Theory]
-    [InlineData("--endpoint https://my-cleanroom.cloudapp.azure.net --collaboration-id 9d8fa4d3-2808-4067-9c20-db26e2a9ec2f --document-id a1b2c3d4-e5f6-7890-abcd-ef1234567890", true)]
+    [InlineData("--endpoint https://my-cleanroom.cloudapp.azure.net --collaboration-id 9d8fa4d3-2808-4067-9c20-db26e2a9ec2f --job-id 0d36c9ab-2898-4ebc-bf05-d52496147e37", true)]
+    [InlineData("--endpoint https://my-cleanroom.cloudapp.azure.net --collaboration-id 9d8fa4d3-2808-4067-9c20-db26e2a9ec2f --document-id 0d36c9ab-2898-4ebc-bf05-d52496147e37", true)]
     [InlineData("--endpoint https://my-cleanroom.cloudapp.azure.net --collaboration-id 9d8fa4d3-2808-4067-9c20-db26e2a9ec2f", false)]
-    [InlineData("--endpoint https://my-cleanroom.cloudapp.azure.net --document-id a1b2c3d4-e5f6-7890-abcd-ef1234567890", false)]
+    [InlineData("--endpoint https://my-cleanroom.cloudapp.azure.net --job-id 0d36c9ab-2898-4ebc-bf05-d52496147e37", false)]
     [InlineData("", false)]
     public async Task ExecuteAsync_ValidatesInputCorrectly(string args, bool shouldSucceed)
     {
         if (shouldSucceed)
         {
-            Service.GetQueryRunsAsync(
+            Service.GetRunStatusAsync(
                 Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
                 .Returns(default(JsonElement));
         }
@@ -54,49 +55,49 @@ public sealed class RunsGetCommandTests : CommandUnitTestsBase<RunsGetCommand, I
     [Fact]
     public async Task ExecuteAsync_DeserializationValidation()
     {
-        var expected = JsonDocument.Parse("""{"runs":[{"runId":"run-001","status":"Completed","documentId":"a1b2c3d4"}]}""").RootElement;
-        Service.GetQueryRunsAsync(
+        var expected = JsonDocument.Parse("""{"id":"0d36c9ab-2898-4ebc-bf05-d52496147e37","status":{"applicationState":{"state":"SUBMITTED"}}}""").RootElement;
+        Service.GetRunStatusAsync(
             Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(expected);
 
         var response = await ExecuteCommandAsync(
             "--endpoint", TestEndpoint,
             "--collaboration-id", TestCollaborationId,
-            "--document-id", TestDocumentId);
+            "--job-id", TestJobId);
 
         var result = ValidateAndDeserializeResponse(response, ManagedCleanroomJsonContext.Default.JsonElement);
         Assert.Equal(JsonValueKind.Object, result.ValueKind);
-        result.AssertProperty("runs");
+        result.AssertProperty("id");
     }
 
     [Fact]
     public async Task ExecuteAsync_ReturnsServiceResponse()
     {
-        Service.GetQueryRunsAsync(
+        Service.GetRunStatusAsync(
             Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(default(JsonElement));
 
         var response = await ExecuteCommandAsync(
             "--endpoint", TestEndpoint,
             "--collaboration-id", TestCollaborationId,
-            "--document-id", TestDocumentId);
+            "--job-id", TestJobId);
 
         Assert.Equal(HttpStatusCode.OK, response.Status);
-        await Service.Received(1).GetQueryRunsAsync(
-            TestEndpoint, TestCollaborationId, TestDocumentId, false, null, Arg.Any<CancellationToken>());
+        await Service.Received(1).GetRunStatusAsync(
+            TestEndpoint, TestCollaborationId, TestJobId, false, null, Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task ExecuteAsync_HandlesServiceErrors()
     {
-        Service.GetQueryRunsAsync(
+        Service.GetRunStatusAsync(
             Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new Exception("Test error"));
 
         var response = await ExecuteCommandAsync(
             "--endpoint", TestEndpoint,
             "--collaboration-id", TestCollaborationId,
-            "--document-id", TestDocumentId);
+            "--job-id", TestJobId);
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.Status);
         Assert.Contains("Test error", response.Message);

@@ -489,6 +489,28 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return ParseResponse(response);
     }
 
+    public async Task<JsonElement> GetRunStatusAsync(
+        string endpoint,
+        string collaborationId,
+        string jobId,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateRequiredParameters(
+            (nameof(collaborationId), collaborationId),
+            (nameof(jobId), jobId));
+
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+            .ConfigureAwait(false);
+
+        var requestContext = new RequestContext { CancellationToken = cancellationToken };
+        Response response = await client.AnalyticsRunsJobIdGetAsync(
+            collaborationId, jobId, requestContext).ConfigureAwait(false);
+
+        return ParseResponse(response);
+    }
+
     public async Task<JsonElement> ListAuditEventsAsync(
         string endpoint,
         string collaborationId,

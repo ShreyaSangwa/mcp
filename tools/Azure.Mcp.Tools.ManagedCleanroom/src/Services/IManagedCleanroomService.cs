@@ -144,6 +144,14 @@ public interface IManagedCleanroomService
         string? tenant = null,
         CancellationToken cancellationToken = default);
 
+    Task<JsonElement> GetRunStatusAsync(
+        string endpoint,
+        string collaborationId,
+        string jobId,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
+        CancellationToken cancellationToken = default);
+
     Task<JsonElement> ListAuditEventsAsync(
         string endpoint,
         string collaborationId,

@@ -15,8 +15,11 @@ public class RunsGetOptions
     [Option(ManagedCleanroomOptionDescriptions.CollaborationId)]
     public required string CollaborationId { get; set; }
 
-    [Option("The unique identifier (UUID) of the query document whose runs to retrieve.")]
-    public required string DocumentId { get; set; }
+    [Option("The unique identifier (UUID) of the query run job to retrieve status for.")]
+    public string? JobId { get; set; }
+
+    [Option("Legacy compatibility alias for --job-id. If provided, this value is treated as the run job ID.")]
+    public string? DocumentId { get; set; }
 
     [Option(ManagedCleanroomOptionDescriptions.AllowUntrustedCert)]
     public bool? AllowUntrustedCert { get; set; }
