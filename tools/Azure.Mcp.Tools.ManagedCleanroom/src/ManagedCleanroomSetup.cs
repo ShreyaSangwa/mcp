@@ -36,6 +36,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<OidcSetIssuerUrlCommand>();
         services.AddSingleton<CollaborationCreateCommand>();
         services.AddSingleton<CollaborationGetCommand>();
+        services.AddSingleton<CollaborationDeleteCommand>();
         services.AddSingleton<CollaborationAddCollaboratorCommand>();
         services.AddSingleton<CollaborationEnableWorkloadCommand>();
         services.AddSingleton<CollaborationGetReadonlyKubeconfigCommand>();
@@ -85,6 +86,7 @@ public class ManagedCleanroomSetup : IAreaSetup
 
         collaborationArm.AddCommand<CollaborationCreateCommand>(serviceProvider);
         collaborationArm.AddCommand<CollaborationGetCommand>(serviceProvider);
+        collaborationArm.AddCommand<CollaborationDeleteCommand>(serviceProvider);
         collaborationArm.AddCommand<CollaborationAddCollaboratorCommand>(serviceProvider);
         collaborationArm.AddCommand<CollaborationEnableWorkloadCommand>(serviceProvider);
         collaborationArm.AddCommand<CollaborationGetReadonlyKubeconfigCommand>(serviceProvider);
