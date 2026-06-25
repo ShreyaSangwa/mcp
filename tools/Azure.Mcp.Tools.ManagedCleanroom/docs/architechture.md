@@ -177,7 +177,7 @@ IManagedCleanroomService (ManagedCleanroomService)
 
 ---
 
-## Commands Implemented (25)
+## Commands Implemented (26)
 
 | Group | Command | Tool Name | What it does |
 |-------|---------|-----------|--------------|
@@ -193,6 +193,7 @@ IManagedCleanroomService (ManagedCleanroomService)
 | `collaboration` | `add-collaborator` | `managedcleanroom_collaboration_add-collaborator` | Add a user/SPN as a collaborator via ARM `addCollaborator` action |
 | `collaboration` | `enable-workload` | `managedcleanroom_collaboration_enable-workload` | Enable a workload type (e.g. Analytics) via ARM `enableWorkload` action |
 | `collaboration` | `get-readonly-kubeconfig` | `managedcleanroom_collaboration_get-readonly-kubeconfig` | Get a read-only kubeconfig for the backing AKS cluster via ARM `getReadonlyKubeConfig` action (`Secret = true`) |
+| `collaboration` | `recover` | `managedcleanroom_collaboration_recover` | Recover a collaboration via ARM `recover` action |
 | `invitations` | `list` | `managedcleanroom_invitations_list` | List collaboration invitations |
 | `invitations` | `accept` | `managedcleanroom_invitations_accept` | Accept a collaboration invitation |
 | `datasets` | `publish` | `managedcleanroom_datasets_publish` | Publish an input/output dataset document |
@@ -256,24 +257,23 @@ Legend: ✅ implemented | ❌ not yet implemented
 | 10 Poll run state | `runs get` | `runs get` | Completed |
 | 11 Run history | `queries runs` | `queries runs` | Completed |
 | 11 Audit events | `auditevents list` | `auditevents list` | Completed |
-| App G Force recover | POST `/recover` | `collaboration recover` | Pending |
+| App G Force recover | POST `/recover` | `collaboration recover` | Completed |
 | App G Delete collaboration | ARM DELETE | `collaboration delete` | Pending |
 
 ---
 
 ## Missing Commands (Roadmap)
 
-**Total: 26 implemented out of ~28 surface-area commands.**
+**Total: 27 implemented out of ~28 surface-area commands.**
 
-### Control plane (ARM) - 2 remaining
+### Control plane (ARM) - 1 remaining
 
-`collaboration` group needs: `recover`, `delete`.
+`collaboration` group needs: `delete`.
 
 ### Minimum viable end-to-end flow
 
-The toolset now covers the complete happy-path agent workflow end-to-end. Remaining gaps are cleanup/recovery operations:
+The toolset now covers the complete happy-path agent workflow end-to-end. Remaining gap is cleanup:
 
-- **ARM:** `collaboration recover` (force-recover a faulted workload).
 - **ARM:** `collaboration delete` (clean up test/dev resources).
 
 ---

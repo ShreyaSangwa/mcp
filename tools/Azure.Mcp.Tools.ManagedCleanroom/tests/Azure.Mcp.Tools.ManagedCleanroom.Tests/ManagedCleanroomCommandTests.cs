@@ -252,6 +252,22 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
     }
 
     [Fact]
+    public async Task Should_recover_collaboration_arm_resource()
+    {
+        var result = await CallToolAsync(
+            "managedcleanroom_collaboration_recover",
+            new()
+            {
+                { "name", Settings.ResourceBaseName },
+                { "resource-group", Settings.ResourceGroupName },
+                { "subscription", Settings.SubscriptionId }
+            });
+
+        Assert.NotNull(result);
+        Output.WriteLine($"Collaboration recover payload: {result.Value}");
+    }
+
+    [Fact]
     public async Task Should_get_oidc_keys()
     {
         var endpoint = GetEndpoint();
@@ -522,4 +538,3 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
         Output.WriteLine($"Audit events payload: {result.Value}");
     }
 }
-

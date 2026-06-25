@@ -700,6 +700,30 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return ParseResponse(response.GetRawResponse());
     }
 
+    public async Task<JsonElement> RecoverCollaborationArmResourceAsync(
+        string name,
+        string resourceGroup,
+        string subscription,
+        string? tenant = null,
+        RetryPolicyOptions? retryPolicy = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateRequiredParameters(
+            (nameof(name), name),
+            (nameof(resourceGroup), resourceGroup),
+            (nameof(subscription), subscription));
+
+        var collaborationResource = await GetCollaborationResourceAsync(
+            name, resourceGroup, subscription, tenant, retryPolicy, cancellationToken)
+            .ConfigureAwait(false);
+
+        var operation = await collaborationResource
+            .RecoverAsync(WaitUntil.Started, new RecoverCollaborationContent(forceRecover: true), cancellationToken)
+            .ConfigureAwait(false);
+
+        return ParseResponse(operation.GetRawResponse());
+    }
+
     public async Task<CollaborationCreateResult> CreateCollaborationArmResourceAsync(
         string name,
         string resourceGroup,

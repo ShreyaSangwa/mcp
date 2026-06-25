@@ -2962,6 +2962,13 @@ azmcp managedcleanroom collaboration get-readonly-kubeconfig --name <name> \
                                                              --subscription <subscription> \
                                                              [--tenant <tenant>]
 
+# Recover an Azure Cleanroom collaboration ARM resource by invoking the recover action
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom collaboration recover --name <name> \
+                                             --resource-group <resource-group> \
+                                             --subscription <subscription> \
+                                             [--tenant <tenant>]
+
 # List invitations for an Azure Cleanroom collaboration via the Frontend service
 # ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
 azmcp managedcleanroom invitations list --endpoint <endpoint> \
