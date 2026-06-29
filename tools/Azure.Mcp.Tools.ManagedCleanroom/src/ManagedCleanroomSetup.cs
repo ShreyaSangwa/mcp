@@ -44,6 +44,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<InvitationsListCommand>();
         services.AddSingleton<InvitationsAcceptCommand>();
         services.AddSingleton<DatasetsPublishCommand>();
+        services.AddSingleton<DatasetsBuildBodyCommand>();
         services.AddSingleton<DatasetsGetCommand>();
         services.AddSingleton<DatasetsListCommand>();
         services.AddSingleton<ConsentPutCommand>();
@@ -102,6 +103,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         root.AddSubGroup(datasets);
 
         datasets.AddCommand<DatasetsPublishCommand>(serviceProvider);
+        datasets.AddCommand<DatasetsBuildBodyCommand>(serviceProvider);
         datasets.AddCommand<DatasetsGetCommand>(serviceProvider);
         datasets.AddCommand<DatasetsListCommand>(serviceProvider);
 

@@ -93,6 +93,23 @@ public interface IManagedCleanroomService
         string? tenant = null,
         CancellationToken cancellationToken = default);
 
+    Task<JsonElement> BuildDatasetBodyAsync(
+        string datasetName,
+        string containerName,
+        string storageAccountUrl,
+        string[] schemaFields,
+        string[] allowedFields,
+        string? format = null,
+        string? accessMode = null,
+        string? encryptionMode = null,
+        string? storageAccountType = null,
+        string? subdirectory = null,
+        string? cpkKeyVaultUrl = null,
+        string? cpkKeyName = null,
+        string? cpkKeyVersion = null,
+        string? additionalStoreJson = null,
+        CancellationToken cancellationToken = default);
+
     Task<JsonElement> PublishQueryAsync(
         string endpoint,
         string collaborationId,

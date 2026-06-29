@@ -2,7 +2,9 @@
 // Licensed under the MIT License.
 
 using System.Buffers;
+using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using AnalyticsFrontendAPI;
 using Azure;
 using Azure.Core;
@@ -321,6 +323,185 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         Response response = await client.AnalyticsDatasetsListGetAsync(collaborationId, requestContext).ConfigureAwait(false);
 
         return ParseResponse(response);
+    }
+
+    public Task<JsonElement> BuildDatasetBodyAsync(
+        string datasetName,
+        string containerName,
+        string storageAccountUrl,
+        string[] schemaFields,
+        string[] allowedFields,
+        string? format = null,
+        string? accessMode = null,
+        string? encryptionMode = null,
+        string? storageAccountType = null,
+        string? subdirectory = null,
+        string? cpkKeyVaultUrl = null,
+        string? cpkKeyName = null,
+        string? cpkKeyVersion = null,
+        string? additionalStoreJson = null,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        ValidateRequiredParameters(
+            (nameof(datasetName), datasetName),
+            (nameof(containerName), containerName),
+            (nameof(storageAccountUrl), storageAccountUrl));
+
+        if (!Uri.TryCreate(storageAccountUrl, UriKind.Absolute, out _))
+        {
+            throw new ArgumentException("storageAccountUrl must be a valid absolute URI.", nameof(storageAccountUrl));
+        }
+
+        if (schemaFields is null || schemaFields.Length == 0)
+        {
+            throw new ArgumentException("At least one schema field is required.", nameof(schemaFields));
+        }
+
+        if (allowedFields is null || allowedFields.Length == 0)
+        {
+            throw new ArgumentException("At least one allowed field is required.", nameof(allowedFields));
+        }
+
+        var normalizedFormat = string.IsNullOrWhiteSpace(format) ? "csv" : format.Trim().ToLowerInvariant();
+        var normalizedAccessMode = string.IsNullOrWhiteSpace(accessMode) ? "read" : accessMode.Trim().ToLowerInvariant();
+        var normalizedStorageAccountType = string.IsNullOrWhiteSpace(storageAccountType)
+            ? "Azure_BlobStorage"
+            : storageAccountType.Trim();
+
+        var normalizedEncryptionMode = string.IsNullOrWhiteSpace(encryptionMode) ? "SSE" : encryptionMode.Trim().ToUpperInvariant();
+        if (normalizedEncryptionMode == "CPK")
+        {
+            // The frontend payload commonly uses CSE for customer-provided keys.
+            normalizedEncryptionMode = "CSE";
+        }
+
+        var schemaFieldNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var schemaNodes = new JsonArray();
+        foreach (var schemaField in schemaFields)
+        {
+            var fieldParts = (schemaField ?? string.Empty).Split(':', 2, StringSplitOptions.TrimEntries);
+            if (fieldParts.Length != 2 || string.IsNullOrWhiteSpace(fieldParts[0]) || string.IsNullOrWhiteSpace(fieldParts[1]))
+            {
+                throw new ArgumentException(
+                    $"Schema field '{schemaField}' is invalid. Use the format '<fieldName>:<fieldType>'.",
+                    nameof(schemaFields));
+            }
+
+            if (!schemaFieldNames.Add(fieldParts[0]))
+            {
+                throw new ArgumentException($"Duplicate schema field '{fieldParts[0]}' is not allowed.", nameof(schemaFields));
+            }
+
+            schemaNodes.Add((JsonNode)new JsonObject
+            {
+                ["fieldName"] = fieldParts[0],
+                ["fieldType"] = fieldParts[1]
+            });
+        }
+
+        var allowedNodes = new JsonArray();
+        foreach (var allowedField in allowedFields)
+        {
+            if (string.IsNullOrWhiteSpace(allowedField))
+            {
+                throw new ArgumentException("allowedFields cannot contain empty values.", nameof(allowedFields));
+            }
+
+            if (!schemaFieldNames.Contains(allowedField))
+            {
+                throw new ArgumentException(
+                    $"Allowed field '{allowedField}' is not present in schemaFields.",
+                    nameof(allowedFields));
+            }
+
+            allowedNodes.Add((JsonNode?)JsonValue.Create(allowedField));
+        }
+
+        var store = new JsonObject
+        {
+            ["containerName"] = containerName,
+            ["storageAccountUrl"] = storageAccountUrl,
+            ["storageAccountType"] = normalizedStorageAccountType,
+            ["encryptionMode"] = normalizedEncryptionMode
+        };
+
+        if (!string.IsNullOrWhiteSpace(subdirectory))
+        {
+            store["subdirectory"] = subdirectory.Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(cpkKeyVaultUrl))
+        {
+            store["cpkKeyVaultUrl"] = cpkKeyVaultUrl.Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(cpkKeyName))
+        {
+            store["cpkKeyName"] = cpkKeyName.Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(cpkKeyVersion))
+        {
+            store["cpkKeyVersion"] = cpkKeyVersion.Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(additionalStoreJson))
+        {
+            JsonObject? additionalStore;
+            try
+            {
+                additionalStore = JsonNode.Parse(additionalStoreJson) as JsonObject;
+            }
+            catch (JsonException ex)
+            {
+                throw new ArgumentException("additionalStoreJson must be a valid JSON object string.", nameof(additionalStoreJson), ex);
+            }
+
+            if (additionalStore is null)
+            {
+                throw new ArgumentException("additionalStoreJson must be a JSON object.", nameof(additionalStoreJson));
+            }
+
+            foreach (var kvp in additionalStore)
+            {
+                store[kvp.Key] = kvp.Value?.DeepClone();
+            }
+        }
+
+        var dataset = new JsonObject
+        {
+            ["name"] = datasetName,
+            ["store"] = store,
+            ["datasetSchema"] = new JsonObject
+            {
+                ["format"] = normalizedFormat,
+                ["fields"] = schemaNodes
+            },
+            ["datasetAccessPolicy"] = new JsonObject
+            {
+                ["accessMode"] = normalizedAccessMode,
+                ["allowedFields"] = allowedNodes
+            }
+        };
+
+        var compactBody = dataset.ToJsonString(new JsonSerializerOptions { WriteIndented = false });
+
+        var result = new JsonObject
+        {
+            ["body"] = compactBody,
+            ["dataset"] = dataset,
+            ["normalization"] = new JsonObject
+            {
+                ["format"] = normalizedFormat,
+                ["accessMode"] = normalizedAccessMode,
+                ["storageAccountType"] = normalizedStorageAccountType,
+                ["encryptionMode"] = normalizedEncryptionMode
+            }
+        };
+
+        return Task.FromResult(result.Deserialize(ManagedCleanroomSerializerContext.Default.JsonElement));
     }
 
     public async Task<JsonElement> PublishQueryAsync(
