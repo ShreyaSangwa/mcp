@@ -996,16 +996,6 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return new CollaborationCreateResult(acceptedResult, acceptedMessage);
     }
 
-    /// <summary>
-    /// Environment variable name for supplying a pre-acquired bearer token.
-    /// When set, its value is used verbatim as the Authorization header instead of going
-    /// through the normal Azure credential chain. This supports MSA / external accounts
-    /// that obtain an MSAL ID token (User.Read scope) rather than an ARM access token —
-    /// matching the <c>MANAGEDCLEANROOM_ACCESS_TOKEN</c> convention used by the
-    /// <c>az managedcleanroom</c> CLI extension.
-    /// </summary>
-    internal const string AccessTokenEnvVar = "MANAGEDCLEANROOM_ACCESS_TOKEN";
-
     private async Task<CollaborationClient> BuildClientAsync(
         string endpoint,
         bool allowUntrustedCert,
@@ -1019,12 +1009,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             throw new ArgumentException($"Endpoint '{endpoint}' is not a valid absolute URI.", nameof(endpoint));
         }
 
-        // If a pre-acquired token is available (e.g. MSAL ID token for MSA / external
-        // accounts), use it directly instead of acquiring one via the credential chain.
-        var rawToken = Environment.GetEnvironmentVariable(AccessTokenEnvVar);
-        TokenCredential credential = !string.IsNullOrWhiteSpace(rawToken)
-            ? new StaticTokenCredential(rawToken)
-            : await GetCredential(tenant, cancellationToken).ConfigureAwait(false);
+        var credential = await GetCredential(tenant, cancellationToken).ConfigureAwait(false);
 
         var options = new CollaborationClientOptions();
         options.AddPolicy(

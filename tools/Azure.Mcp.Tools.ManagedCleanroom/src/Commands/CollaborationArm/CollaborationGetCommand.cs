@@ -4,7 +4,7 @@
 using System.Net;
 using Azure.Mcp.Core.Commands.Subscription;
 using Azure.Mcp.Core.Services.Azure.Subscription;
-using Azure.Mcp.Tools.ManagedCleanroom.Options.Collaboration;
+using Azure.Mcp.Tools.ManagedCleanroom.Options.CollaborationArm;
 using Azure.Mcp.Tools.ManagedCleanroom.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Mcp.Core.Commands;

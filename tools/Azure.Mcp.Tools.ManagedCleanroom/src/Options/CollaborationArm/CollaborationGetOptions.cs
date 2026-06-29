@@ -5,11 +5,11 @@ using Azure.Mcp.Core.Options;
 using Microsoft.Mcp.Core.Models;
 using Microsoft.Mcp.Core.Options;
 
-namespace Azure.Mcp.Tools.ManagedCleanroom.Options.Collaboration;
+namespace Azure.Mcp.Tools.ManagedCleanroom.Options.CollaborationArm;
 
-public class CollaborationDeleteOptions : ISubscriptionOption
+public class CollaborationGetOptions : ISubscriptionOption
 {
-    [Option("The name of the Azure Cleanroom collaboration ARM resource to delete.")]
+    [Option("The name of the Azure Cleanroom collaboration ARM resource to retrieve.")]
     public required string Name { get; set; }
 
     [Option(OptionDescriptions.ResourceGroup)]

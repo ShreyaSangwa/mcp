@@ -63,12 +63,6 @@ public class ManagedCleanroomSetup : IAreaSetup
         var root = new CommandGroup(Name,
             "Azure Managed Cleanroom operations - Commands for interacting with the Azure Cleanroom Analytics Frontend, including listing and inspecting collaborations and analytics workloads.", Title);
 
-        var collaborations = new CommandGroup("collaborations", "Cleanroom collaboration operations - Commands for listing and inspecting cleanroom collaborations.");
-        root.AddSubGroup(collaborations);
-
-        collaborations.AddCommand<CollaborationsListCommand>(serviceProvider);
-        collaborations.AddCommand<CollaborationsGetCommand>(serviceProvider);
-
         var analytics = new CommandGroup("analytics", "Cleanroom analytics operations - Commands for inspecting analytics workload configuration on a cleanroom collaboration.");
         root.AddSubGroup(analytics);
 
@@ -85,6 +79,8 @@ public class ManagedCleanroomSetup : IAreaSetup
         var collaborationArm = new CommandGroup("collaborationarm", "Cleanroom ARM management operations - Commands for creating and managing Azure Cleanroom collaboration ARM resources.");
         root.AddSubGroup(collaborationArm);
 
+        collaborationArm.AddCommand<CollaborationsListCommand>(serviceProvider);
+        collaborationArm.AddCommand<CollaborationsGetCommand>(serviceProvider);
         collaborationArm.AddCommand<CollaborationCreateCommand>(serviceProvider);
         collaborationArm.AddCommand<CollaborationGetCommand>(serviceProvider);
         collaborationArm.AddCommand<CollaborationDeleteCommand>(serviceProvider);
