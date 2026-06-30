@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using Azure.Mcp.Tools.ManagedCleanroom.Models;
 using Microsoft.Mcp.Core.Options;
 
@@ -12,6 +13,14 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Services;
 /// </summary>
 public interface IManagedCleanroomServiceControlPlane
 {
+    Task<JsonElement> GetCollaborationArmResourceAsync(
+        string name,
+        string resourceGroup,
+        string subscription,
+        string? tenant = null,
+        RetryPolicyOptions? retryPolicy = null,
+        CancellationToken cancellationToken = default);
+
     Task<CollaborationCreateResult> CreateCollaborationArmResourceAsync(
         string name,
         string resourceGroup,
