@@ -108,6 +108,15 @@ public interface IManagedCleanroomService
         string? cpkKeyName = null,
         string? cpkKeyVersion = null,
         string? additionalStoreJson = null,
+        string? identityName = null,
+        string? identityClientId = null,
+        string? identityTenantId = null,
+        string? identityIssuerUrl = null,
+        string? dekKeyVaultUrl = null,
+        string? dekSecretId = null,
+        string? kekKeyVaultUrl = null,
+        string? kekSecretId = null,
+        string? maaUrl = null,
         CancellationToken cancellationToken = default);
 
     Task<JsonElement> PublishQueryAsync(
@@ -117,6 +126,16 @@ public interface IManagedCleanroomService
         string? body = null,
         bool allowUntrustedCert = false,
         string? tenant = null,
+        CancellationToken cancellationToken = default);
+
+    Task<JsonElement> BuildQueryBodyAsync(
+        string queryName,
+        string queryDirectory,
+        string outputDataset,
+        string? publisherInputDataset = null,
+        string? consumerInputDataset = null,
+        string? inputDatasetMappings = null,
+        string? outputDatasetAlias = null,
         CancellationToken cancellationToken = default);
 
     Task<JsonElement> GetQueryAsync(
@@ -263,3 +282,5 @@ public interface IManagedCleanroomService
 /// <param name="Properties">ARM resource properties as a raw <see cref="System.Text.Json.JsonElement"/>.</param>
 /// <param name="Message">Human-readable summary of the provisioning outcome including elapsed time.</param>
 public sealed record CollaborationCreateResult(System.Text.Json.JsonElement Properties, string Message);
+
+

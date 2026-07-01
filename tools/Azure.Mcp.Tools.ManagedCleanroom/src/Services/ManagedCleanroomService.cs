@@ -3,6 +3,8 @@
 
 using System.Buffers;
 using System.Collections.Generic;
+using System.IO;
+using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using AnalyticsFrontendAPI;
@@ -26,9 +28,9 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
     private static readonly TimeSpan WorkloadEndpointTimeout = TimeSpan.FromMinutes(15);
 
-    // A stable empty-object JsonElement to return when the service returns an empty/non-JSON body.
-    private static readonly JsonElement EmptyObjectElement =
-        JsonDocument.Parse("{}").RootElement.Clone();
+    // A stable empty-string JsonElement to represent an empty raw response body.
+    private static readonly JsonElement EmptyStringElement =
+        JsonDocument.Parse("\"\"").RootElement.Clone();
     private static readonly TimeSpan WorkloadHealthTimeout = TimeSpan.FromMinutes(10);
 
     public async Task<JsonElement> ListCollaborationsAsync(
@@ -325,7 +327,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return ParseResponse(response);
     }
 
-    public Task<JsonElement> BuildDatasetBodyAsync(
+        public Task<JsonElement> BuildDatasetBodyAsync(
         string datasetName,
         string containerName,
         string storageAccountUrl,
@@ -340,6 +342,15 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         string? cpkKeyName = null,
         string? cpkKeyVersion = null,
         string? additionalStoreJson = null,
+        string? identityName = null,
+        string? identityClientId = null,
+        string? identityTenantId = null,
+        string? identityIssuerUrl = null,
+        string? dekKeyVaultUrl = null,
+        string? dekSecretId = null,
+        string? kekKeyVaultUrl = null,
+        string? kekSecretId = null,
+        string? maaUrl = null,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -364,6 +375,23 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             throw new ArgumentException("At least one allowed field is required.", nameof(allowedFields));
         }
 
+        var hasAnyIdentity =
+            !string.IsNullOrWhiteSpace(identityName) ||
+            !string.IsNullOrWhiteSpace(identityClientId) ||
+            !string.IsNullOrWhiteSpace(identityTenantId) ||
+            !string.IsNullOrWhiteSpace(identityIssuerUrl);
+
+        if (hasAnyIdentity &&
+            (string.IsNullOrWhiteSpace(identityName) ||
+             string.IsNullOrWhiteSpace(identityClientId) ||
+             string.IsNullOrWhiteSpace(identityTenantId) ||
+             string.IsNullOrWhiteSpace(identityIssuerUrl)))
+        {
+            throw new ArgumentException(
+                "Identity settings must include name, clientId, tenantId, and issuerUrl when any identity value is provided.",
+                nameof(identityName));
+        }
+
         var normalizedFormat = string.IsNullOrWhiteSpace(format) ? "csv" : format.Trim().ToLowerInvariant();
         var normalizedAccessMode = string.IsNullOrWhiteSpace(accessMode) ? "read" : accessMode.Trim().ToLowerInvariant();
         var normalizedStorageAccountType = string.IsNullOrWhiteSpace(storageAccountType)
@@ -375,6 +403,32 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         {
             // The frontend payload commonly uses CSE for customer-provided keys.
             normalizedEncryptionMode = "CSE";
+        }
+
+        var hasAnyKeyBlocks =
+            !string.IsNullOrWhiteSpace(dekKeyVaultUrl) ||
+            !string.IsNullOrWhiteSpace(dekSecretId) ||
+            !string.IsNullOrWhiteSpace(kekKeyVaultUrl) ||
+            !string.IsNullOrWhiteSpace(kekSecretId) ||
+            !string.IsNullOrWhiteSpace(maaUrl);
+
+        if (hasAnyKeyBlocks &&
+            (string.IsNullOrWhiteSpace(dekKeyVaultUrl) ||
+             string.IsNullOrWhiteSpace(dekSecretId) ||
+             string.IsNullOrWhiteSpace(kekKeyVaultUrl) ||
+             string.IsNullOrWhiteSpace(kekSecretId) ||
+             string.IsNullOrWhiteSpace(maaUrl)))
+        {
+            throw new ArgumentException(
+                "Key blocks require dekKeyVaultUrl, dekSecretId, kekKeyVaultUrl, kekSecretId, and maaUrl when any key value is provided.",
+                nameof(dekKeyVaultUrl));
+        }
+
+        if (hasAnyKeyBlocks && normalizedEncryptionMode != "CSE")
+        {
+            throw new ArgumentException(
+                "dek/kek key blocks are only valid when encryptionMode is CPK/CSE.",
+                nameof(encryptionMode));
         }
 
         var schemaFieldNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -486,6 +540,33 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             }
         };
 
+        if (hasAnyIdentity)
+        {
+            dataset["identity"] = new JsonObject
+            {
+                ["name"] = identityName!.Trim(),
+                ["clientId"] = identityClientId!.Trim(),
+                ["tenantId"] = identityTenantId!.Trim(),
+                ["issuerUrl"] = identityIssuerUrl!.Trim()
+            };
+        }
+
+        if (hasAnyKeyBlocks)
+        {
+            dataset["dek"] = new JsonObject
+            {
+                ["keyVaultUrl"] = dekKeyVaultUrl!.Trim(),
+                ["secretId"] = dekSecretId!.Trim()
+            };
+
+            dataset["kek"] = new JsonObject
+            {
+                ["keyVaultUrl"] = kekKeyVaultUrl!.Trim(),
+                ["secretId"] = kekSecretId!.Trim(),
+                ["maaUrl"] = maaUrl!.Trim()
+            };
+        }
+
         var compactBody = dataset.ToJsonString(new JsonSerializerOptions { WriteIndented = false });
 
         var result = new JsonObject
@@ -527,6 +608,211 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             collaborationId, documentId, content, requestContext).ConfigureAwait(false);
 
         return ParseResponse(response);
+    }
+
+    public async Task<JsonElement> BuildQueryBodyAsync(
+        string queryName,
+        string queryDirectory,
+        string outputDataset,
+        string? publisherInputDataset = null,
+        string? consumerInputDataset = null,
+        string? inputDatasetMappings = null,
+        string? outputDatasetAlias = null,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        ValidateRequiredParameters(
+            (nameof(queryName), queryName),
+            (nameof(queryDirectory), queryDirectory),
+            (nameof(outputDataset), outputDataset));
+
+        if (!Directory.Exists(queryDirectory))
+        {
+            throw new ArgumentException($"Query directory '{queryDirectory}' was not found.", nameof(queryDirectory));
+        }
+
+        // Resolve input dataset mappings: use custom JSON if provided, else fall back to publisher/consumer pair.
+        var inputDatasetMappingsDict = new Dictionary<string, string>();
+        if (!string.IsNullOrWhiteSpace(inputDatasetMappings))
+        {
+            // Parse custom mappings from JSON.
+            try
+            {
+                var mappingsJson = JsonDocument.Parse(inputDatasetMappings).RootElement;
+                if (mappingsJson.ValueKind != JsonValueKind.Object)
+                {
+                    throw new ArgumentException("Input dataset mappings must be a JSON object.");
+                }
+
+                foreach (var property in mappingsJson.EnumerateObject())
+                {
+                    var datasetId = property.Name;
+                    if (property.Value.ValueKind != JsonValueKind.String)
+                    {
+                        throw new ArgumentException($"Alias for dataset '{datasetId}' must be a string.");
+                    }
+
+                    var alias = property.Value.GetString();
+                    if (string.IsNullOrWhiteSpace(alias))
+                    {
+                        throw new ArgumentException($"Alias for dataset '{datasetId}' cannot be empty.");
+                    }
+
+                    inputDatasetMappingsDict[datasetId.Trim()] = alias.Trim();
+                }
+            }
+            catch (JsonException ex)
+            {
+                throw new ArgumentException($"Failed to parse input dataset mappings JSON: {ex.Message}", ex);
+            }
+
+            if (inputDatasetMappingsDict.Count == 0)
+            {
+                throw new ArgumentException("Input dataset mappings JSON must contain at least one dataset.");
+            }
+        }
+        else
+        {
+            // Fall back to publisher/consumer pattern.
+            if (string.IsNullOrWhiteSpace(publisherInputDataset) || string.IsNullOrWhiteSpace(consumerInputDataset))
+            {
+                throw new ArgumentException(
+                    "Either provide --input-dataset-mappings or both --publisher-input-dataset and --consumer-input-dataset.");
+            }
+
+            inputDatasetMappingsDict[publisherInputDataset.Trim()] = "publisher_data";
+            inputDatasetMappingsDict[consumerInputDataset.Trim()] = "consumer_data";
+        }
+
+        var normalizedOutputAlias = string.IsNullOrWhiteSpace(outputDatasetAlias) ? "output" : outputDatasetAlias.Trim();
+
+        var jsonSegments = Directory.GetFiles(queryDirectory, "segment*.json").OrderBy(path => path, StringComparer.OrdinalIgnoreCase).ToArray();
+        var txtSegments = Directory.GetFiles(queryDirectory, "segment*.txt").OrderBy(path => path, StringComparer.OrdinalIgnoreCase).ToArray();
+
+        if (jsonSegments.Length == 0 && txtSegments.Length == 0)
+        {
+            throw new ArgumentException(
+                $"No segment*.json or segment*.txt files found in '{queryDirectory}'.",
+                nameof(queryDirectory));
+        }
+
+        var queryDataNodes = new JsonArray();
+        var sourceFormat = jsonSegments.Length > 0 ? "json" : "txt";
+
+        if (jsonSegments.Length > 0)
+        {
+            foreach (var segmentPath in jsonSegments)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var rawSegment = await File.ReadAllTextAsync(segmentPath, cancellationToken).ConfigureAwait(false);
+
+                JsonElement segment;
+                try
+                {
+                    segment = JsonDocument.Parse(rawSegment).RootElement;
+                }
+                catch (JsonException ex)
+                {
+                    throw new ArgumentException($"Segment file '{segmentPath}' does not contain valid JSON.", nameof(queryDirectory), ex);
+                }
+
+                if (!segment.TryGetProperty("data", out var dataElement) || dataElement.ValueKind != JsonValueKind.String)
+                {
+                    throw new ArgumentException($"Segment file '{segmentPath}' must include a string 'data' property.", nameof(queryDirectory));
+                }
+
+                if (!segment.TryGetProperty("executionSequence", out var executionSequenceElement) || !executionSequenceElement.TryGetInt32(out var executionSequence))
+                {
+                    throw new ArgumentException($"Segment file '{segmentPath}' must include an integer 'executionSequence' property.", nameof(queryDirectory));
+                }
+
+                var data = dataElement.GetString();
+                if (string.IsNullOrWhiteSpace(data))
+                {
+                    throw new ArgumentException($"Segment file '{segmentPath}' has an empty 'data' value.", nameof(queryDirectory));
+                }
+
+                var preConditions = TryGetStringProperty(segment, "preConditions") ?? string.Empty;
+                var postFilters = TryGetStringProperty(segment, "postFilters") ?? string.Empty;
+
+                queryDataNodes.Add((JsonNode)new JsonObject
+                {
+                    ["data"] = data,
+                    ["executionSequence"] = executionSequence,
+                    ["preConditions"] = preConditions,
+                    ["postFilters"] = postFilters
+                });
+            }
+        }
+        else
+        {
+            // Keep parity with the sample script behavior: sequence defaults to 1 unless overridden by '-- seq=N' per file.
+            var sequence = 1;
+            foreach (var segmentPath in txtSegments)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var sql = (await File.ReadAllTextAsync(segmentPath, cancellationToken).ConfigureAwait(false)).Trim();
+                if (string.IsNullOrWhiteSpace(sql))
+                {
+                    throw new ArgumentException($"Segment file '{segmentPath}' is empty.", nameof(queryDirectory));
+                }
+
+                var match = Regex.Match(sql, @"^--\s*seq\s*=\s*(\d+)", RegexOptions.CultureInvariant);
+                if (match.Success)
+                {
+                    sequence = int.Parse(match.Groups[1].Value);
+                    sql = Regex.Replace(sql, @"^--\s*seq\s*=\s*\d+\s*\r?\n?", string.Empty, RegexOptions.CultureInvariant).Trim();
+                }
+
+                queryDataNodes.Add((JsonNode)new JsonObject
+                {
+                    ["executionSequence"] = sequence,
+                    ["data"] = sql,
+                    ["preConditions"] = string.Empty,
+                    ["postFilters"] = string.Empty
+                });
+            }
+        }
+
+        // Build inputDatasets string in the format "datasetId1:alias1,datasetId2:alias2".
+        var inputDatasetsPairs = inputDatasetMappingsDict.Select(kvp => $"{kvp.Key}:{kvp.Value}");
+        var inputDatasetsString = string.Join(",", inputDatasetsPairs);
+
+        var query = new JsonObject
+        {
+            ["inputDatasets"] = inputDatasetsString,
+            ["outputDataset"] = $"{outputDataset}:{normalizedOutputAlias}",
+            ["queryData"] = queryDataNodes
+        };
+
+        var compactBody = query.ToJsonString(new JsonSerializerOptions { WriteIndented = false });
+        var result = new JsonObject
+        {
+            ["body"] = compactBody,
+            ["query"] = query,
+            ["recommendedDocumentId"] = queryName,
+            ["normalization"] = new JsonObject
+            {
+                ["queryName"] = queryName,
+                ["segmentSource"] = sourceFormat,
+                ["segmentCount"] = queryDataNodes.Count,
+                ["inputDatasetCount"] = inputDatasetMappingsDict.Count,
+                ["outputDatasetAlias"] = normalizedOutputAlias
+            }
+        };
+
+        return result.Deserialize(ManagedCleanroomSerializerContext.Default.JsonElement);
+    }
+
+    private static string? TryGetStringProperty(JsonElement node, string name)
+    {
+        if (!node.TryGetProperty(name, out var element))
+        {
+            return null;
+        }
+
+        return element.ValueKind == JsonValueKind.String ? element.GetString() : null;
     }
 
     public async Task<JsonElement> GetQueryAsync(
@@ -713,6 +999,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
 
         return ParseResponse(response);
     }
+
 
     public async Task<JsonElement> AddCollaboratorAsync(
         string name,
@@ -1042,13 +1329,13 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
     {
         if (response.Content is null)
         {
-            return EmptyObjectElement;
+            return EmptyStringElement;
         }
 
         var content = response.Content.ToMemory();
         if (content.IsEmpty)
         {
-            return EmptyObjectElement;
+            return EmptyStringElement;
         }
 
         try
@@ -1056,8 +1343,8 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             var element = JsonSerializer.Deserialize(
                 content.Span,
                 ManagedCleanroomSerializerContext.Default.JsonElement);
-            // Guard against Undefined (e.g. deserializing a null JSON token).
-            return element.ValueKind == JsonValueKind.Undefined ? EmptyObjectElement : element;
+            // Preserve JSON payload as received when content is valid JSON.
+            return element;
         }
         catch (JsonException)
         {
@@ -1065,7 +1352,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             var rawResponse = response.Content.ToString();
             if (string.IsNullOrWhiteSpace(rawResponse))
             {
-                return EmptyObjectElement;
+                return EmptyStringElement;
             }
 
             var buffer = new ArrayBufferWriter<byte>();
@@ -1112,3 +1399,5 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return element;
     }
 }
+
+

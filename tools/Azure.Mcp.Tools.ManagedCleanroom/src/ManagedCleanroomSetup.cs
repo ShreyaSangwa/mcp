@@ -48,6 +48,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<DatasetsGetCommand>();
         services.AddSingleton<DatasetsListCommand>();
         services.AddSingleton<ConsentPutCommand>();
+        services.AddSingleton<QueriesBuildBodyCommand>();
         services.AddSingleton<QueriesPublishCommand>();
         services.AddSingleton<QueriesGetCommand>();
         services.AddSingleton<QueriesListCommand>();
@@ -111,6 +112,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         var queries = new CommandGroup("queries", "Cleanroom query operations - Commands for publishing, inspecting, and running analytics queries on a cleanroom collaboration.");
         root.AddSubGroup(queries);
 
+        queries.AddCommand<QueriesBuildBodyCommand>(serviceProvider);
         queries.AddCommand<QueriesPublishCommand>(serviceProvider);
         queries.AddCommand<QueriesGetCommand>(serviceProvider);
         queries.AddCommand<QueriesListCommand>(serviceProvider);
