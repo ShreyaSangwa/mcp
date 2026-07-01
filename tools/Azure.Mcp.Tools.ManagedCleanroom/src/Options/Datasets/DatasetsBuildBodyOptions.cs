@@ -48,4 +48,31 @@ public class DatasetsBuildBodyOptions
 
     [Option("Optional JSON object string with additional store properties to merge into the dataset 'store' object.")]
     public string? AdditionalStoreJson { get; set; }
+
+    [Option("Optional managed identity name for the dataset identity block.")]
+    public string? IdentityName { get; set; }
+
+    [Option("Optional managed identity clientId for the dataset identity block.")]
+    public string? IdentityClientId { get; set; }
+
+    [Option("Optional managed identity tenantId for the dataset identity block.")]
+    public string? IdentityTenantId { get; set; }
+
+    [Option("Optional OIDC issuer URL for the dataset identity block.")]
+    public string? IdentityIssuerUrl { get; set; }
+
+    [Option("Optional DEK Key Vault URL for CPK/CSE payloads. Requires --dek-secret-id, --kek-key-vault-url, --kek-secret-id, and --maa-url.")]
+    public string? DekKeyVaultUrl { get; set; }
+
+    [Option("Optional DEK secret identifier for CPK/CSE payloads. Requires --dek-key-vault-url, --kek-key-vault-url, --kek-secret-id, and --maa-url.")]
+    public string? DekSecretId { get; set; }
+
+    [Option("Optional KEK Key Vault URL for CPK/CSE payloads. Requires --dek-key-vault-url, --dek-secret-id, --kek-secret-id, and --maa-url.")]
+    public string? KekKeyVaultUrl { get; set; }
+
+    [Option("Optional KEK secret identifier for CPK/CSE payloads. Requires --dek-key-vault-url, --dek-secret-id, --kek-key-vault-url, and --maa-url.")]
+    public string? KekSecretId { get; set; }
+
+    [Option("Optional MAA URL for KEK attestation in CPK/CSE payloads. Requires --dek-key-vault-url, --dek-secret-id, --kek-key-vault-url, and --kek-secret-id.")]
+    public string? MaaUrl { get; set; }
 }

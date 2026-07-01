@@ -201,9 +201,10 @@ Use when the user wants to publish a query, add a query to a clean room, or asks
 12. Ask whether the query should be segmented into multiple views or execution steps. If the query is large or logically split, recommend segmentation; if one segment is enough, state that clearly.
 13. Explain preconditions and postfilters, and help the user decide whether to set them before publication.
 14. Ask the user to choose the final query name and confirm it.
-15. Publish the query with `managedcleanroom queries publish` using the selected input datasets, output dataset, and composed query body.
-16. If the publishing user is also expected to approve the query, continue with the query approval workflow.
-17. Tell the user to share the final query name with the relevant dataset owners so they can review and approve it.
+15. Call `managedcleanroom queries build-body` using the selected query directory, input datasets, and output dataset.
+16. If build passes, publish the query with `managedcleanroom queries publish` using the returned `body` value.
+17. If the publishing user is also expected to approve the query, continue with the query approval workflow.
+18. Tell the user to share the final query name with the relevant dataset owners so they can review and approve it.
 
 ### Dataset Validation and Publication Workflow
 
@@ -215,7 +216,7 @@ Use when the user is ready to validate and publish dataset information.
 3. Help the user choose the `allowedFields` set and explain that only those fields are exposed to query processing.
 4. If the dataset uses `CPK`, confirm the managed identity, Key Vault, OIDC setup, federation inputs, and secure key release prerequisites before publish.
 5. Call `managedcleanroom datasets build-body` first.
-6. If validation passes, call `managedcleanroom datasets publish` using the returned `body`.
+6. If validation passes, call `managedcleanroom datasets publish` using the returned `body` value only (do not pass the full build-body wrapper object).
 7. Verify publication with `managedcleanroom datasets get` or `managedcleanroom datasets list`.
 8. Explain that the user can withdraw consent for the dataset later if they need to prevent reuse.
 

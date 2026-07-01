@@ -3058,6 +3058,30 @@ azmcp managedcleanroom consent put --endpoint <endpoint> \
                                    [--allow-untrusted-cert] \
                                    [--tenant <tenant>]
 
+# Build a query publish body from local segment files in a query directory
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ✅ LocalRequired
+azmcp managedcleanroom queries build-body --query-name <query-name> \
+                                          --query-directory <query-directory> \
+                                          --output-dataset <output-dataset> \
+                                          [--publisher-input-dataset <publisher-input-dataset>] \
+                                          [--consumer-input-dataset <consumer-input-dataset>] \
+                                          [--input-dataset-mappings <input-dataset-mappings>] \
+                                          [--output-dataset-alias <output-dataset-alias>]
+
+# Simple two-dataset example (publisher/consumer pattern):
+azmcp managedcleanroom queries build-body --query-name "sales-analysis-v1" \
+                                          --query-directory "./queries/sales" \
+                                          --publisher-input-dataset "northwind-data" \
+                                          --consumer-input-dataset "woodgrove-data" \
+                                          --output-dataset "results"
+
+# Generic multi-dataset example with custom aliases:
+azmcp managedcleanroom queries build-body --query-name "analytics-v2" \
+                                          --query-directory "./queries/analytics" \
+                                          --output-dataset "analytics-results" \
+                                          --input-dataset-mappings '{"source1":"view_a","source2":"view_b"}' \
+                                          --output-dataset-alias "output"
+
 # Publish a query document for a cleanroom collaboration
 # ❌ Destructive | ❌ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
 azmcp managedcleanroom queries publish --endpoint <endpoint> \

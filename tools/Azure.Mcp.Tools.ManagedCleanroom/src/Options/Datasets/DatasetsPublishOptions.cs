@@ -18,7 +18,7 @@ public class DatasetsPublishOptions
     [Option(ManagedCleanroomOptionDescriptions.DocumentId)]
     public required string DocumentId { get; set; }
 
-    [Option("JSON request body for dataset publish. Supports CLI-style @file input to load JSON from disk. Use @@ to send a literal value starting with '@'. If omitted, an empty JSON object '{}' is sent.")]
+    [Option("JSON request body for dataset publish. Supports CLI-style @file input to load JSON from disk. Use @@ to send a literal value starting with '@'. If omitted, an empty JSON object '{}' is sent. If using datasets build-body output, pass the returned body value (or dataset object only), not the full wrapper JSON.")]
     public string? Body { get; set; }
 
     [Option(ManagedCleanroomOptionDescriptions.AllowUntrustedCert)]

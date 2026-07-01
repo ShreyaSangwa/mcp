@@ -17,8 +17,21 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.CollaborationArm;
     Name = "create",
     Title = "Create Cleanroom Collaboration",
     Description = """
-        Create a new Azure Cleanroom collaboration. The request returns immediately after Azure accepts it; provisioning continues in the background and typically takes about 25 minutes. 
-        You'll need to provide: collaboration name, Azure region, resource group, and subscription.
+        Create a new Azure Cleanroom collaboration.
+
+        Use a structured argument object with these fields:
+        - name: collaboration name
+        - location: Azure region for the collaboration ARM resource
+        - resource-group: target resource group
+        - subscription: target subscription
+
+        Optional fields:
+        - resource-location: region for the cleanroom workload resources
+        - collaborator: repeat for each collaborator email address
+        - tenant: Entra tenant override
+        - retry: retry policy settings
+
+        The request returns immediately after Azure accepts it; provisioning continues in the background and typically takes about 25 minutes.
         """,
     Destructive = false,
     Idempotent = true,
