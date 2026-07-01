@@ -18,6 +18,9 @@ using Azure.ResourceManager;
 using Azure.ResourceManager.CleanRoom;
 using Azure.ResourceManager.CleanRoom.Models;
 using Azure.ResourceManager.Resources;
+using Azure.Storage;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Microsoft.Mcp.Core.Options;
 namespace Azure.Mcp.Tools.ManagedCleanroom.Services;
 
@@ -978,6 +981,116 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return ParseResponse(response);
     }
 
+    public async Task<JsonElement> DownloadQueryOutputAsync(
+        string endpoint,
+        string collaborationId,
+        string queryDocumentId,
+        string outputDirectory,
+        string? jobId = null,
+        string? cpkEncryptionKeyBase64 = null,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateRequiredParameters(
+            (nameof(endpoint), endpoint),
+            (nameof(collaborationId), collaborationId),
+            (nameof(queryDocumentId), queryDocumentId),
+            (nameof(outputDirectory), outputDirectory));
+
+        var query = await GetQueryAsync(
+            endpoint,
+            collaborationId,
+            queryDocumentId,
+            allowUntrustedCert,
+            tenant,
+            cancellationToken).ConfigureAwait(false);
+
+        var outputDatasetMapping = GetRequiredStringProperty(query, "outputDataset", "query output dataset mapping");
+        var outputDatasetDocumentId = ParseDatasetDocumentId(outputDatasetMapping);
+
+        var dataset = await GetDatasetAsync(
+            endpoint,
+            collaborationId,
+            outputDatasetDocumentId,
+            allowUntrustedCert,
+            tenant,
+            cancellationToken).ConfigureAwait(false);
+
+        var storageAccountUrl = GetRequiredStringProperty(dataset, "storageAccountUrl", "dataset storage account URL");
+        var containerName = GetRequiredStringProperty(dataset, "containerName", "dataset container name");
+        var encryptionMode = GetOptionalStringProperty(dataset, "encryptionMode") ?? "SSE";
+
+        var isCpk = string.Equals(encryptionMode, "CPK", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(encryptionMode, "CSE", StringComparison.OrdinalIgnoreCase);
+
+        if (isCpk && string.IsNullOrWhiteSpace(cpkEncryptionKeyBase64))
+        {
+            throw new ArgumentException(
+                "Dataset encryption mode is CPK/CSE. Provide --cpk-encryption-key-base64 to download output.",
+                nameof(cpkEncryptionKeyBase64));
+        }
+
+        var normalizedOutputDirectory = Path.GetFullPath(outputDirectory);
+        Directory.CreateDirectory(normalizedOutputDirectory);
+
+        var credential = await GetCredential(tenant, cancellationToken).ConfigureAwait(false);
+        var blobOptions = new BlobClientOptions();
+        var blobServiceClient = new BlobServiceClient(new Uri(storageAccountUrl), credential, blobOptions);
+        var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+
+        var runUuid = NormalizeRunId(jobId);
+        var downloadedFiles = new JsonArray();
+        await foreach (var blobItem in containerClient.GetBlobsAsync(prefix: "Analytics/", cancellationToken: cancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var blobName = blobItem.Name;
+            if (!blobName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase) ||
+                blobName.EndsWith(".crc", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(runUuid) && blobName.IndexOf(runUuid, StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                continue;
+            }
+
+            var localFilePath = Path.Combine(normalizedOutputDirectory, Path.GetFileName(blobName));
+            BlobClient blobClient = containerClient.GetBlobClient(blobName);
+
+            if (isCpk)
+            {
+                var keyBytes = Convert.FromBase64String(cpkEncryptionKeyBase64!);
+                blobClient = blobClient.WithCustomerProvidedKey(new CustomerProvidedKey(keyBytes));
+            }
+
+            await blobClient.DownloadToAsync(localFilePath, cancellationToken).ConfigureAwait(false);
+            downloadedFiles.Add((JsonNode)new JsonObject
+            {
+                ["name"] = blobName,
+                ["path"] = localFilePath,
+                ["size"] = blobItem.Properties.ContentLength
+            });
+        }
+
+        var result = new JsonObject
+        {
+            ["queryDocumentId"] = queryDocumentId,
+            ["outputDatasetDocumentId"] = outputDatasetDocumentId,
+            ["storageAccountUrl"] = storageAccountUrl,
+            ["containerName"] = containerName,
+            ["encryptionMode"] = encryptionMode,
+            ["jobIdFilter"] = string.IsNullOrWhiteSpace(jobId) ? null : jobId,
+            ["outputDirectory"] = normalizedOutputDirectory,
+            ["downloadedCount"] = downloadedFiles.Count,
+            ["downloadedFiles"] = downloadedFiles
+        };
+
+        return result.Deserialize(ManagedCleanroomSerializerContext.Default.JsonElement);
+    }
+
     public async Task<JsonElement> ListAuditEventsAsync(
         string endpoint,
         string collaborationId,
@@ -1030,6 +1143,86 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         };
 
         var operation = await collaborationResource
+
+            private static string ParseDatasetDocumentId(string outputDatasetMapping)
+            {
+                var trimmed = outputDatasetMapping.Trim();
+                if (string.IsNullOrWhiteSpace(trimmed))
+                {
+                    throw new ArgumentException("Output dataset mapping is empty.", nameof(outputDatasetMapping));
+                }
+
+                var separatorIndex = trimmed.IndexOf(':');
+                return separatorIndex < 0 ? trimmed : trimmed[..separatorIndex].Trim();
+            }
+
+            private static string NormalizeRunId(string? jobId)
+            {
+                if (string.IsNullOrWhiteSpace(jobId))
+                {
+                    return string.Empty;
+                }
+
+                const string prefix = "cl-spark-";
+                var trimmed = jobId.Trim();
+                return trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+                    ? trimmed[prefix.Length..]
+                    : trimmed;
+            }
+
+            private static string? GetOptionalStringProperty(JsonElement root, string propertyName)
+            {
+                return TryFindStringProperty(root, propertyName, out var value)
+                    ? value
+                    : null;
+            }
+
+            private static string GetRequiredStringProperty(JsonElement root, string propertyName, string contextName)
+            {
+                if (!TryFindStringProperty(root, propertyName, out var value) || string.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentException($"Unable to resolve {contextName} from service response (expected '{propertyName}').");
+                }
+
+                return value.Trim();
+            }
+
+            private static bool TryFindStringProperty(JsonElement element, string propertyName, out string? value)
+            {
+                value = null;
+
+                if (element.ValueKind == JsonValueKind.Object)
+                {
+                    if (element.TryGetProperty(propertyName, out var directMatch) && directMatch.ValueKind == JsonValueKind.String)
+                    {
+                        value = directMatch.GetString();
+                        return true;
+                    }
+
+                    foreach (var property in element.EnumerateObject())
+                    {
+                        if (TryFindStringProperty(property.Value, propertyName, out value))
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+
+                if (element.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var item in element.EnumerateArray())
+                    {
+                        if (TryFindStringProperty(item, propertyName, out value))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
             .AddCollaboratorAsync(WaitUntil.Started, content, cancellationToken)
             .ConfigureAwait(false);
 

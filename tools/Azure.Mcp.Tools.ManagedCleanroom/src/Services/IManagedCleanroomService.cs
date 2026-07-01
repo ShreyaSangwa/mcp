@@ -188,6 +188,17 @@ public interface IManagedCleanroomService
         string? tenant = null,
         CancellationToken cancellationToken = default);
 
+    Task<JsonElement> DownloadQueryOutputAsync(
+        string endpoint,
+        string collaborationId,
+        string queryDocumentId,
+        string outputDirectory,
+        string? jobId = null,
+        string? cpkEncryptionKeyBase64 = null,
+        bool allowUntrustedCert = false,
+        string? tenant = null,
+        CancellationToken cancellationToken = default);
+
     Task<JsonElement> ListAuditEventsAsync(
         string endpoint,
         string collaborationId,
