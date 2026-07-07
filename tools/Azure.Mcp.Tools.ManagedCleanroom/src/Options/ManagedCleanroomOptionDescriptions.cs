@@ -15,8 +15,11 @@ public static class ManagedCleanroomOptionDescriptions
     public const string CollaborationId =
         "The unique identifier (UUID) of the cleanroom collaboration.";
 
+    public const string IncludeDeleted =
+        "When true, includes soft-deleted records in the response.";
+
     public const string TokenScope =
-        "Optional Microsoft Entra token scope for the cleanroom frontend API (for example, 'https://my-cleanroom.cloudapp.azure.net/.default'). Defaults to '<endpoint-origin>/.default'.";
+        "Optional Microsoft Entra token scope for the cleanroom frontend API. Defaults to 'https://management.azure.com/.default'.";
 
     public const string DocumentId =
         "The unique identifier (UUID) of the dataset document to publish.";

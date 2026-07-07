@@ -19,4 +19,13 @@ public interface IManagedCleanroomServiceDataPlane
         string? tenant = null,
         RetryPolicyOptions? retryPolicy = null,
         CancellationToken cancellationToken = default);
+
+    Task<JsonElement> GetCollaborationAsync(
+        string endpoint,
+        string collaborationId,
+        bool? includeDeleted = null,
+        string? tokenScope = null,
+        string? tenant = null,
+        RetryPolicyOptions? retryPolicy = null,
+        CancellationToken cancellationToken = default);
 }

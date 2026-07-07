@@ -2,7 +2,7 @@
 
 ## Overview
 
-`Azure.Mcp.Tools.ManagedCleanroom` currently provides an initial set of operations for interacting with Azure Managed Cleanroom services. The current implementation includes `collaborations list` (data plane) and `collaborationarm create` (control plane), with additional command groups planned.
+`Azure.Mcp.Tools.ManagedCleanroom` currently provides an initial set of operations for interacting with Azure Managed Cleanroom services. The current implementation includes `collaborations list` and `collaborations get` (data plane) plus `collaborationarm create` and `collaborationarm get` (control plane), with additional command groups planned.
 
 Commands interact with:
 - **Data Plane APIs**: Cleanroom Analytics Frontend for read operations (list collaborations, queries, datasets)
@@ -17,7 +17,7 @@ Commands interact with:
 | Command Group | Command | Status |
 | --- | --- | --- |
 | CollaborationArm | `collaborationarm create` | Completed |
-| CollaborationArm | `collaborationarm get` | Pending |
+| CollaborationArm | `collaborationarm get` | Completed |
 | CollaborationArm | `collaborationarm add-collaborator` | Pending |
 | CollaborationArm | `collaborationarm enable-workload` | Pending |
 | CollaborationArm | `collaborationarm get-readonly-kubeconfig` | Pending |
@@ -27,7 +27,7 @@ Commands interact with:
 | Command Group | Command | Status |
 | --- | --- | --- |
 | Collaborations | `collaborations list` | Completed |
-| Collaborations | `collaborations get` | Pending |
+| Collaborations | `collaborations get` | Completed |
 | Analytics | `analytics get` | Pending |
 | Analytics | `analytics skr-policy` | Pending |
 | OIDC | `oidc issuer-info` | Pending |
@@ -58,9 +58,10 @@ Azure.Mcp.Tools.ManagedCleanroom/
 │   ├── ManagedCleanroomSetup.cs                      # DI registration & command tree
 │   ├── Commands/
 │   │   ├── ManagedCleanroomJsonContext.cs            # AOT-safe JSON serialization
-│   │   ├── Collaboration/
+│   │   ├── CollaborationArm/
 │   │   │   ├── CollaborationCreateCommand.cs 
-│   │   │   └── [Other collaboration commands ]
+│   │   │   ├── CollaborationGetCommand.cs 
+│   │   │   └── [Other collaboration ARM commands ]
 │   │   ├── Collaborations/
 │   │   │   ├── CollaborationsListCommand.cs 
 │   │   │   └── [Other collaboration commands ]
@@ -74,8 +75,10 @@ Azure.Mcp.Tools.ManagedCleanroom/
 │   │   └── AuditEvents/                            # Audit event listing
 │   ├── Options/
 │   │   ├── ManagedCleanroomOptionDescriptions.cs
-│   │   ├── Collaboration/
-│   │   │   └── [Options classes - mixed status]
+│   │   ├── CollaborationArm/
+│   │   │   ├── CollaborationCreateOptions.cs
+│   │   │   ├── CollaborationGetOptions.cs
+│   │   │   └── [Other options classes - mixed status]
 │   │   └── [Options for all command groups]
 │   ├── Models/
 │   │   └── CollaborationCreateResult.cs
@@ -88,6 +91,7 @@ Azure.Mcp.Tools.ManagedCleanroom/
     └── Azure.Mcp.Tools.ManagedCleanroom.Tests/
         ├── CollaborationArm/
         │   ├── CollaborationCreateCommandTests.cs 
+        │   ├── CollaborationGetCommandTests.cs 
         │   └── [Other tests - ⏳]
         ├── Collaborations/
         │   ├── CollaborationsListCommandTests.cs 
@@ -99,7 +103,7 @@ Azure.Mcp.Tools.ManagedCleanroom/
 
 ## Implementation Notes
 
-- **Completed**: `collaborations list`, `collaboration create`
+- **Completed**: `collaborations list`, `collaborations get`, `collaborationarm create`, `collaborationarm get`
 - **Pending**: 25 additional commands across 9 command groups
 - Commands span both data plane and control plane operations
 

@@ -30,22 +30,26 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<IManagedCleanroomServiceDataPlane, ManagedCleanroomDataPlaneService>();
         services.AddSingleton<IManagedCleanroomServiceControlPlane, ManagedCleanroomControlPlaneService>();
         services.AddSingleton<CollaborationsListCommand>();
+        services.AddSingleton<CollaborationsGetCommand>();
+        services.AddSingleton<CollaborationGetCommand>();
         services.AddSingleton<CollaborationCreateCommand>();
     }
 
     public CommandGroup RegisterCommands(IServiceProvider serviceProvider)
     {
         var root = new CommandGroup(Name,
-            "Azure Managed Cleanroom operations - Commands for interacting with the Azure Cleanroom Analytics Frontend, including listing and inspecting collaborations and analytics workloads.", Title);
+            "Azure Managed Cleanroom operations - Commands for interacting with the Cleanroom frontend and ARM APIs for collaboration listing, lookup, and creation.", Title);
 
         var collaborations = new CommandGroup("collaborations", "Cleanroom collaboration operations - Commands for listing and inspecting cleanroom collaborations.");
         root.AddSubGroup(collaborations);
 
         collaborations.AddCommand<CollaborationsListCommand>(serviceProvider);
+        collaborations.AddCommand<CollaborationsGetCommand>(serviceProvider);
 
         var collaborationArm = new CommandGroup("collaborationarm", "Cleanroom ARM management operations - Commands for creating and managing Azure Cleanroom collaboration ARM resources.");
         root.AddSubGroup(collaborationArm);
 
+        collaborationArm.AddCommand<CollaborationGetCommand>(serviceProvider);
         collaborationArm.AddCommand<CollaborationCreateCommand>(serviceProvider);
 
         return root;

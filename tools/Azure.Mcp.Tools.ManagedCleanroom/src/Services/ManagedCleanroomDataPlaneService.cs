@@ -36,6 +36,26 @@ public class ManagedCleanroomDataPlaneService(ISubscriptionService subscriptionS
         return ParseResponse(response);
     }
 
+    public async Task<JsonElement> GetCollaborationAsync(
+        string endpoint,
+        string collaborationId,
+        bool? includeDeleted = null,
+        string? tokenScope = null,
+        string? tenant = null,
+        RetryPolicyOptions? retryPolicy = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateRequiredParameters((nameof(collaborationId), collaborationId));
+
+        var client = await BuildClientAsync(endpoint, tokenScope, tenant, cancellationToken)
+            .ConfigureAwait(false);
+
+        var requestContext = new RequestContext { CancellationToken = cancellationToken };
+        Response response = await client.IdGetAsync(collaborationId, includeDeleted, requestContext).ConfigureAwait(false);
+
+        return ParseResponse(response);
+    }
+
     private async Task<CollaborationClient> BuildClientAsync(
         string endpoint,
         string? tokenScope,

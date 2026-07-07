@@ -20,7 +20,7 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.CollaborationArm;
     Description = """
         Creates an Azure Cleanroom collaboration ARM resource in the specified resource group and location.
         Returns immediately once the request is accepted by ARM. Provisioning runs in the background and typically takes ~25 minutes.
-        You can check the status by asking to get the collaboration by name once the request is accepted.
+        Monitor provisioning with `managedcleanroom collaborationarm get`, Azure portal, or ARM resource status APIs.
         """,
     Destructive = false,
     Idempotent = false,

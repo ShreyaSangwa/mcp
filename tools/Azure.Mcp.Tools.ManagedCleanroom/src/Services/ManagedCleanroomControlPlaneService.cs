@@ -20,6 +20,27 @@ public class ManagedCleanroomControlPlaneService(ISubscriptionService subscripti
 {
     private readonly ISubscriptionService _subscriptionService = subscriptionService;
 
+    public async Task<JsonElement> GetCollaborationArmResourceAsync(
+        string name,
+        string resourceGroup,
+        string subscription,
+        string? tenant = null,
+        RetryPolicyOptions? retryPolicy = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateRequiredParameters(
+            (nameof(name), name),
+            (nameof(resourceGroup), resourceGroup),
+            (nameof(subscription), subscription));
+
+        var collaborationResource = await GetCollaborationResourceAsync(
+            name, resourceGroup, subscription, tenant, retryPolicy, cancellationToken)
+            .ConfigureAwait(false);
+
+        var response = await collaborationResource.GetAsync(cancellationToken).ConfigureAwait(false);
+        return ParseResponse(response.GetRawResponse());
+    }
+
     public async Task<CollaborationCreateResult> CreateCollaborationArmResourceAsync(
         string name,
         string resourceGroup,
@@ -73,11 +94,32 @@ public class ManagedCleanroomControlPlaneService(ISubscriptionService subscripti
 
         var message = $"Collaboration '{name}' creation request accepted. " +
             "Provisioning is running in the background and typically takes ~25 minutes to complete. " +
-            $"You can check the status by asking to get the collaboration '{name}' in resource group '{resourceGroup}'.";
+            $"Use 'managedcleanroom collaborationarm get --name {name} --resource-group {resourceGroup} --subscription {subscription}' or Azure portal to monitor provisioning.";
 
         return new CollaborationCreateResult(
             ParseResponse(operation.GetRawResponse()),
             message);
+    }
+
+    private async Task<CollaborationResource> GetCollaborationResourceAsync(
+        string name,
+        string resourceGroup,
+        string subscription,
+        string? tenant,
+        RetryPolicyOptions? retryPolicy,
+        CancellationToken cancellationToken)
+    {
+        var armClient = await CreateArmClientAsync(tenant, retryPolicy, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        var subscriptionResource = await _subscriptionService
+            .GetSubscription(subscription, tenant, retryPolicy, cancellationToken)
+            .ConfigureAwait(false);
+
+        var resourceId = CollaborationResource.CreateResourceIdentifier(
+            subscriptionResource.Id.SubscriptionId!, resourceGroup, name);
+
+        return armClient.GetCollaborationResource(resourceId);
     }
 
     private static JsonElement ParseResponse(Response response)
@@ -92,3 +134,4 @@ public class ManagedCleanroomControlPlaneService(ISubscriptionService subscripti
             ManagedCleanroomJsonContext.Default.JsonElement);
     }
 }
+
