@@ -134,3 +134,4 @@ public class ManagedCleanroomControlPlaneService(ISubscriptionService subscripti
             ManagedCleanroomJsonContext.Default.JsonElement);
     }
 }
+
