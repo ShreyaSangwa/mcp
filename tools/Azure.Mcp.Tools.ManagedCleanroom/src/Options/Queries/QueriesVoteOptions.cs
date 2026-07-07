@@ -24,6 +24,9 @@ public class QueriesVoteOptions
     [Option("Optional compatibility vote value. Used only when --body is not provided.")]
     public string? Vote { get; set; }
 
+    [Option("Optional proposal identifier for approval workflows that require proposal scoping. If omitted and --vote is used, the service attempts to resolve proposalId from the query document.")]
+    public string? ProposalId { get; set; }
+
     [Option(ManagedCleanroomOptionDescriptions.AllowUntrustedCert)]
     public bool AllowUntrustedCert { get; set; }
 

@@ -28,7 +28,7 @@ public class DatasetsBuildBodyOptions
     [Option("Dataset access mode. Defaults to 'read'.")]
     public string? AccessMode { get; set; }
 
-    [Option("Dataset encryption mode. Defaults to 'SSE'. Values like 'CPK' are normalized to 'CSE' for frontend payload compatibility.")]
+    [Option("Dataset encryption mode. Defaults to 'SSE'. Use 'CPK' for customer-provided keys to match the sample dataset payloads; 'CSE' is also accepted for compatibility.")]
     public string? EncryptionMode { get; set; }
 
     [Option("Storage account type for the dataset store. Defaults to 'Azure_BlobStorage'.")]

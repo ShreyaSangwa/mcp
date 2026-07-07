@@ -6,6 +6,7 @@ using System.Text.Json;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Datasets;
 using Azure.Mcp.Tools.ManagedCleanroom.Services;
+using Microsoft.Mcp.Core.Commands;
 using Microsoft.Mcp.Tests;
 using Microsoft.Mcp.Tests.Client;
 using NSubstitute;
@@ -106,6 +107,52 @@ public sealed class DatasetsPublishCommandTests : CommandUnitTestsBase<DatasetsP
         await Service.Received(1).PublishDatasetAsync(
             TestEndpoint, TestCollaborationId, TestDocumentId, body, false, null, Arg.Any<CancellationToken>());
     }
+
+        [Fact]
+        public async Task ExecuteAsync_WithStructuredMcpBody_BindsRawJsonToService()
+        {
+                var bodyElement = JsonDocument.Parse(
+                        """
+                        {
+                            "datasetDetails": {
+                                "name": "demo",
+                                "datasetSchema": { "format": "csv", "fields": [] },
+                                "datasetAccessPolicy": { "accessMode": "read", "allowedFields": [] },
+                                "store": {
+                                    "storageAccountUrl": "https://demo.blob.core.windows.net",
+                                    "containerName": "input",
+                                    "storageAccountType": "Azure_BlobStorage",
+                                    "encryptionMode": "SSE"
+                                }
+                            }
+                        }
+                        """).RootElement;
+
+                Service.PublishDatasetAsync(
+                        Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<bool>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+                        .Returns(default(JsonElement));
+
+                var arguments = new Dictionary<string, JsonElement>
+                {
+                        ["endpoint"] = JsonSerializer.SerializeToElement(TestEndpoint),
+                        ["collaborationId"] = JsonSerializer.SerializeToElement(TestCollaborationId),
+                        ["documentId"] = JsonSerializer.SerializeToElement(TestDocumentId),
+                        ["body"] = bodyElement
+                };
+
+                var parseResult = CommandDefinition.ParseFromDictionary(arguments);
+                var response = await ((IBaseCommand)Command).ExecuteAsync(Context, parseResult, TestContext.Current.CancellationToken);
+
+                Assert.Equal(HttpStatusCode.OK, response.Status);
+                await Service.Received(1).PublishDatasetAsync(
+                        TestEndpoint,
+                        TestCollaborationId,
+                        TestDocumentId,
+                        bodyElement.GetRawText(),
+                        false,
+                        null,
+                        Arg.Any<CancellationToken>());
+        }
 
     [Fact]
     public async Task ExecuteAsync_WithAllowUntrustedCertTrue_PassesTrueToService()

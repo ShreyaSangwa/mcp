@@ -6,6 +6,7 @@ using Azure.Mcp.Tools.ManagedCleanroom.Commands.AuditEvents;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.CollaborationArm;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaborations;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Consent;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.Dashboard;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Datasets;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Queries;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Runs;
@@ -43,6 +44,7 @@ public class ManagedCleanroomSetup : IAreaSetup
         services.AddSingleton<CollaborationRecoverCommand>();
         services.AddSingleton<InvitationsListCommand>();
         services.AddSingleton<InvitationsAcceptCommand>();
+        services.AddSingleton<DashboardOpenGrafanaCommand>();
         services.AddSingleton<DatasetsPublishCommand>();
         services.AddSingleton<DatasetsBuildBodyCommand>();
         services.AddSingleton<DatasetsGetCommand>();
@@ -96,6 +98,11 @@ public class ManagedCleanroomSetup : IAreaSetup
 
         invitations.AddCommand<InvitationsListCommand>(serviceProvider);
         invitations.AddCommand<InvitationsAcceptCommand>(serviceProvider);
+
+        var dashboard = new CommandGroup("dashboard", "Cleanroom dashboard operations - Commands for accessing monitoring dashboards in a cleanroom collaboration.");
+        root.AddSubGroup(dashboard);
+
+        dashboard.AddCommand<DashboardOpenGrafanaCommand>(serviceProvider);
 
         var datasets = new CommandGroup("datasets", "Cleanroom dataset operations - Commands for publishing and inspecting datasets in a cleanroom collaboration.");
         root.AddSubGroup(datasets);

@@ -159,6 +159,7 @@ public interface IManagedCleanroomService
         string documentId,
         string? body = null,
         string? vote = null,
+        string? proposalId = null,
         bool allowUntrustedCert = false,
         string? tenant = null,
         CancellationToken cancellationToken = default);

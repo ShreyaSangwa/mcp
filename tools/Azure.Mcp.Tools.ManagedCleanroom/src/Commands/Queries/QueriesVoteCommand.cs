@@ -43,6 +43,7 @@ public sealed class QueriesVoteCommand(ILogger<QueriesVoteCommand> logger, IMana
                 options.DocumentId,
                 options.Body,
                 options.Vote,
+                options.ProposalId,
                 options.AllowUntrustedCert,
                 options.Tenant,
                 cancellationToken).ConfigureAwait(false);

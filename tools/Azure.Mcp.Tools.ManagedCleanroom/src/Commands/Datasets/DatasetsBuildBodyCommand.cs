@@ -14,7 +14,7 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Datasets;
     Id = "33cce6e4-b8fb-4f70-b1af-d25227cd1ca1",
     Name = "build-body",
     Title = "Build Cleanroom Dataset Body",
-    Description = "Builds and validates a dataset publish body for Azure Cleanroom. Returns a wrapper with 'body' (compact JSON string) and 'dataset' (object). For datasets publish, pass the returned 'body' value, not the full wrapper object.",
+    Description = "Builds and validates a dataset publish body for Azure Cleanroom. Returns a wrapper with 'body' (compact JSON string), 'dataset' (object), and normalization metadata. Datasets publish accepts the returned body value, the dataset object, or the full wrapper JSON directly.",
     Destructive = false,
     Idempotent = true,
     OpenWorld = false,

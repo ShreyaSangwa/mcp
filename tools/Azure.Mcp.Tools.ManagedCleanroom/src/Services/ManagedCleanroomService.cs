@@ -235,7 +235,8 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             .ConfigureAwait(false);
 
         var requestBody = await ResolveBodyContentAsync(body, cancellationToken).ConfigureAwait(false);
-        var content = RequestContent.Create(BinaryData.FromString(requestBody));
+        var normalizedBody = NormalizeDatasetPublishPayload(requestBody);
+        var content = RequestContent.Create(BinaryData.FromString(normalizedBody));
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
         Response response = await client.AnalyticsDatasetsDocumentIdPublishPostAsync(
             collaborationId, documentId, content, requestContext).ConfigureAwait(false);
@@ -263,6 +264,126 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             throw new FileNotFoundException($"Body file '{filePath}' was not found.", filePath);
 
         return await File.ReadAllTextAsync(filePath, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Normalizes dataset publish payload to mimic SDK CLI behavior:
+    /// - send the body bytes exactly as provided for flat dataset JSON
+    /// - if the payload is a build-body wrapper, extract and send its nested dataset JSON
+    /// - if the payload is a command/tool response envelope, extract and send the nested payload
+    /// </summary>
+    internal static string NormalizeDatasetPublishPayload(string json)
+    {
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        if (root.ValueKind == JsonValueKind.String)
+        {
+            var nestedJson = root.GetString();
+            if (!string.IsNullOrWhiteSpace(nestedJson))
+            {
+                return NormalizeDatasetPublishPayload(nestedJson);
+            }
+        }
+
+        if (root.ValueKind == JsonValueKind.Object)
+        {
+            if (TryGetNestedPayload(root, out var nestedPayload))
+            {
+                return NormalizeDatasetPublishPayload(nestedPayload);
+            }
+
+            if (root.TryGetProperty("datasetDetails", out var datasetDetails))
+            {
+                if (datasetDetails.ValueKind == JsonValueKind.Object)
+                {
+                    return datasetDetails.GetRawText();
+                }
+
+                if (datasetDetails.ValueKind == JsonValueKind.String)
+                {
+                    var nestedJson = datasetDetails.GetString();
+                    if (!string.IsNullOrWhiteSpace(nestedJson))
+                    {
+                        return NormalizeDatasetPublishPayload(nestedJson);
+                    }
+                }
+
+                return json;
+            }
+
+            if (root.TryGetProperty("dataset", out var dataset) && dataset.ValueKind == JsonValueKind.Object)
+            {
+                return dataset.GetRawText();
+            }
+
+            if (root.TryGetProperty("body", out var bodyProperty) && bodyProperty.ValueKind == JsonValueKind.String)
+            {
+                var nestedJson = bodyProperty.GetString();
+                if (!string.IsNullOrWhiteSpace(nestedJson))
+                {
+                    return NormalizeDatasetPublishPayload(nestedJson);
+                }
+            }
+        }
+
+        return json;
+    }
+
+    private static bool TryGetNestedPayload(JsonElement root, out string nestedPayload)
+    {
+        if (TryGetObjectOrStringProperty(root, "results", out nestedPayload)
+            || TryGetObjectOrStringProperty(root, "result", out nestedPayload)
+            || TryGetObjectOrStringProperty(root, "value", out nestedPayload))
+        {
+            return true;
+        }
+
+        if (root.TryGetProperty("content", out var content)
+            && content.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in content.EnumerateArray())
+            {
+                if (item.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                if (item.TryGetProperty("text", out var text)
+                    && text.ValueKind == JsonValueKind.String)
+                {
+                    var textValue = text.GetString();
+                    if (!string.IsNullOrWhiteSpace(textValue))
+                    {
+                        nestedPayload = textValue;
+                        return true;
+                    }
+                }
+            }
+        }
+
+        nestedPayload = string.Empty;
+        return false;
+    }
+
+    private static bool TryGetObjectOrStringProperty(JsonElement root, string propertyName, out string nestedPayload)
+    {
+        if (root.TryGetProperty(propertyName, out var property))
+        {
+            switch (property.ValueKind)
+            {
+                case JsonValueKind.Object:
+                case JsonValueKind.Array:
+                    nestedPayload = property.GetRawText();
+                    return true;
+                case JsonValueKind.String:
+                    nestedPayload = property.GetString() ?? string.Empty;
+                    return !string.IsNullOrWhiteSpace(nestedPayload);
+            }
+        }
+
+        nestedPayload = string.Empty;
+        return false;
     }
 
     public async Task<JsonElement> GetDatasetAsync(
@@ -402,11 +523,6 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             : storageAccountType.Trim();
 
         var normalizedEncryptionMode = string.IsNullOrWhiteSpace(encryptionMode) ? "SSE" : encryptionMode.Trim().ToUpperInvariant();
-        if (normalizedEncryptionMode == "CPK")
-        {
-            // The frontend payload commonly uses CSE for customer-provided keys.
-            normalizedEncryptionMode = "CSE";
-        }
 
         var hasAnyKeyBlocks =
             !string.IsNullOrWhiteSpace(dekKeyVaultUrl) ||
@@ -427,7 +543,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
                 nameof(dekKeyVaultUrl));
         }
 
-        if (hasAnyKeyBlocks && normalizedEncryptionMode != "CSE")
+        if (hasAnyKeyBlocks && normalizedEncryptionMode is not ("CPK" or "CSE"))
         {
             throw new ArgumentException(
                 "dek/kek key blocks are only valid when encryptionMode is CPK/CSE.",
@@ -864,6 +980,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         string documentId,
         string? body = null,
         string? vote = null,
+        string? proposalId = null,
         bool allowUntrustedCert = false,
         string? tenant = null,
         CancellationToken cancellationToken = default)
@@ -884,15 +1001,35 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         if (!string.IsNullOrWhiteSpace(body))
         {
             requestBody = await ResolveBodyContentAsync(body, cancellationToken).ConfigureAwait(false);
+            requestBody = NormalizeVoteBodyPayload(requestBody);
         }
         else if (!string.IsNullOrWhiteSpace(vote))
         {
             // Backward compatibility for legacy --vote input.
+            // Match SDK workflow payload shape: {"voteAction":"accept|reject","proposalId":"..."}
+            var normalizedVote = vote.Trim();
+            var normalizedVoteAction = NormalizeVoteAction(normalizedVote);
+            if (string.IsNullOrWhiteSpace(normalizedVoteAction))
+            {
+                throw new ArgumentException(
+                    "Unsupported vote value. Use approve/accept or reject/decline, or pass a full --body payload.");
+            }
+
+            var resolvedProposalId = proposalId?.Trim();
+
+            if (string.IsNullOrWhiteSpace(resolvedProposalId))
+            {
+                throw new ArgumentException(
+                    "proposalId is required for query vote. Provide --proposal-id or pass a full --body payload.");
+            }
+
             var buffer = new ArrayBufferWriter<byte>();
             using (var writer = new Utf8JsonWriter(buffer))
             {
                 writer.WriteStartObject();
-                writer.WriteString("vote", vote);
+                writer.WriteString("voteAction", normalizedVoteAction);
+                writer.WriteString("proposalId", resolvedProposalId);
+
                 writer.WriteEndObject();
                 writer.Flush();
             }
@@ -910,6 +1047,137 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             collaborationId, documentId, content, requestContext).ConfigureAwait(false);
 
         return ParseResponse(response);
+    }
+
+    internal static string NormalizeVoteBodyPayload(string json)
+    {
+        using var doc = JsonDocument.Parse(json);
+        if (doc.RootElement.ValueKind != JsonValueKind.Object)
+        {
+            return json;
+        }
+
+        var root = doc.RootElement;
+        var hasVoteAction = root.TryGetProperty("voteAction", out var voteActionProperty)
+            && voteActionProperty.ValueKind == JsonValueKind.String;
+        var hasVote = root.TryGetProperty("vote", out var voteProperty)
+            && voteProperty.ValueKind == JsonValueKind.String;
+
+        var normalizedVoteAction = hasVoteAction
+            ? NormalizeVoteAction(voteActionProperty.GetString() ?? string.Empty)
+            : null;
+
+        if (string.IsNullOrWhiteSpace(normalizedVoteAction) && hasVote)
+        {
+            normalizedVoteAction = NormalizeVoteAction(voteProperty.GetString() ?? string.Empty);
+        }
+
+        if (string.IsNullOrWhiteSpace(normalizedVoteAction))
+        {
+            return json;
+        }
+
+        var buffer = new ArrayBufferWriter<byte>();
+        using var writer = new Utf8JsonWriter(buffer);
+        writer.WriteStartObject();
+
+        foreach (var property in root.EnumerateObject())
+        {
+            if (property.NameEquals("voteAction"))
+            {
+                writer.WriteString("voteAction", normalizedVoteAction);
+            }
+            else
+            {
+                property.WriteTo(writer);
+            }
+        }
+
+        if (!hasVoteAction)
+        {
+            writer.WriteString("voteAction", normalizedVoteAction);
+        }
+
+        writer.WriteEndObject();
+        writer.Flush();
+
+        return BinaryData.FromBytes(buffer.WrittenMemory.ToArray()).ToString();
+    }
+
+    private static string? NormalizeVoteAction(string vote)
+    {
+        if (vote.Equals("approve", StringComparison.OrdinalIgnoreCase)
+            || vote.Equals("approved", StringComparison.OrdinalIgnoreCase)
+            || vote.Equals("accept", StringComparison.OrdinalIgnoreCase)
+            || vote.Equals("accepted", StringComparison.OrdinalIgnoreCase))
+        {
+            return "accept";
+        }
+
+        if (vote.Equals("reject", StringComparison.OrdinalIgnoreCase)
+            || vote.Equals("rejected", StringComparison.OrdinalIgnoreCase)
+            || vote.Equals("decline", StringComparison.OrdinalIgnoreCase)
+            || vote.Equals("declined", StringComparison.OrdinalIgnoreCase)
+            || vote.Equals("deny", StringComparison.OrdinalIgnoreCase)
+            || vote.Equals("denied", StringComparison.OrdinalIgnoreCase))
+        {
+            return "reject";
+        }
+
+        return null;
+    }
+
+    private static string? TryResolveProposalId(JsonElement query)
+    {
+        if (TryGetStringProperty(query, "proposalId", out var proposalId))
+        {
+            return proposalId;
+        }
+
+        if (query.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var property in query.EnumerateObject())
+            {
+                if (property.Value.ValueKind == JsonValueKind.Object || property.Value.ValueKind == JsonValueKind.Array)
+                {
+                    var nested = TryResolveProposalId(property.Value);
+                    if (!string.IsNullOrWhiteSpace(nested))
+                    {
+                        return nested;
+                    }
+                }
+            }
+        }
+        else if (query.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in query.EnumerateArray())
+            {
+                var nested = TryResolveProposalId(item);
+                if (!string.IsNullOrWhiteSpace(nested))
+                {
+                    return nested;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static bool TryGetStringProperty(JsonElement element, string propertyName, out string? value)
+    {
+        value = null;
+        if (element.ValueKind != JsonValueKind.Object || !element.TryGetProperty(propertyName, out var property))
+        {
+            return false;
+        }
+
+        if (property.ValueKind != JsonValueKind.String)
+        {
+            return false;
+        }
+
+        value = property.GetString();
+        return !string.IsNullOrWhiteSpace(value);
     }
 
     public async Task<JsonElement> RunQueryAsync(
@@ -1113,6 +1381,86 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         return ParseResponse(response);
     }
 
+    private static string ParseDatasetDocumentId(string outputDatasetMapping)
+    {
+        var trimmed = outputDatasetMapping.Trim();
+        if (string.IsNullOrWhiteSpace(trimmed))
+        {
+            throw new ArgumentException("Output dataset mapping is empty.", nameof(outputDatasetMapping));
+        }
+
+        var separatorIndex = trimmed.IndexOf(':');
+        return separatorIndex < 0 ? trimmed : trimmed[..separatorIndex].Trim();
+    }
+
+    private static string NormalizeRunId(string? jobId)
+    {
+        if (string.IsNullOrWhiteSpace(jobId))
+        {
+            return string.Empty;
+        }
+
+        const string prefix = "cl-spark-";
+        var trimmed = jobId.Trim();
+        return trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            ? trimmed[prefix.Length..]
+            : trimmed;
+    }
+
+    private static string? GetOptionalStringProperty(JsonElement root, string propertyName)
+    {
+        return TryFindStringProperty(root, propertyName, out var value)
+            ? value
+            : null;
+    }
+
+    private static string GetRequiredStringProperty(JsonElement root, string propertyName, string contextName)
+    {
+        if (!TryFindStringProperty(root, propertyName, out var value) || string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException($"Unable to resolve {contextName} from service response (expected '{propertyName}').");
+        }
+
+        return value.Trim();
+    }
+
+    private static bool TryFindStringProperty(JsonElement element, string propertyName, out string? value)
+    {
+        value = null;
+
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            if (element.TryGetProperty(propertyName, out var directMatch) && directMatch.ValueKind == JsonValueKind.String)
+            {
+                value = directMatch.GetString();
+                return true;
+            }
+
+            foreach (var property in element.EnumerateObject())
+            {
+                if (TryFindStringProperty(property.Value, propertyName, out value))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        if (element.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in element.EnumerateArray())
+            {
+                if (TryFindStringProperty(item, propertyName, out value))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
 
     public async Task<JsonElement> AddCollaboratorAsync(
         string name,
@@ -1143,86 +1491,6 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         };
 
         var operation = await collaborationResource
-
-            private static string ParseDatasetDocumentId(string outputDatasetMapping)
-            {
-                var trimmed = outputDatasetMapping.Trim();
-                if (string.IsNullOrWhiteSpace(trimmed))
-                {
-                    throw new ArgumentException("Output dataset mapping is empty.", nameof(outputDatasetMapping));
-                }
-
-                var separatorIndex = trimmed.IndexOf(':');
-                return separatorIndex < 0 ? trimmed : trimmed[..separatorIndex].Trim();
-            }
-
-            private static string NormalizeRunId(string? jobId)
-            {
-                if (string.IsNullOrWhiteSpace(jobId))
-                {
-                    return string.Empty;
-                }
-
-                const string prefix = "cl-spark-";
-                var trimmed = jobId.Trim();
-                return trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
-                    ? trimmed[prefix.Length..]
-                    : trimmed;
-            }
-
-            private static string? GetOptionalStringProperty(JsonElement root, string propertyName)
-            {
-                return TryFindStringProperty(root, propertyName, out var value)
-                    ? value
-                    : null;
-            }
-
-            private static string GetRequiredStringProperty(JsonElement root, string propertyName, string contextName)
-            {
-                if (!TryFindStringProperty(root, propertyName, out var value) || string.IsNullOrWhiteSpace(value))
-                {
-                    throw new ArgumentException($"Unable to resolve {contextName} from service response (expected '{propertyName}').");
-                }
-
-                return value.Trim();
-            }
-
-            private static bool TryFindStringProperty(JsonElement element, string propertyName, out string? value)
-            {
-                value = null;
-
-                if (element.ValueKind == JsonValueKind.Object)
-                {
-                    if (element.TryGetProperty(propertyName, out var directMatch) && directMatch.ValueKind == JsonValueKind.String)
-                    {
-                        value = directMatch.GetString();
-                        return true;
-                    }
-
-                    foreach (var property in element.EnumerateObject())
-                    {
-                        if (TryFindStringProperty(property.Value, propertyName, out value))
-                        {
-                            return true;
-                        }
-                    }
-
-                    return false;
-                }
-
-                if (element.ValueKind == JsonValueKind.Array)
-                {
-                    foreach (var item in element.EnumerateArray())
-                    {
-                        if (TryFindStringProperty(item, propertyName, out value))
-                        {
-                            return true;
-                        }
-                    }
-                }
-
-                return false;
-            }
             .AddCollaboratorAsync(WaitUntil.Started, content, cancellationToken)
             .ConfigureAwait(false);
 
