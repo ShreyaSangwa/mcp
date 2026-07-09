@@ -5,6 +5,8 @@
   <ItemGroup>
     <PackageVersion Include="Apache.Arrow" Version="22.1.0" />
     <PackageVersion Include="Azure.Containers.ContainerRegistry" Version="1.2.0" />
+    <!-- Cleanroom SDKs are temporarily added as vendored NuGet packages until they are published. -->
+    <PackageVersion Include="Azure.Cleanroom.Analytics.Frontend.Client" Version="1.0.0-beta.1" />
     <PackageVersion Include="Azure.Communication.Sms" Version="1.0.2" />
     <PackageVersion Include="Azure.Communication.Email" Version="1.0.2" />
     <PackageVersion Include="Azure.AI.Projects" Version="1.0.0-beta.9" />
@@ -54,7 +56,6 @@
     <PackageVersion Include="Azure.Security.KeyVault.Administration" Version="4.5.0" />
     <PackageVersion Include="Azure.Security.KeyVault.Certificates" Version="4.7.0" />
     <PackageVersion Include="Azure.Security.ConfidentialLedger" Version="1.4.1-beta.3" />
-    <PackageVersion Include="Azure.Cleanroom.Analytics.Frontend.Client" Version="1.0.0-beta.1" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.24.0" />
     <PackageVersion Include="Azure.ResourceManager.StorageCache" Version="1.4.0" />
     <PackageVersion Include="Azure.ResourceManager.Datadog" Version="1.0.0-beta.6" />
