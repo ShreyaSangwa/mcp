@@ -1771,18 +1771,19 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             HttpPipelinePosition.PerCall);
 
         var testProxyUrl = Environment.GetEnvironmentVariable("TEST_PROXY_URL");
-        if (!string.IsNullOrWhiteSpace(testProxyUrl))
+        if (allowUntrustedCert)
         {
-            // Keep proxy transport active in record/playback so requests are captured and replayed.
-            options.Transport = new HttpClientTransport(_httpClientFactory.CreateClient());
-        }
-        else if (allowUntrustedCert)
-        {
+            // Explicitly prefer insecure certificate bypass when requested.
             var handler = new HttpClientHandler
             {
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             };
             options.Transport = new HttpClientTransport(handler);
+        }
+        else if (!string.IsNullOrWhiteSpace(testProxyUrl))
+        {
+            // Keep proxy transport active in record/playback so requests are captured and replayed.
+            options.Transport = new HttpClientTransport(_httpClientFactory.CreateClient());
         }
         else
         {
