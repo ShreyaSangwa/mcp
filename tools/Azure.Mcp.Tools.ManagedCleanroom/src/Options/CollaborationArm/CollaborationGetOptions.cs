@@ -9,18 +9,18 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Options.CollaborationArm;
 
 public class CollaborationGetOptions : ISubscriptionOption
 {
-    [Option("The name of the Azure Cleanroom collaboration ARM resource to retrieve.")]
+    [Option(Description = "The name of the Azure Cleanroom collaboration ARM resource to retrieve.")]
     public required string Name { get; set; }
 
-    [Option(OptionDescriptions.ResourceGroup)]
+    [Option(Description = OptionDescriptions.ResourceGroup)]
     public required string ResourceGroup { get; set; }
 
-    [Option(OptionDescriptions.Subscription)]
+    [Option(Description = OptionDescriptions.Subscription)]
     public string? Subscription { get; set; }
 
-    [Option(OptionDescriptions.Tenant)]
+    [Option(Description = OptionDescriptions.Tenant)]
     public string? Tenant { get; set; }
 
-    [Option(Name = "retry")]
+    [OptionContainer(Prefix = "retry")]
     public RetryPolicyOptions? RetryPolicy { get; set; }
 }

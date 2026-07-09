@@ -21,11 +21,11 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Oidc;
     ReadOnly = false,
     Secret = false,
     LocalRequired = false)]
-public sealed class OidcSetIssuerUrlCommand(ILogger<OidcSetIssuerUrlCommand> logger, IManagedCleanroomService service)
+public sealed class OidcSetIssuerUrlCommand(ILogger<OidcSetIssuerUrlCommand> logger, IManagedCleanroomServiceDataPlane service)
     : AuthenticatedCommand<OidcSetIssuerUrlOptions, OidcSetIssuerUrlCommand.OidcSetIssuerUrlCommandResult>
 {
     private readonly ILogger<OidcSetIssuerUrlCommand> _logger = logger;
-    private readonly IManagedCleanroomService _service = service;
+    private readonly IManagedCleanroomServiceDataPlane _service = service;
 
     public override async Task<CommandResponse> ExecuteAsync(
         CommandContext context, OidcSetIssuerUrlOptions options, CancellationToken cancellationToken)

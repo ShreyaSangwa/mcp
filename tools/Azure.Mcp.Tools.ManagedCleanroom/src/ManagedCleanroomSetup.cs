@@ -27,7 +27,10 @@ public class ManagedCleanroomSetup : IAreaSetup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddSingleton<IManagedCleanroomService, ManagedCleanroomService>();
+        services.AddSingleton<ManagedCleanroomService>();
+        services.AddSingleton<IManagedCleanroomService>(sp => sp.GetRequiredService<ManagedCleanroomService>());
+        services.AddSingleton<IManagedCleanroomServiceDataPlane>(sp => sp.GetRequiredService<ManagedCleanroomService>());
+        services.AddSingleton<IManagedCleanroomServiceControlPlane>(sp => sp.GetRequiredService<ManagedCleanroomService>());
         services.AddSingleton<CollaborationsListCommand>();
         services.AddSingleton<CollaborationsGetCommand>();
         services.AddSingleton<AnalyticsGetCommand>();
@@ -80,18 +83,22 @@ public class ManagedCleanroomSetup : IAreaSetup
         oidc.AddCommand<OidcKeysCommand>(serviceProvider);
         oidc.AddCommand<OidcSetIssuerUrlCommand>(serviceProvider);
 
-        var collaborationArm = new CommandGroup("collaborationarm", "Cleanroom ARM management operations - Commands for creating and managing Azure Cleanroom collaboration ARM resources.");
-        root.AddSubGroup(collaborationArm);
+        var collaborations = new CommandGroup("collaborations", "Cleanroom collaboration operations - Commands for listing and inspecting cleanroom collaborations.");
+        root.AddSubGroup(collaborations);
 
-        collaborationArm.AddCommand<CollaborationsListCommand>(serviceProvider);
-        collaborationArm.AddCommand<CollaborationsGetCommand>(serviceProvider);
-        collaborationArm.AddCommand<CollaborationCreateCommand>(serviceProvider);
-        collaborationArm.AddCommand<CollaborationGetCommand>(serviceProvider);
-        collaborationArm.AddCommand<CollaborationDeleteCommand>(serviceProvider);
-        collaborationArm.AddCommand<CollaborationAddCollaboratorCommand>(serviceProvider);
-        collaborationArm.AddCommand<CollaborationEnableWorkloadCommand>(serviceProvider);
-        collaborationArm.AddCommand<CollaborationGetReadonlyKubeconfigCommand>(serviceProvider);
-        collaborationArm.AddCommand<CollaborationRecoverCommand>(serviceProvider);
+        collaborations.AddCommand<CollaborationsListCommand>(serviceProvider);
+        collaborations.AddCommand<CollaborationsGetCommand>(serviceProvider);
+
+        var collaboration = new CommandGroup("collaboration", "Cleanroom ARM management operations - Commands for creating and managing Azure Cleanroom collaboration ARM resources.");
+        root.AddSubGroup(collaboration);
+
+        collaboration.AddCommand<CollaborationCreateCommand>(serviceProvider);
+        collaboration.AddCommand<CollaborationGetCommand>(serviceProvider);
+        collaboration.AddCommand<CollaborationDeleteCommand>(serviceProvider);
+        collaboration.AddCommand<CollaborationAddCollaboratorCommand>(serviceProvider);
+        collaboration.AddCommand<CollaborationEnableWorkloadCommand>(serviceProvider);
+        collaboration.AddCommand<CollaborationGetReadonlyKubeconfigCommand>(serviceProvider);
+        collaboration.AddCommand<CollaborationRecoverCommand>(serviceProvider);
 
         var invitations = new CommandGroup("invitations", "Cleanroom invitation operations - Commands for listing and inspecting cleanroom collaboration invitations.");
         root.AddSubGroup(invitations);

@@ -9,23 +9,23 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Options.CollaborationArm;
 
 public class CollaborationEnableWorkloadOptions : ISubscriptionOption
 {
-    [Option("The name of the Azure Cleanroom collaboration ARM resource.")]
+    [Option(Description = "The name of the Azure Cleanroom collaboration ARM resource.")]
     public required string Name { get; set; }
 
-    [Option("The type of workload to enable on the collaboration. Allowed values: Analytics, AnalyticsStrict.")]
+    [Option(Description = "The type of workload to enable on the collaboration. Allowed values: Analytics, AnalyticsStrict.")]
     public required string WorkloadType { get; set; }
 
-    [Option(OptionDescriptions.ResourceGroup)]
+    [Option(Description = OptionDescriptions.ResourceGroup)]
     public required string ResourceGroup { get; set; }
 
-    [Option(OptionDescriptions.Subscription)]
+    [Option(Description = OptionDescriptions.Subscription)]
     public required string Subscription { get; set; }
 
     string? ISubscriptionOption.Subscription { get => Subscription; set => Subscription = value ?? string.Empty; }
 
-    [Option(OptionDescriptions.Tenant)]
+    [Option(Description = OptionDescriptions.Tenant)]
     public string? Tenant { get; set; }
 
-    [Option(Name = "retry")]
+    [OptionContainer(Prefix = "retry")]
     public RetryPolicyOptions? RetryPolicy { get; set; }
 }

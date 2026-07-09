@@ -29,12 +29,12 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.CollaborationArm;
     LocalRequired = false)]
 public sealed class CollaborationEnableWorkloadCommand(
     ILogger<CollaborationEnableWorkloadCommand> logger,
-    IManagedCleanroomService service,
+    IManagedCleanroomServiceControlPlane service,
     ISubscriptionResolver subscriptionResolver)
     : SubscriptionCommand<CollaborationEnableWorkloadOptions, CollaborationEnableWorkloadCommand.CollaborationEnableWorkloadCommandResult>(subscriptionResolver)
 {
     private readonly ILogger<CollaborationEnableWorkloadCommand> _logger = logger;
-    private readonly IManagedCleanroomService _service = service;
+    private readonly IManagedCleanroomServiceControlPlane _service = service;
 
     public override async Task<CommandResponse> ExecuteAsync(
         CommandContext context, CollaborationEnableWorkloadOptions options, CancellationToken cancellationToken)

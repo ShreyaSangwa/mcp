@@ -15,7 +15,7 @@ using NSubstitute.ExceptionExtensions;
 namespace Azure.Mcp.Tools.ManagedCleanroom.Tests.Collaboration;
 
 public sealed class CollaborationGetReadonlyKubeconfigCommandTests
-    : SubscriptionCommandUnitTestsBase<CollaborationGetReadonlyKubeconfigCommand, IManagedCleanroomService>
+    : SubscriptionCommandUnitTestsBase<CollaborationGetReadonlyKubeconfigCommand, IManagedCleanroomServiceControlPlane>
 {
     private const string TestName = "my-collab";
     private const string TestResourceGroup = "my-rg";

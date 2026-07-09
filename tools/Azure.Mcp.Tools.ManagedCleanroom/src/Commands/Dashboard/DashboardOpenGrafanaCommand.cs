@@ -35,11 +35,11 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Dashboard;
     ReadOnly = true,
     Secret = true,
     LocalRequired = true)]
-public sealed class DashboardOpenGrafanaCommand(ILogger<DashboardOpenGrafanaCommand> logger, IManagedCleanroomService service)
+public sealed class DashboardOpenGrafanaCommand(ILogger<DashboardOpenGrafanaCommand> logger, IManagedCleanroomServiceDataPlane service)
     : AuthenticatedCommand<DashboardOpenGrafanaOptions, DashboardOpenGrafanaCommand.DashboardOpenGrafanaCommandResult>
 {
     private readonly ILogger<DashboardOpenGrafanaCommand> _logger = logger;
-    private readonly IManagedCleanroomService _service = service;
+    private readonly IManagedCleanroomServiceDataPlane _service = service;
 
     private const string GrafanaSecretName = "cleanroom-spark-grafana";
     private const string GrafanaNamespace = "telemetry";

@@ -21,11 +21,11 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.AuditEvents;
     ReadOnly = true,
     Secret = false,
     LocalRequired = false)]
-public sealed class AuditEventsListCommand(ILogger<AuditEventsListCommand> logger, IManagedCleanroomService service)
+public sealed class AuditEventsListCommand(ILogger<AuditEventsListCommand> logger, IManagedCleanroomServiceDataPlane service)
     : AuthenticatedCommand<AuditEventsListOptions, AuditEventsListCommand.AuditEventsListCommandResult>
 {
     private readonly ILogger<AuditEventsListCommand> _logger = logger;
-    private readonly IManagedCleanroomService _service = service;
+    private readonly IManagedCleanroomServiceDataPlane _service = service;
 
     public override async Task<CommandResponse> ExecuteAsync(
         CommandContext context, AuditEventsListOptions options, CancellationToken cancellationToken)

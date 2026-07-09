@@ -21,11 +21,11 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Datasets;
     ReadOnly = false,
     Secret = false,
     LocalRequired = false)]
-public sealed class DatasetsPublishCommand(ILogger<DatasetsPublishCommand> logger, IManagedCleanroomService service)
+public sealed class DatasetsPublishCommand(ILogger<DatasetsPublishCommand> logger, IManagedCleanroomServiceDataPlane service)
     : AuthenticatedCommand<DatasetsPublishOptions, DatasetsPublishCommand.DatasetsPublishCommandResult>
 {
     private readonly ILogger<DatasetsPublishCommand> _logger = logger;
-    private readonly IManagedCleanroomService _service = service;
+    private readonly IManagedCleanroomServiceDataPlane _service = service;
 
     public override async Task<CommandResponse> ExecuteAsync(
         CommandContext context, DatasetsPublishOptions options, CancellationToken cancellationToken)

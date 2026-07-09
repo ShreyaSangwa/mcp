@@ -13,7 +13,7 @@ using NSubstitute.ExceptionExtensions;
 
 namespace Azure.Mcp.Tools.ManagedCleanroom.Tests.Datasets;
 
-public sealed class DatasetsBuildBodyCommandTests : CommandUnitTestsBase<DatasetsBuildBodyCommand, IManagedCleanroomService>
+public sealed class DatasetsBuildBodyCommandTests : CommandUnitTestsBase<DatasetsBuildBodyCommand, IManagedCleanroomServiceDataPlane>
 {
     private const string DatasetName = "woodgrove-input-csv-v1";
     private const string ContainerName = "woodgrove-input";

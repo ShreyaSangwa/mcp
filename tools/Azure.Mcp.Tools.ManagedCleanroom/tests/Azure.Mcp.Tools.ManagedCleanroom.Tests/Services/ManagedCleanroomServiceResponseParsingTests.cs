@@ -31,21 +31,19 @@ public sealed class ManagedCleanroomServiceResponseParsingTests
 
         var result = ManagedCleanroomService.ParseResponse(response);
 
-        Assert.Equal(JsonValueKind.Undefined, result.ValueKind);
+        Assert.Equal(JsonValueKind.String, result.ValueKind);
+        Assert.Equal(string.Empty, result.GetString());
     }
 
     [Fact]
-    public void ParseResponse_WithNonJsonContent_ReturnsSuccessEnvelope()
+    public void ParseResponse_WithNonJsonContent_ReturnsRawJsonString()
     {
         var response = Substitute.For<Response>();
         response.Content.Returns(BinaryData.FromString("publish completed"));
-        response.Status.Returns(200);
 
         var result = ManagedCleanroomService.ParseResponse(response);
 
-        Assert.Equal(JsonValueKind.Object, result.ValueKind);
-        Assert.Equal("Succeeded", result.GetProperty("status").GetString());
-        Assert.Equal(200, result.GetProperty("statusCode").GetInt32());
-        Assert.Equal("publish completed", result.GetProperty("rawResponse").GetString());
+        Assert.Equal(JsonValueKind.String, result.ValueKind);
+        Assert.Equal("publish completed", result.GetString());
     }
 }

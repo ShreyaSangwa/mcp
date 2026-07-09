@@ -30,12 +30,14 @@ Azure.Mcp.Tools.ManagedCleanroom/
 │   │   │   └── AnalyticsSkrPolicyCommand.cs
 │   │   ├── AuditEvents/
 │   │   │   └── AuditEventsListCommand.cs
-│   │   ├── Collaboration/
+│   │   ├── CollaborationArm/
 │   │   │   ├── CollaborationAddCollaboratorCommand.cs
 │   │   │   ├── CollaborationCreateCommand.cs
+│   │   │   ├── CollaborationDeleteCommand.cs
 │   │   │   ├── CollaborationEnableWorkloadCommand.cs
 │   │   │   ├── CollaborationGetCommand.cs
-│   │   │   └── CollaborationGetReadonlyKubeconfigCommand.cs
+│   │   │   ├── CollaborationGetReadonlyKubeconfigCommand.cs
+│   │   │   └── CollaborationRecoverCommand.cs
 │   │   ├── Collaborations/
 │   │   │   ├── CollaborationsListCommand.cs
 │   │   │   └── CollaborationsGetCommand.cs
@@ -102,6 +104,8 @@ Azure.Mcp.Tools.ManagedCleanroom/
 │   │       └── RunsGetOptions.cs
 │   └── Services/
 │       ├── IManagedCleanroomService.cs
+│       ├── IManagedCleanroomServiceDataPlane.cs
+│       ├── IManagedCleanroomServiceControlPlane.cs
 │       ├── ManagedCleanroomService.cs     # Frontend client + ARM glue
 │       └── ManagedCleanroomSerializerContext.cs
 └── tests/
@@ -123,7 +127,11 @@ Azure.Mcp.Tools.ManagedCleanroom/
         │   ├── CollaborationCreateCommandTests.cs
         │   ├── CollaborationEnableWorkloadCommandTests.cs
         │   ├── CollaborationGetCommandTests.cs
-        │   └── CollaborationGetReadonlyKubeconfigCommandTests.cs
+        │   ├── CollaborationGetReadonlyKubeconfigCommandTests.cs
+        │   └── CollaborationRecoverCommandTests.cs
+        ├── CollaborationArm/
+        │   ├── CollaborationCreateCommandTests.cs
+        │   └── CollaborationDeleteCommandTests.cs
         ├── Collaborations/
         │   ├── CollaborationsListCommandTests.cs
         │   └── CollaborationsGetCommandTests.cs
@@ -159,7 +167,8 @@ Azure.Mcp.Tools.ManagedCleanroom/
 Command (sealed, [CommandMetadata])
     │
     ▼
-IManagedCleanroomService (ManagedCleanroomService)
+IManagedCleanroomServiceDataPlane / IManagedCleanroomServiceControlPlane
+    (both backed by ManagedCleanroomService)
     │
     ├─► CollaborationClient   (HTTPS to --endpoint, bearer token w/ ARM scope)
     │       returns Azure.Response -> parsed to JsonElement
@@ -177,7 +186,7 @@ IManagedCleanroomService (ManagedCleanroomService)
 
 ---
 
-## Commands Implemented (26)
+## Commands Implemented (28)
 
 | Group | Command | Tool Name | What it does |
 |-------|---------|-----------|--------------|
@@ -194,6 +203,7 @@ IManagedCleanroomService (ManagedCleanroomService)
 | `collaboration` | `enable-workload` | `managedcleanroom_collaboration_enable-workload` | Enable a workload type (e.g. Analytics) via ARM `enableWorkload` action |
 | `collaboration` | `get-readonly-kubeconfig` | `managedcleanroom_collaboration_get-readonly-kubeconfig` | Get a read-only kubeconfig for the backing AKS cluster via ARM `getReadonlyKubeConfig` action (`Secret = true`) |
 | `collaboration` | `recover` | `managedcleanroom_collaboration_recover` | Recover a collaboration via ARM `recover` action |
+| `collaboration` | `delete` | `managedcleanroom_collaboration_delete` | Delete a collaboration ARM resource |
 | `invitations` | `list` | `managedcleanroom_invitations_list` | List collaboration invitations |
 | `invitations` | `accept` | `managedcleanroom_invitations_accept` | Accept a collaboration invitation |
 | `datasets` | `publish` | `managedcleanroom_datasets_publish` | Publish an input/output dataset document |
@@ -258,23 +268,15 @@ Legend: ✅ implemented | ❌ not yet implemented
 | 11 Run history | `queries runs` | `queries runs` | Completed |
 | 11 Audit events | `auditevents list` | `auditevents list` | Completed |
 | App G Force recover | POST `/recover` | `collaboration recover` | Completed |
-| App G Delete collaboration | ARM DELETE | `collaboration delete` | Pending |
+| App G Delete collaboration | ARM DELETE | `collaboration delete` | Completed |
 
 ---
 
 ## Missing Commands (Roadmap)
 
-**Total: 27 implemented out of ~28 surface-area commands.**
+**Total: 28 implemented out of ~28 current surface-area commands.**
 
-### Control plane (ARM) - 1 remaining
-
-`collaboration` group needs: `delete`.
-
-### Minimum viable end-to-end flow
-
-The toolset now covers the complete happy-path agent workflow end-to-end. Remaining gap is cleanup:
-
-- **ARM:** `collaboration delete` (clean up test/dev resources).
+No known command gaps remain in the currently supported data-plane and control-plane API coverage.
 
 ---
 

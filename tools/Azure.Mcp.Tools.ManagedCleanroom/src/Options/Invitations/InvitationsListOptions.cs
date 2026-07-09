@@ -9,18 +9,18 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Options.Invitations;
 
 public class InvitationsListOptions
 {
-    [Option(ManagedCleanroomOptionDescriptions.Endpoint)]
+    [Option(Description = ManagedCleanroomOptionDescriptions.Endpoint)]
     public required string Endpoint { get; set; }
 
-    [Option(ManagedCleanroomOptionDescriptions.CollaborationId)]
+    [Option(Description = ManagedCleanroomOptionDescriptions.CollaborationId)]
     public required string CollaborationId { get; set; }
 
-    [Option("When true, returns only pending invitations. When omitted, returns all invitations.")]
+    [Option(Description = "When true, returns only pending invitations. When omitted, returns all invitations.")]
     public bool? PendingOnly { get; set; }
 
-    [Option(ManagedCleanroomOptionDescriptions.AllowUntrustedCert)]
+    [Option(Description = ManagedCleanroomOptionDescriptions.AllowUntrustedCert)]
     public bool? AllowUntrustedCert { get; set; }
 
-    [Option(OptionDescriptions.Tenant)]
+    [Option(Description = OptionDescriptions.Tenant)]
     public string? Tenant { get; set; }
 }

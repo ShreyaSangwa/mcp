@@ -25,7 +25,7 @@ using Microsoft.Mcp.Core.Options;
 namespace Azure.Mcp.Tools.ManagedCleanroom.Services;
 
 public class ManagedCleanroomService(ISubscriptionService subscriptionService, ITenantService tenantService, IHttpClientFactory httpClientFactory)
-    : BaseAzureResourceService(subscriptionService, tenantService), IManagedCleanroomService
+    : BaseAzureResourceService(subscriptionService, tenantService), IManagedCleanroomService, IManagedCleanroomServiceDataPlane, IManagedCleanroomServiceControlPlane
 {
     private readonly ISubscriptionService _subscriptionService = subscriptionService;
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
@@ -40,10 +40,12 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         string endpoint,
         bool? activeOnly = null,
         bool allowUntrustedCert = false,
+        string? tokenScope = null,
         string? tenant = null,
+        RetryPolicyOptions? retryPolicy = null,
         CancellationToken cancellationToken = default)
     {
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tokenScope, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
@@ -62,7 +64,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
     {
         ValidateRequiredParameters((nameof(collaborationId), collaborationId));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
@@ -80,7 +82,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
     {
         ValidateRequiredParameters((nameof(collaborationId), collaborationId));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
@@ -101,7 +103,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             (nameof(collaborationId), collaborationId),
             (nameof(kid), kid));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
@@ -120,7 +122,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
     {
         ValidateRequiredParameters((nameof(collaborationId), collaborationId));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
@@ -141,7 +143,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             (nameof(collaborationId), collaborationId),
             (nameof(invitationId), invitationId));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
@@ -159,7 +161,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
     {
         ValidateRequiredParameters((nameof(collaborationId), collaborationId));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
@@ -177,7 +179,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
     {
         ValidateRequiredParameters((nameof(collaborationId), collaborationId));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
@@ -198,7 +200,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             (nameof(collaborationId), collaborationId),
             (nameof(issuerUrl), issuerUrl));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         // Build the request body expected by the frontend API: {"url": "<value>"}
@@ -231,7 +233,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             (nameof(collaborationId), collaborationId),
             (nameof(documentId), documentId));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestBody = await ResolveBodyContentAsync(body, cancellationToken).ConfigureAwait(false);
@@ -398,7 +400,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             (nameof(collaborationId), collaborationId),
             (nameof(documentId), documentId));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
@@ -421,7 +423,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             (nameof(collaborationId), collaborationId),
             (nameof(documentId), documentId));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestBody = await ResolveBodyContentAsync(body, cancellationToken).ConfigureAwait(false);
@@ -442,7 +444,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
     {
         ValidateRequiredParameters((nameof(collaborationId), collaborationId));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
@@ -717,7 +719,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             (nameof(collaborationId), collaborationId),
             (nameof(documentId), documentId));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestBody = await ResolveBodyContentAsync(body, cancellationToken).ConfigureAwait(false);
@@ -946,7 +948,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             (nameof(collaborationId), collaborationId),
             (nameof(documentId), documentId));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
@@ -965,7 +967,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
     {
         ValidateRequiredParameters((nameof(collaborationId), collaborationId));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
@@ -994,7 +996,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             throw new ArgumentException("Either body or vote must be provided for query vote.");
         }
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         string requestBody;
@@ -1193,7 +1195,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             (nameof(collaborationId), collaborationId),
             (nameof(documentId), documentId));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestBody = await ResolveBodyContentAsync(body, cancellationToken).ConfigureAwait(false);
@@ -1217,7 +1219,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             (nameof(collaborationId), collaborationId),
             (nameof(documentId), documentId));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
@@ -1239,7 +1241,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
             (nameof(collaborationId), collaborationId),
             (nameof(jobId), jobId));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
@@ -1371,7 +1373,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
     {
         ValidateRequiredParameters((nameof(collaborationId), collaborationId));
 
-        var client = await BuildClientAsync(endpoint, allowUntrustedCert, tenant, cancellationToken)
+        var client = await BuildClientAsync(endpoint, allowUntrustedCert, null, tenant, cancellationToken)
             .ConfigureAwait(false);
 
         var requestContext = new RequestContext { CancellationToken = cancellationToken };
@@ -1747,6 +1749,7 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
     private async Task<CollaborationClient> BuildClientAsync(
         string endpoint,
         bool allowUntrustedCert,
+        string? tokenScope,
         string? tenant,
         CancellationToken cancellationToken)
     {
@@ -1760,8 +1763,11 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         var credential = await GetCredential(tenant, cancellationToken).ConfigureAwait(false);
 
         var options = new CollaborationClientOptions();
+        var authScope = string.IsNullOrWhiteSpace(tokenScope)
+            ? TenantService.CloudConfiguration.ArmEnvironment.DefaultScope
+            : tokenScope;
         options.AddPolicy(
-            new BearerTokenAuthenticationPolicy(credential, TenantService.CloudConfiguration.ArmEnvironment.DefaultScope),
+            new BearerTokenAuthenticationPolicy(credential, authScope),
             HttpPipelinePosition.PerCall);
 
         var testProxyUrl = Environment.GetEnvironmentVariable("TEST_PROXY_URL");
@@ -1829,36 +1835,6 @@ public class ManagedCleanroomService(ISubscriptionService subscriptionService, I
         }
     }
 
-    /// <summary>
-    /// Parses the response bytes from an ARM action POST, throwing if the service returned
-    /// an error payload despite a 2xx HTTP status (e.g. HTTP 200 with ErrorCode: InternalError).
-    /// </summary>
-    private static JsonElement ParseArmActionResponse(byte[] responseBytes, int httpStatusCode, string actionName)
-    {
-        if (responseBytes.Length == 0)
-        {
-            return default;
-        }
-
-        var element = JsonSerializer.Deserialize(responseBytes, ManagedCleanroomSerializerContext.Default.JsonElement);
-
-        if (element.ValueKind == JsonValueKind.Object &&
-            element.TryGetProperty("error", out var errorProp) &&
-            errorProp.TryGetProperty("code", out var codeProp))
-        {
-            var code = codeProp.GetString() ?? "UnknownError";
-            var message = errorProp.TryGetProperty("message", out var msgProp)
-                ? msgProp.GetString() ?? string.Empty
-                : string.Empty;
-            throw new Azure.RequestFailedException(
-                httpStatusCode,
-                $"ARM action '{actionName}' returned an error: [{code}] {message}",
-                code,
-                null);
-        }
-
-        return element;
-    }
 }
 
 

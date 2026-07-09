@@ -14,7 +14,7 @@ using NSubstitute.ExceptionExtensions;
 
 namespace Azure.Mcp.Tools.ManagedCleanroom.Tests.Datasets;
 
-public sealed class DatasetsPublishCommandTests : CommandUnitTestsBase<DatasetsPublishCommand, IManagedCleanroomService>
+public sealed class DatasetsPublishCommandTests : CommandUnitTestsBase<DatasetsPublishCommand, IManagedCleanroomServiceDataPlane>
 {
     private const string TestEndpoint = "https://my-cleanroom.cloudapp.azure.net";
     private const string TestCollaborationId = "9d8fa4d3-2808-4067-9c20-db26e2a9ec2f";

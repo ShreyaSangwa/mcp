@@ -17,7 +17,7 @@ using NSubstitute.ExceptionExtensions;
 namespace Azure.Mcp.Tools.ManagedCleanroom.Tests.Collaboration;
 
 public sealed class CollaborationEnableWorkloadCommandTests
-    : SubscriptionCommandUnitTestsBase<CollaborationEnableWorkloadCommand, IManagedCleanroomService>
+    : SubscriptionCommandUnitTestsBase<CollaborationEnableWorkloadCommand, IManagedCleanroomServiceControlPlane>
 {
     private const string TestName = "my-collab";
     private const string TestResourceGroup = "my-rg";

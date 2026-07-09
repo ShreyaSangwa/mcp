@@ -12,7 +12,9 @@ public interface IManagedCleanroomService
         string endpoint,
         bool? activeOnly = null,
         bool allowUntrustedCert = false,
+        string? tokenScope = null,
         string? tenant = null,
+        RetryPolicyOptions? retryPolicy = null,
         CancellationToken cancellationToken = default);
 
     Task<JsonElement> GetCollaborationAsync(

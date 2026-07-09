@@ -33,12 +33,12 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.CollaborationArm;
     LocalRequired = false)]
 public sealed class CollaborationGetReadonlyKubeconfigCommand(
     ILogger<CollaborationGetReadonlyKubeconfigCommand> logger,
-    IManagedCleanroomService service,
+    IManagedCleanroomServiceControlPlane service,
     ISubscriptionResolver subscriptionResolver)
     : SubscriptionCommand<CollaborationGetReadonlyKubeconfigOptions, CollaborationGetReadonlyKubeconfigCommand.CollaborationGetReadonlyKubeconfigCommandResult>(subscriptionResolver)
 {
     private readonly ILogger<CollaborationGetReadonlyKubeconfigCommand> _logger = logger;
-    private readonly IManagedCleanroomService _service = service;
+    private readonly IManagedCleanroomServiceControlPlane _service = service;
 
     public override async Task<CommandResponse> ExecuteAsync(
         CommandContext context, CollaborationGetReadonlyKubeconfigOptions options, CancellationToken cancellationToken)

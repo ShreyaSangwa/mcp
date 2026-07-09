@@ -9,21 +9,21 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Options.Dashboard;
 
 public class DashboardOpenGrafanaOptions
 {
-    [Option(ManagedCleanroomOptionDescriptions.Endpoint)]
+    [Option(Description = ManagedCleanroomOptionDescriptions.Endpoint)]
     public required string Endpoint { get; set; }
 
-    [Option(ManagedCleanroomOptionDescriptions.CollaborationId)]
+    [Option(Description = ManagedCleanroomOptionDescriptions.CollaborationId)]
     public required string CollaborationId { get; set; }
 
-    [Option("--kubeconfig-path", Description = "Path to the kubeconfig file for accessing the AKS cluster (e.g., /path/to/kubeconfig.yaml). Required for kubectl access to retrieve Grafana credentials.")]
+    [Option(Name = "kubeconfig-path", Description = "Path to the kubeconfig file for accessing the AKS cluster (e.g., /path/to/kubeconfig.yaml). Required for kubectl access to retrieve Grafana credentials.")]
     public required string KubeconfigPath { get; set; }
 
-    [Option("--local-port", Description = "Local port for port-forwarding to Grafana (default: 3000).")]
+    [Option(Name = "local-port", Description = "Local port for port-forwarding to Grafana (default: 3000).")]
     public int LocalPort { get; set; } = 3000;
 
-    [Option(ManagedCleanroomOptionDescriptions.AllowUntrustedCert)]
+    [Option(Description = ManagedCleanroomOptionDescriptions.AllowUntrustedCert)]
     public bool? AllowUntrustedCert { get; set; }
 
-    [Option(OptionDescriptions.Tenant)]
+    [Option(Description = OptionDescriptions.Tenant)]
     public string? Tenant { get; set; }
 }

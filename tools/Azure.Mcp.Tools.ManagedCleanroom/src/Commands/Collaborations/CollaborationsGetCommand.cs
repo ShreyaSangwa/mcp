@@ -21,11 +21,11 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaborations;
     ReadOnly = true,
     Secret = false,
     LocalRequired = false)]
-public sealed class CollaborationsGetCommand(ILogger<CollaborationsGetCommand> logger, IManagedCleanroomService service)
+public sealed class CollaborationsGetCommand(ILogger<CollaborationsGetCommand> logger, IManagedCleanroomServiceDataPlane service)
     : AuthenticatedCommand<CollaborationsGetOptions, CollaborationsGetCommand.CollaborationsGetCommandResult>
 {
     private readonly ILogger<CollaborationsGetCommand> _logger = logger;
-    private readonly IManagedCleanroomService _service = service;
+    private readonly IManagedCleanroomServiceDataPlane _service = service;
 
     public override async Task<CommandResponse> ExecuteAsync(
         CommandContext context, CollaborationsGetOptions options, CancellationToken cancellationToken)

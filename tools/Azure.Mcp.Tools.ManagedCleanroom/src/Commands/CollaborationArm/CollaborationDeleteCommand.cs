@@ -33,12 +33,12 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.CollaborationArm;
     LocalRequired = false)]
 public sealed class CollaborationDeleteCommand(
     ILogger<CollaborationDeleteCommand> logger,
-    IManagedCleanroomService service,
+    IManagedCleanroomServiceControlPlane service,
     ISubscriptionResolver subscriptionResolver)
     : SubscriptionCommand<CollaborationDeleteOptions, CollaborationDeleteCommand.CollaborationDeleteCommandResult>(subscriptionResolver)
 {
     private readonly ILogger<CollaborationDeleteCommand> _logger = logger;
-    private readonly IManagedCleanroomService _service = service;
+    private readonly IManagedCleanroomServiceControlPlane _service = service;
 
     public override async Task<CommandResponse> ExecuteAsync(
         CommandContext context, CollaborationDeleteOptions options, CancellationToken cancellationToken)

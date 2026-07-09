@@ -33,12 +33,12 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.CollaborationArm;
     LocalRequired = false)]
 public sealed class CollaborationRecoverCommand(
     ILogger<CollaborationRecoverCommand> logger,
-    IManagedCleanroomService service,
+    IManagedCleanroomServiceControlPlane service,
     ISubscriptionResolver subscriptionResolver)
     : SubscriptionCommand<CollaborationRecoverOptions, CollaborationRecoverCommand.CollaborationRecoverCommandResult>(subscriptionResolver)
 {
     private readonly ILogger<CollaborationRecoverCommand> _logger = logger;
-    private readonly IManagedCleanroomService _service = service;
+    private readonly IManagedCleanroomServiceControlPlane _service = service;
 
     public override async Task<CommandResponse> ExecuteAsync(
         CommandContext context, CollaborationRecoverOptions options, CancellationToken cancellationToken)

@@ -8,16 +8,16 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Options.Analytics;
 
 public class AnalyticsGetOptions
 {
-    [Option("The Azure Cleanroom Analytics Frontend service endpoint URL (e.g., 'https://my-cleanroom.cloudapp.azure.net').")]
+    [Option(Description = "The Azure Cleanroom Analytics Frontend service endpoint URL (e.g., 'https://my-cleanroom.cloudapp.azure.net').")]
     public required string Endpoint { get; set; }
 
-    [Option("The unique identifier (UUID) of the cleanroom collaboration.")]
+    [Option(Description = "The unique identifier (UUID) of the cleanroom collaboration.")]
     public required string CollaborationId { get; set; }
 
-    [Option(ManagedCleanroomOptionDescriptions.AllowUntrustedCert)]
+    [Option(Description = ManagedCleanroomOptionDescriptions.AllowUntrustedCert)]
     public bool AllowUntrustedCert { get; set; }
 
-    [Option(OptionDescriptions.Tenant)]
+    [Option(Description = OptionDescriptions.Tenant)]
     public string? Tenant { get; set; }
 }
 

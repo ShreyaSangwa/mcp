@@ -14,18 +14,18 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaborations;
     Id = "0d6a0a0e-7a3a-4a7c-8e3f-2c0d2cfb91a1",
     Name = "list",
     Title = "List Cleanroom Collaborations",
-    Description = "List all your Azure Cleanroom collaborations. Shows details and status for all collaborations you participate in.",
+    Description = "Lists Azure Cleanroom collaborations the calling user participates in via the Cleanroom Analytics Frontend service. Returns the full collaboration details from the service.",
     Destructive = false,
     Idempotent = true,
     OpenWorld = false,
     ReadOnly = true,
     Secret = false,
     LocalRequired = false)]
-public sealed class CollaborationsListCommand(ILogger<CollaborationsListCommand> logger, IManagedCleanroomService service)
+public sealed class CollaborationsListCommand(ILogger<CollaborationsListCommand> logger, IManagedCleanroomServiceDataPlane service)
     : AuthenticatedCommand<CollaborationsListOptions, CollaborationsListCommand.CollaborationsListCommandResult>
 {
     private readonly ILogger<CollaborationsListCommand> _logger = logger;
-    private readonly IManagedCleanroomService _service = service;
+    private readonly IManagedCleanroomServiceDataPlane _service = service;
 
     public override async Task<CommandResponse> ExecuteAsync(
         CommandContext context, CollaborationsListOptions options, CancellationToken cancellationToken)
@@ -36,7 +36,9 @@ public sealed class CollaborationsListCommand(ILogger<CollaborationsListCommand>
                 options.Endpoint,
                 options.ActiveOnly,
                 options.AllowUntrustedCert,
+                options.TokenScope,
                 options.Tenant,
+                options.RetryPolicy,
                 cancellationToken).ConfigureAwait(false);
 
             context.Response.Results = ResponseResult.Create(

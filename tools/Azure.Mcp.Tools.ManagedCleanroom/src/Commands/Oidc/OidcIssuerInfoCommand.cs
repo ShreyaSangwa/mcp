@@ -21,11 +21,11 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Oidc;
     ReadOnly = true,
     Secret = false,
     LocalRequired = false)]
-public sealed class OidcIssuerInfoCommand(ILogger<OidcIssuerInfoCommand> logger, IManagedCleanroomService service)
+public sealed class OidcIssuerInfoCommand(ILogger<OidcIssuerInfoCommand> logger, IManagedCleanroomServiceDataPlane service)
     : AuthenticatedCommand<OidcIssuerInfoOptions, OidcIssuerInfoCommand.OidcIssuerInfoCommandResult>
 {
     private readonly ILogger<OidcIssuerInfoCommand> _logger = logger;
-    private readonly IManagedCleanroomService _service = service;
+    private readonly IManagedCleanroomServiceDataPlane _service = service;
 
     public override async Task<CommandResponse> ExecuteAsync(
         CommandContext context, OidcIssuerInfoOptions options, CancellationToken cancellationToken)

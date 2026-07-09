@@ -21,11 +21,11 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Queries;
     ReadOnly = true,
     Secret = false,
     LocalRequired = false)]
-public sealed class QueriesGetCommand(ILogger<QueriesGetCommand> logger, IManagedCleanroomService service)
+public sealed class QueriesGetCommand(ILogger<QueriesGetCommand> logger, IManagedCleanroomServiceDataPlane service)
     : AuthenticatedCommand<QueriesGetOptions, QueriesGetCommand.QueriesGetCommandResult>
 {
     private readonly ILogger<QueriesGetCommand> _logger = logger;
-    private readonly IManagedCleanroomService _service = service;
+    private readonly IManagedCleanroomServiceDataPlane _service = service;
 
     public override async Task<CommandResponse> ExecuteAsync(
         CommandContext context, QueriesGetOptions options, CancellationToken cancellationToken)

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Net;
+using System.Text.Json;
 using Azure.Mcp.Core.Commands.Subscription;
 using Azure.Mcp.Core.Services.Azure.Subscription;
 using Azure.Mcp.Tools.ManagedCleanroom.Options.CollaborationArm;
@@ -17,36 +18,24 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.CollaborationArm;
     Name = "create",
     Title = "Create Cleanroom Collaboration",
     Description = """
-        Create a new Azure Cleanroom collaboration.
-
-        Use a structured argument object with these fields:
-        - name: collaboration name
-        - location: Azure region for the collaboration ARM resource
-        - resource-group: target resource group
-        - subscription: target subscription
-
-        Optional fields:
-        - resource-location: region for the cleanroom workload resources
-        - collaborator: repeat for each collaborator email address
-        - tenant: Entra tenant override
-        - retry: retry policy settings
-
-        The request returns immediately after Azure accepts it; provisioning continues in the background and typically takes about 25 minutes.
+        Creates an Azure Cleanroom collaboration ARM resource in the specified resource group and location.
+        Returns immediately once the request is accepted by ARM. Provisioning runs in the background and typically takes ~25 minutes.
+        You can check the status by asking to get the collaboration by name once the request is accepted.
         """,
     Destructive = false,
-    Idempotent = true,
+    Idempotent = false,
     OpenWorld = false,
     ReadOnly = false,
     Secret = false,
     LocalRequired = false)]
 public sealed class CollaborationCreateCommand(
     ILogger<CollaborationCreateCommand> logger,
-    IManagedCleanroomService service,
+    IManagedCleanroomServiceControlPlane service,
     ISubscriptionResolver subscriptionResolver)
-    : SubscriptionCommand<CollaborationCreateOptions, CollaborationCreateCommand.CollaborationCreateCommandResult>(subscriptionResolver)
+    : SubscriptionCommand<CollaborationCreateOptions, JsonElement>(subscriptionResolver)
 {
     private readonly ILogger<CollaborationCreateCommand> _logger = logger;
-    private readonly IManagedCleanroomService _service = service;
+    private readonly IManagedCleanroomServiceControlPlane _service = service;
 
     public override async Task<CommandResponse> ExecuteAsync(
         CommandContext context, CollaborationCreateOptions options, CancellationToken cancellationToken)
@@ -87,24 +76,10 @@ public sealed class CollaborationCreateCommand(
         RequestFailedException reqEx when reqEx.Status == (int)HttpStatusCode.Forbidden =>
             $"Authorization failed creating the collaboration. Details: {reqEx.Message}",
         RequestFailedException reqEx when reqEx.Status == (int)HttpStatusCode.NotFound =>
-            "Resource group not found. Verify the resource group exists and you have access.",
+            "Requested resource was not found. Verify the resource group, subscription, and access.",
         RequestFailedException reqEx => reqEx.Message,
         _ => base.GetErrorMessage(ex)
     };
-
-    protected override HttpStatusCode GetStatusCode(Exception ex) => ex switch
-    {
-        RequestFailedException reqEx when reqEx.Status == (int)HttpStatusCode.Conflict =>
-            HttpStatusCode.Conflict,
-        RequestFailedException reqEx when reqEx.Status == (int)HttpStatusCode.Forbidden =>
-            HttpStatusCode.Forbidden,
-        RequestFailedException reqEx when reqEx.Status == (int)HttpStatusCode.NotFound =>
-            HttpStatusCode.NotFound,
-        RequestFailedException reqEx => (HttpStatusCode)reqEx.Status,
-        _ => base.GetStatusCode(ex)
-    };
-
-    public record CollaborationCreateCommandResult;
 }
 
 

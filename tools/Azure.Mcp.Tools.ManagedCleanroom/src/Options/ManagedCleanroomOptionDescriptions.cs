@@ -20,5 +20,8 @@ public static class ManagedCleanroomOptionDescriptions
 
     public const string AllowUntrustedCert =
         "When true, skips TLS certificate validation for the cleanroom endpoint. Use only for dev/test endpoints with self-signed certificates.";
+
+    public const string TokenScope =
+        "Optional OAuth scope override for access tokens used when calling the cleanroom endpoint.";
 }
 

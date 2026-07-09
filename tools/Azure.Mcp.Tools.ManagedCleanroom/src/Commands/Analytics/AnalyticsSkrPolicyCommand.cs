@@ -21,11 +21,11 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Analytics;
     ReadOnly = true,
     Secret = false,
     LocalRequired = false)]
-public sealed class AnalyticsSkrPolicyCommand(ILogger<AnalyticsSkrPolicyCommand> logger, IManagedCleanroomService service)
+public sealed class AnalyticsSkrPolicyCommand(ILogger<AnalyticsSkrPolicyCommand> logger, IManagedCleanroomServiceDataPlane service)
     : AuthenticatedCommand<AnalyticsSkrPolicyOptions, AnalyticsSkrPolicyCommand.AnalyticsSkrPolicyCommandResult>
 {
     private readonly ILogger<AnalyticsSkrPolicyCommand> _logger = logger;
-    private readonly IManagedCleanroomService _service = service;
+    private readonly IManagedCleanroomServiceDataPlane _service = service;
 
     public override async Task<CommandResponse> ExecuteAsync(
         CommandContext context, AnalyticsSkrPolicyOptions options, CancellationToken cancellationToken)

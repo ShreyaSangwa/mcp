@@ -13,7 +13,7 @@ using NSubstitute.ExceptionExtensions;
 
 namespace Azure.Mcp.Tools.ManagedCleanroom.Tests.Oidc;
 
-public sealed class OidcIssuerInfoCommandTests : CommandUnitTestsBase<OidcIssuerInfoCommand, IManagedCleanroomService>
+public sealed class OidcIssuerInfoCommandTests : CommandUnitTestsBase<OidcIssuerInfoCommand, IManagedCleanroomServiceDataPlane>
 {
     private const string TestEndpoint = "https://my-cleanroom.cloudapp.azure.net";
     private const string TestCollaborationId = "fdab3134-931f-4e82-acea-5d224061df80";

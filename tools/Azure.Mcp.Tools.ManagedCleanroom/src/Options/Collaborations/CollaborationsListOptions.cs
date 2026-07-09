@@ -1,23 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Azure.Mcp.Core.Options;
 using Microsoft.Mcp.Core.Options;
 
 namespace Azure.Mcp.Tools.ManagedCleanroom.Options.Collaborations;
 
-public class CollaborationsListOptions
+public class CollaborationsListOptions : BaseManagedCleanroomDataPlaneOptions
 {
-    [Option("The Azure Cleanroom Analytics Frontend service endpoint URL (e.g., 'https://my-cleanroom.cloudapp.azure.net').")]
-    public required string Endpoint { get; set; }
-
-    [Option("When true, returns only active collaborations (email-only lookup). When omitted, returns all collaborations.")]
+    [Option(Description = "When true, returns only active collaborations (email-only lookup). When omitted, returns all collaborations.")]
     public bool? ActiveOnly { get; set; }
-
-    [Option(ManagedCleanroomOptionDescriptions.AllowUntrustedCert)]
-    public bool AllowUntrustedCert { get; set; }
-
-    [Option(OptionDescriptions.Tenant)]
-    public string? Tenant { get; set; }
 }
 

@@ -13,7 +13,7 @@ using NSubstitute.ExceptionExtensions;
 
 namespace Azure.Mcp.Tools.ManagedCleanroom.Tests.Analytics;
 
-public sealed class AnalyticsSkrPolicyCommandTests : CommandUnitTestsBase<AnalyticsSkrPolicyCommand, IManagedCleanroomService>
+public sealed class AnalyticsSkrPolicyCommandTests : CommandUnitTestsBase<AnalyticsSkrPolicyCommand, IManagedCleanroomServiceDataPlane>
 {
     private const string TestEndpoint = "https://my-cleanroom.cloudapp.azure.net";
     private const string TestCollaborationId = "fdab3134-931f-4e82-acea-5d224061df80";

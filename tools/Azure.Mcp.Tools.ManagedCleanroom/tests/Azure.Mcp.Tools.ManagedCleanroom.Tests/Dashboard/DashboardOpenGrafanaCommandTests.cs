@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Net;
+using System.CommandLine;
 using System.Text.Json;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Dashboard;
@@ -12,7 +13,7 @@ using NSubstitute;
 
 namespace Azure.Mcp.Tools.ManagedCleanroom.Tests.Dashboard;
 
-public sealed class DashboardOpenGrafanaCommandTests : CommandUnitTestsBase<DashboardOpenGrafanaCommand, IManagedCleanroomService>
+public sealed class DashboardOpenGrafanaCommandTests : CommandUnitTestsBase<DashboardOpenGrafanaCommand, IManagedCleanroomServiceDataPlane>
 {
     private const string TestEndpoint = "https://my-cleanroom.cloudapp.azure.net";
     private const string TestCollaborationId = "9d8fa4d3-2808-4067-9c20-db26e2a9ec2f";
@@ -46,22 +47,27 @@ public sealed class DashboardOpenGrafanaCommandTests : CommandUnitTestsBase<Dash
     }
 
     [Fact]
-    public void BindOptions_BindsOptionsCorrectly()
+    public void Parse_BindsLocalPortOptionCorrectly()
     {
         var args = $"--endpoint {TestEndpoint} --collaboration-id {TestCollaborationId} --kubeconfig-path {TestKubeconfigPath} --local-port 3001";
-        var options = BindOptionsHelper<DashboardOpenGrafanaOptions>(args);
+        var parseResult = CommandDefinition.Parse(args);
+        var localPortOption = CommandDefinition.Options
+            .OfType<Option<int>>()
+            .Single(option => option.Name == "--local-port");
+        var localPort = parseResult.GetValue(localPortOption);
 
-        Assert.Equal(TestEndpoint, options.Endpoint);
-        Assert.Equal(TestCollaborationId, options.CollaborationId);
-        Assert.Equal(TestKubeconfigPath, options.KubeconfigPath);
-        Assert.Equal(3001, options.LocalPort);
+        Assert.Equal(3001, localPort);
     }
 
     [Fact]
-    public void BindOptions_DefaultsLocalPortTo3000()
+    public void Options_DefaultsLocalPortTo3000()
     {
-        var args = $"--endpoint {TestEndpoint} --collaboration-id {TestCollaborationId} --kubeconfig-path {TestKubeconfigPath}";
-        var options = BindOptionsHelper<DashboardOpenGrafanaOptions>(args);
+        var options = new Azure.Mcp.Tools.ManagedCleanroom.Options.Dashboard.DashboardOpenGrafanaOptions
+        {
+            Endpoint = TestEndpoint,
+            CollaborationId = TestCollaborationId,
+            KubeconfigPath = TestKubeconfigPath,
+        };
 
         Assert.Equal(3000, options.LocalPort);
     }

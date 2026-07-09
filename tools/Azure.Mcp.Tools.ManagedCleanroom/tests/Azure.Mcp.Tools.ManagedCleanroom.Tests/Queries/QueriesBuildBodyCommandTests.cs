@@ -13,7 +13,7 @@ using NSubstitute.ExceptionExtensions;
 
 namespace Azure.Mcp.Tools.ManagedCleanroom.Tests.Queries;
 
-public sealed class QueriesBuildBodyCommandTests : CommandUnitTestsBase<QueriesBuildBodyCommand, IManagedCleanroomService>
+public sealed class QueriesBuildBodyCommandTests : CommandUnitTestsBase<QueriesBuildBodyCommand, IManagedCleanroomServiceDataPlane>
 {
     private const string QueryName = "query1-v1";
     private const string QueryDirectory = "./demos/query/woodgrove/query1";

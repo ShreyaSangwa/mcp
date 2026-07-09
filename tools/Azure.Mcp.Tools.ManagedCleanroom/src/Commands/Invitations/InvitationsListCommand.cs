@@ -21,11 +21,11 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.Invitations;
     ReadOnly = true,
     Secret = false,
     LocalRequired = false)]
-public sealed class InvitationsListCommand(ILogger<InvitationsListCommand> logger, IManagedCleanroomService service)
+public sealed class InvitationsListCommand(ILogger<InvitationsListCommand> logger, IManagedCleanroomServiceDataPlane service)
     : AuthenticatedCommand<InvitationsListOptions, InvitationsListCommand.InvitationsListCommandResult>
 {
     private readonly ILogger<InvitationsListCommand> _logger = logger;
-    private readonly IManagedCleanroomService _service = service;
+    private readonly IManagedCleanroomServiceDataPlane _service = service;
 
     public override async Task<CommandResponse> ExecuteAsync(
         CommandContext context, InvitationsListOptions options, CancellationToken cancellationToken)
