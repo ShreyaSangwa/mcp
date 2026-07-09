@@ -38,7 +38,7 @@ function Set-DeploymentOutputValue {
 # Required/optional values for recording all Managed Cleanroom command tests.
 Set-DeploymentOutputValue -Key "CLEANROOM_SKR_POLICY_KID"
 Set-DeploymentOutputValue -Key "CLEANROOM_KUBECONFIG_PATH"
-Set-DeploymentOutputValue -Key "CLEANROOM_ENABLE_ARM_MUTATION_TESTS" -DefaultValue "false"
+Set-DeploymentOutputValue -Key "CLEANROOM_ENABLE_ARM_MUTATION_TESTS" -DefaultValue "true"
 Set-DeploymentOutputValue -Key "CLEANROOM_MUTATION_NAME" -DefaultValue "$BaseName-lt"
 Set-DeploymentOutputValue -Key "CLEANROOM_QUERY_DOCUMENT_ID"
 Set-DeploymentOutputValue -Key "CLEANROOM_DATASET_DOCUMENT_ID"

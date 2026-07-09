@@ -32,11 +32,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
             ? value
             : defaultValue;
 
-    private static bool IsEnabled(string? value) =>
-        string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(value, "1", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(value, "yes", StringComparison.OrdinalIgnoreCase);
-
     [Fact]
     public async Task Should_list_collaborations()
     {
@@ -271,13 +266,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
     [Fact]
     public async Task Should_create_collaboration_arm_resource()
     {
-        Settings.DeploymentOutputs.TryGetValue("CLEANROOM_ENABLE_ARM_MUTATION_TESTS", out var mutationTestsEnabled);
-        if (TestMode != TestMode.Playback)
-        {
-            Assert.SkipWhen(!IsEnabled(mutationTestsEnabled),
-                "Set CLEANROOM_ENABLE_ARM_MUTATION_TESTS=true to run collaboration create/delete live tests.");
-        }
-
         var location = GetOutputOrDefault("CLEANROOM_LOCATION", GetOutputOrDefault("LOCATION", "westus"));
         var name = GetOutputOrDefault("CLEANROOM_MUTATION_NAME", $"{Settings.ResourceBaseName}-lt");
 
@@ -336,13 +324,6 @@ public class ManagedCleanroomCommandTests(ITestOutputHelper output, TestProxyFix
     [Fact]
     public async Task Should_delete_collaboration_arm_resource()
     {
-        Settings.DeploymentOutputs.TryGetValue("CLEANROOM_ENABLE_ARM_MUTATION_TESTS", out var mutationTestsEnabled);
-        if (TestMode != TestMode.Playback)
-        {
-            Assert.SkipWhen(!IsEnabled(mutationTestsEnabled),
-                "Set CLEANROOM_ENABLE_ARM_MUTATION_TESTS=true to run collaboration create/delete live tests.");
-        }
-
         var name = GetOutputOrDefault("CLEANROOM_MUTATION_NAME", $"{Settings.ResourceBaseName}-lt");
 
         var result = await CallToolAsync(
