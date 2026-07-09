@@ -2904,6 +2904,254 @@ azmcp grafana list --subscription <subscription> \
                   [--resource-group <resource-group>]
 ```
 
+### Azure Managed Cleanroom Operations
+
+```bash
+# List Azure Cleanroom collaborations the calling user participates in
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom collaborations list --endpoint <endpoint> \
+                                          [--active-only <true/false>] \
+                                          [--allow-untrusted-cert] \
+                                          [--tenant <tenant>]
+
+# Get details for a single Azure Cleanroom collaboration by its identifier
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom collaborations get --endpoint <endpoint> \
+                                         --collaboration-id <collaboration-id> \
+                                         [--include-deleted <true/false>] \
+                                         [--allow-untrusted-cert] \
+                                         [--tenant <tenant>]
+
+# Get the analytics workload configuration for a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom analytics get --endpoint <endpoint> \
+                                     --collaboration-id <collaboration-id> \
+                                     [--allow-untrusted-cert] \
+                                     [--tenant <tenant>]
+
+# Get the Secure Key Release (SKR) policy for a key on a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom analytics skr-policy --endpoint <endpoint> \
+                                            --collaboration-id <collaboration-id> \
+                                            --kid <kid> \
+                                            [--allow-untrusted-cert] \
+                                            [--tenant <tenant>]
+
+# Get the OIDC issuer information for a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom oidc issuer-info --endpoint <endpoint> \
+                                        --collaboration-id <collaboration-id> \
+                                        [--allow-untrusted-cert] \
+                                        [--tenant <tenant>]
+
+# Get the OIDC JSON Web Key Set (JWKS) for a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom oidc keys --endpoint <endpoint> \
+                                  --collaboration-id <collaboration-id> \
+                                  [--allow-untrusted-cert] \
+                                  [--tenant <tenant>]
+
+# Register an OIDC issuer URL for a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom oidc set-issuer-url --endpoint <endpoint> \
+                                           --collaboration-id <collaboration-id> \
+                                           --issuer-url <issuer-url> \
+                                           [--allow-untrusted-cert] \
+                                           [--tenant <tenant>]
+
+# Create an Azure Cleanroom collaboration ARM resource(provisions AKS cluster + CACI instances ~25 min)
+# ✅ Destructive | ✅ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom collaboration create --name <name> \
+                                            --location <location> \
+                                            --resource-group <resource-group> \
+                                            --subscription <subscription> \
+                                            [--resource-location <resource-location>] \
+                                            [--collaborator <email>] \
+                                            [--tenant <tenant>]
+```
+
+
+
+# Add a collaborator (user) to an Azure Cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom collaboration add-collaborator --name <name> \
+                                                     --collaborator-user-identifier <email-or-spn-id> \
+                                                     --resource-group <resource-group> \
+                                                     --subscription <subscription> \
+                                                     [--collaborator-object-id <object-id>] \
+                                                     [--collaborator-tenant-id <tenant-id>] \
+                                                     [--tenant <tenant>]
+
+# Enable a workload on an Azure Cleanroom collaboration (posts enableWorkload ARM action)
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom collaboration enable-workload --name <name> \
+                                                    --workload-type <workload-type> \
+                                                    --resource-group <resource-group> \
+                                                    --subscription <subscription> \
+                                                    [--tenant <tenant>]
+
+# Get details of an Azure Cleanroom collaboration ARM resource (provisioningState, health, workloads)
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom collaboration get --name <name> \
+                                         --resource-group <resource-group> \
+                                         --subscription <subscription> \
+                                         [--tenant <tenant>]
+
+# Get a read-only kubeconfig for the AKS cluster backing an Azure Cleanroom collaboration ARM resource
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ✅ Secret | ❌ LocalRequired
+azmcp managedcleanroom collaboration get-readonly-kubeconfig --name <name> \
+                                                             --resource-group <resource-group> \
+                                                             --subscription <subscription> \
+                                                             [--tenant <tenant>]
+
+# Recover an Azure Cleanroom collaboration ARM resource by invoking the recover action
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom collaboration recover --name <name> \
+                                             --resource-group <resource-group> \
+                                             --subscription <subscription> \
+                                             [--tenant <tenant>]
+
+# List invitations for an Azure Cleanroom collaboration via the Frontend service
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom invitations list --endpoint <endpoint> \
+                                        --collaboration-id <collaboration-id> \
+                                        [--pending-only <true/false>] \
+                                        [--allow-untrusted-cert] \
+                                        [--tenant <tenant>]
+
+# Accept an invitation to join an Azure Cleanroom collaboration via the Frontend service
+# ❌ Destructive | ❌ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom invitations accept --endpoint <endpoint> \
+                                          --collaboration-id <collaboration-id> \
+                                          --invitation-id <invitation-id> \
+                                          [--allow-untrusted-cert] \
+                                          [--tenant <tenant>]
+
+# Publish a dataset document for a cleanroom collaboration
+# ❌ Destructive | ❌ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom datasets publish --endpoint <endpoint> \
+                                        --collaboration-id <collaboration-id> \
+                                        --document-id <document-id> \
+                                        [--allow-untrusted-cert] \
+                                        [--tenant <tenant>]
+
+# Get a dataset document for a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom datasets get --endpoint <endpoint> \
+                                    --collaboration-id <collaboration-id> \
+                                    --document-id <document-id> \
+                                    [--allow-untrusted-cert] \
+                                    [--tenant <tenant>]
+
+# List dataset documents for a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom datasets list --endpoint <endpoint> \
+                                     --collaboration-id <collaboration-id> \
+                                     [--allow-untrusted-cert] \
+                                     [--tenant <tenant>]
+
+# Create or update a consent documentfor a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom consent put --endpoint <endpoint> \
+                                   --collaboration-id <collaboration-id> \
+                                   --document-id <document-id> \
+                                   [--allow-untrusted-cert] \
+                                   [--tenant <tenant>]
+
+# Build a query publish body from local segment files in a query directory
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ✅ LocalRequired
+azmcp managedcleanroom queries build-body --query-name <query-name> \
+                                          --query-directory <query-directory> \
+                                          --output-dataset <output-dataset> \
+                                          [--publisher-input-dataset <publisher-input-dataset>] \
+                                          [--consumer-input-dataset <consumer-input-dataset>] \
+                                          [--input-dataset-mappings <input-dataset-mappings>] \
+                                          [--output-dataset-alias <output-dataset-alias>]
+
+# Simple two-dataset example (publisher/consumer pattern):
+azmcp managedcleanroom queries build-body --query-name "sales-analysis-v1" \
+                                          --query-directory "./queries/sales" \
+                                          --publisher-input-dataset "northwind-data" \
+                                          --consumer-input-dataset "woodgrove-data" \
+                                          --output-dataset "results"
+
+# Generic multi-dataset example with custom aliases:
+azmcp managedcleanroom queries build-body --query-name "analytics-v2" \
+                                          --query-directory "./queries/analytics" \
+                                          --output-dataset "analytics-results" \
+                                          --input-dataset-mappings '{"source1":"view_a","source2":"view_b"}' \
+                                          --output-dataset-alias "output"
+
+# Publish a query document for a cleanroom collaboration
+# ❌ Destructive | ❌ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom queries publish --endpoint <endpoint> \
+                                       --collaboration-id <collaboration-id> \
+                                       --document-id <document-id> \
+                                       [--allow-untrusted-cert] \
+                                       [--tenant <tenant>]
+
+# Get a query document for a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom queries get --endpoint <endpoint> \
+                                   --collaboration-id <collaboration-id> \
+                                   --document-id <document-id> \
+                                   [--allow-untrusted-cert] \
+                                   [--tenant <tenant>]
+
+# List query documents for a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom queries list --endpoint <endpoint> \
+                                    --collaboration-id <collaboration-id> \
+                                    [--allow-untrusted-cert] \
+                                    [--tenant <tenant>]
+
+# Vote (Approve or Reject) on a query document for a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom queries vote --endpoint <endpoint> \
+                                    --collaboration-id <collaboration-id> \
+                                    --document-id <document-id> \
+                                    --vote <Approve|Reject> \
+                                    [--allow-untrusted-cert] \
+                                    [--tenant <tenant>]
+
+# Run a query document for a cleanroom collaboration
+# ❌ Destructive | ❌ Idempotent | ❌ OpenWorld | ❌ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom queries run --endpoint <endpoint> \
+                                   --collaboration-id <collaboration-id> \
+                                   --document-id <document-id> \
+                                   [--allow-untrusted-cert] \
+                                   [--tenant <tenant>]
+
+# Get the run history for a query document via the queries command group
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom queries runs --endpoint <endpoint> \
+                                    --collaboration-id <collaboration-id> \
+                                    --document-id <document-id> \
+                                    [--allow-untrusted-cert] \
+                                    [--tenant <tenant>]
+```
+
+# Get the run history for a query document in a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+azmcp managedcleanroom runs get --endpoint <endpoint> \
+                                --collaboration-id <collaboration-id> \
+                                --document-id <document-id> \
+                                [--allow-untrusted-cert] \
+                                [--tenant <tenant>]
+```
+
+# List audit events for a cleanroom collaboration
+# ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired
+```bash
+azmcp managedcleanroom auditevents list --endpoint <endpoint> \
+                                        --collaboration-id <collaboration-id> \
+                                        [--scope <scope>] \
+                                        [--from-seqno <from-seqno>] \
+                                        [--to-seqno <to-seqno>] \
+                                        [--allow-untrusted-cert] \
+                                        [--tenant <tenant>]
+```
+
 ### Azure Marketplace Operations
 
 ```bash

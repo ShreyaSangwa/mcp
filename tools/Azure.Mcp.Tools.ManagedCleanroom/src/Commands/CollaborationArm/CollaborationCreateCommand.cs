@@ -24,7 +24,7 @@ namespace Azure.Mcp.Tools.ManagedCleanroom.Commands.CollaborationArm;
         """,
     Destructive = false,
     Idempotent = false,
-    OpenWorld = true,
+    OpenWorld = false,
     ReadOnly = false,
     Secret = false,
     LocalRequired = false)]
@@ -80,5 +80,6 @@ public sealed class CollaborationCreateCommand(
         RequestFailedException reqEx => reqEx.Message,
         _ => base.GetErrorMessage(ex)
     };
-
 }
+
+

@@ -25,7 +25,13 @@ public class CollaborationCreateOptions : ISubscriptionOption
     public required string ResourceGroup { get; set; }
 
     [Option(Description = OptionDescriptions.Subscription)]
-    public string? Subscription { get; set; }
+    public required string Subscription { get; set; }
+
+    string? ISubscriptionOption.Subscription
+    {
+        get => Subscription;
+        set => Subscription = value ?? string.Empty;
+    }
 
     [Option(Description = OptionDescriptions.Tenant)]
     public string? Tenant { get; set; }

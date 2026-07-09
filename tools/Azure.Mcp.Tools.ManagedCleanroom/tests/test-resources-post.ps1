@@ -14,30 +14,45 @@ $ErrorActionPreference = "Stop"
 
 $testSettings = New-TestSettings @PSBoundParameters -OutputPath $PSScriptRoot
 
-function Get-DeploymentOutputValue {
-    param(
-        [hashtable] $Outputs,
-        [string] $Name
-    )
-
-    $output = $Outputs[$Name]
-
-    if ($null -eq $output) {
-        return $null
-    }
-
-    if ($output -is [hashtable] -and $output.ContainsKey('value')) {
-        return [string] $output['value']
-    }
-
-    if ($output.PSObject.Properties['value']) {
-        return [string] $output.value
-    }
-
-    return [string] $output
+if (-not $testSettings.Contains('DeploymentOutputs') -or $null -eq $testSettings.DeploymentOutputs) {
+    $testSettings.DeploymentOutputs = @{}
 }
 
-$cleanroomEndpoint = Get-DeploymentOutputValue -Outputs $DeploymentOutputs -Name 'CLEANROOM_ENDPOINT'
+function Set-DeploymentOutputValue {
+    param(
+        [string] $Key,
+        [string] $DefaultValue = ""
+    )
+
+    $value = $DefaultValue
+    if ($AdditionalParameters -and $AdditionalParameters.ContainsKey($Key) -and -not [string]::IsNullOrWhiteSpace($AdditionalParameters[$Key])) {
+        $value = [string]$AdditionalParameters[$Key]
+    }
+    elseif ($DeploymentOutputs -and $DeploymentOutputs.ContainsKey($Key) -and -not [string]::IsNullOrWhiteSpace($DeploymentOutputs[$Key])) {
+        $value = [string]$DeploymentOutputs[$Key]
+    }
+
+    $testSettings.DeploymentOutputs[$Key] = $value
+}
+
+# Required/optional values for recording all Managed Cleanroom command tests.
+Set-DeploymentOutputValue -Key "CLEANROOM_SKR_POLICY_KID"
+Set-DeploymentOutputValue -Key "CLEANROOM_KUBECONFIG_PATH"
+Set-DeploymentOutputValue -Key "CLEANROOM_ENABLE_ARM_MUTATION_TESTS" -DefaultValue "true"
+Set-DeploymentOutputValue -Key "CLEANROOM_MUTATION_NAME" -DefaultValue "$BaseName-lt"
+Set-DeploymentOutputValue -Key "CLEANROOM_QUERY_DOCUMENT_ID"
+Set-DeploymentOutputValue -Key "CLEANROOM_DATASET_DOCUMENT_ID"
+Set-DeploymentOutputValue -Key "CLEANROOM_CONSENT_DOCUMENT_ID"
+Set-DeploymentOutputValue -Key "CLEANROOM_OIDC_ISSUER_URL"
+Set-DeploymentOutputValue -Key "CLEANROOM_INVITATION_ID"
+Set-DeploymentOutputValue -Key "CLEANROOM_QUERY_PUBLISHER_DATASET_ID"
+Set-DeploymentOutputValue -Key "CLEANROOM_QUERY_CONSUMER_DATASET_ID"
+Set-DeploymentOutputValue -Key "CLEANROOM_QUERY_OUTPUT_DATASET_ID"
+
+$settingsPath = Join-Path -Path $PSScriptRoot -ChildPath ".testsettings.json"
+($testSettings | ConvertTo-Json -Depth 20) | Set-Content -Path $settingsPath -Force -NoNewLine
+
+$cleanroomEndpoint = $DeploymentOutputs['CLEANROOM_ENDPOINT']
 
 if ([string]::IsNullOrWhiteSpace($cleanroomEndpoint)) {
     Write-Warning "CLEANROOM_ENDPOINT was not set. Live tests will be skipped until a Cleanroom Analytics Frontend endpoint is provisioned and provided."

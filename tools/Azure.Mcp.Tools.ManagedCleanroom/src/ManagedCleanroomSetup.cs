@@ -1,8 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.Analytics;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.AuditEvents;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.CollaborationArm;
 using Azure.Mcp.Tools.ManagedCleanroom.Commands.Collaborations;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.Consent;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.Dashboard;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.Datasets;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.Queries;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.Runs;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.Invitations;
+using Azure.Mcp.Tools.ManagedCleanroom.Commands.Oidc;
 using Azure.Mcp.Tools.ManagedCleanroom.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Mcp.Core.Areas;
@@ -12,25 +21,48 @@ namespace Azure.Mcp.Tools.ManagedCleanroom;
 
 public class ManagedCleanroomSetup : IAreaSetup
 {
-    internal const string DefaultHttpClientName = "ManagedCleanroom.Default";
-    internal const string UnsafeHttpClientName = "ManagedCleanroom.Unsafe";
-
     public string Name => "managedcleanroom";
 
     public string Title => "Azure Managed Cleanroom";
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddHttpClient(DefaultHttpClientName);
-        services.AddHttpClient(UnsafeHttpClientName)
-            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-            });
-        services.AddSingleton<IManagedCleanroomServiceDataPlane, ManagedCleanroomDataPlaneService>();
-        services.AddSingleton<IManagedCleanroomServiceControlPlane, ManagedCleanroomControlPlaneService>();
+        services.AddSingleton<ManagedCleanroomService>();
+        services.AddSingleton<IManagedCleanroomService>(sp => sp.GetRequiredService<ManagedCleanroomService>());
+        services.AddSingleton<IManagedCleanroomServiceDataPlane>(sp => sp.GetRequiredService<ManagedCleanroomService>());
+        services.AddSingleton<IManagedCleanroomServiceControlPlane>(sp => sp.GetRequiredService<ManagedCleanroomService>());
         services.AddSingleton<CollaborationsListCommand>();
+        services.AddSingleton<CollaborationsGetCommand>();
+        services.AddSingleton<AnalyticsGetCommand>();
+        services.AddSingleton<AnalyticsSkrPolicyCommand>();
+        services.AddSingleton<OidcIssuerInfoCommand>();
+        services.AddSingleton<OidcKeysCommand>();
+        services.AddSingleton<OidcSetIssuerUrlCommand>();
         services.AddSingleton<CollaborationCreateCommand>();
+        services.AddSingleton<CollaborationGetCommand>();
+        services.AddSingleton<CollaborationDeleteCommand>();
+        services.AddSingleton<CollaborationAddCollaboratorCommand>();
+        services.AddSingleton<CollaborationEnableWorkloadCommand>();
+        services.AddSingleton<CollaborationGetReadonlyKubeconfigCommand>();
+        services.AddSingleton<CollaborationRecoverCommand>();
+        services.AddSingleton<InvitationsListCommand>();
+        services.AddSingleton<InvitationsAcceptCommand>();
+        services.AddSingleton<DashboardOpenGrafanaCommand>();
+        services.AddSingleton<DatasetsPublishCommand>();
+        services.AddSingleton<DatasetsBuildBodyCommand>();
+        services.AddSingleton<DatasetsGetCommand>();
+        services.AddSingleton<DatasetsListCommand>();
+        services.AddSingleton<ConsentPutCommand>();
+        services.AddSingleton<QueriesBuildBodyCommand>();
+        services.AddSingleton<QueriesDownloadOutputCommand>();
+        services.AddSingleton<QueriesPublishCommand>();
+        services.AddSingleton<QueriesGetCommand>();
+        services.AddSingleton<QueriesListCommand>();
+        services.AddSingleton<QueriesVoteCommand>();
+        services.AddSingleton<QueriesRunCommand>();
+        services.AddSingleton<QueriesRunsCommand>();
+        services.AddSingleton<RunsGetCommand>();
+        services.AddSingleton<AuditEventsListCommand>();
     }
 
     public CommandGroup RegisterCommands(IServiceProvider serviceProvider)
@@ -38,15 +70,81 @@ public class ManagedCleanroomSetup : IAreaSetup
         var root = new CommandGroup(Name,
             "Azure Managed Cleanroom operations - Commands for interacting with the Azure Cleanroom Analytics Frontend, including listing and inspecting collaborations and analytics workloads.", Title);
 
+        var analytics = new CommandGroup("analytics", "Cleanroom analytics operations - Commands for inspecting analytics workload configuration on a cleanroom collaboration.");
+        root.AddSubGroup(analytics);
+
+        analytics.AddCommand<AnalyticsGetCommand>(serviceProvider);
+        analytics.AddCommand<AnalyticsSkrPolicyCommand>(serviceProvider);
+
+        var oidc = new CommandGroup("oidc", "Cleanroom OIDC operations - Commands for inspecting OIDC issuer configuration on a cleanroom collaboration.");
+        root.AddSubGroup(oidc);
+
+        oidc.AddCommand<OidcIssuerInfoCommand>(serviceProvider);
+        oidc.AddCommand<OidcKeysCommand>(serviceProvider);
+        oidc.AddCommand<OidcSetIssuerUrlCommand>(serviceProvider);
+
         var collaborations = new CommandGroup("collaborations", "Cleanroom collaboration operations - Commands for listing and inspecting cleanroom collaborations.");
         root.AddSubGroup(collaborations);
 
         collaborations.AddCommand<CollaborationsListCommand>(serviceProvider);
+        collaborations.AddCommand<CollaborationsGetCommand>(serviceProvider);
 
-        var collaborationArm = new CommandGroup("collaborationarm", "Cleanroom ARM management operations - Commands for creating and managing Azure Cleanroom collaboration ARM resources.");
-        root.AddSubGroup(collaborationArm);
+        var collaboration = new CommandGroup("collaboration", "Cleanroom ARM management operations - Commands for creating and managing Azure Cleanroom collaboration ARM resources.");
+        root.AddSubGroup(collaboration);
 
-        collaborationArm.AddCommand<CollaborationCreateCommand>(serviceProvider);
+        collaboration.AddCommand<CollaborationCreateCommand>(serviceProvider);
+        collaboration.AddCommand<CollaborationGetCommand>(serviceProvider);
+        collaboration.AddCommand<CollaborationDeleteCommand>(serviceProvider);
+        collaboration.AddCommand<CollaborationAddCollaboratorCommand>(serviceProvider);
+        collaboration.AddCommand<CollaborationEnableWorkloadCommand>(serviceProvider);
+        collaboration.AddCommand<CollaborationGetReadonlyKubeconfigCommand>(serviceProvider);
+        collaboration.AddCommand<CollaborationRecoverCommand>(serviceProvider);
+
+        var invitations = new CommandGroup("invitations", "Cleanroom invitation operations - Commands for listing and inspecting cleanroom collaboration invitations.");
+        root.AddSubGroup(invitations);
+
+        invitations.AddCommand<InvitationsListCommand>(serviceProvider);
+        invitations.AddCommand<InvitationsAcceptCommand>(serviceProvider);
+
+        var dashboard = new CommandGroup("dashboard", "Cleanroom dashboard operations - Commands for accessing monitoring dashboards in a cleanroom collaboration.");
+        root.AddSubGroup(dashboard);
+
+        dashboard.AddCommand<DashboardOpenGrafanaCommand>(serviceProvider);
+
+        var datasets = new CommandGroup("datasets", "Cleanroom dataset operations - Commands for publishing and inspecting datasets in a cleanroom collaboration.");
+        root.AddSubGroup(datasets);
+
+        datasets.AddCommand<DatasetsPublishCommand>(serviceProvider);
+        datasets.AddCommand<DatasetsBuildBodyCommand>(serviceProvider);
+        datasets.AddCommand<DatasetsGetCommand>(serviceProvider);
+        datasets.AddCommand<DatasetsListCommand>(serviceProvider);
+
+        var consent = new CommandGroup("consent", "Cleanroom consent operations - Commands for creating and managing consent documents in a cleanroom collaboration.");
+        root.AddSubGroup(consent);
+
+        consent.AddCommand<ConsentPutCommand>(serviceProvider);
+
+        var queries = new CommandGroup("queries", "Cleanroom query operations - Commands for publishing, inspecting, and running analytics queries on a cleanroom collaboration.");
+        root.AddSubGroup(queries);
+
+        queries.AddCommand<QueriesBuildBodyCommand>(serviceProvider);
+        queries.AddCommand<QueriesDownloadOutputCommand>(serviceProvider);
+        queries.AddCommand<QueriesPublishCommand>(serviceProvider);
+        queries.AddCommand<QueriesGetCommand>(serviceProvider);
+        queries.AddCommand<QueriesListCommand>(serviceProvider);
+        queries.AddCommand<QueriesVoteCommand>(serviceProvider);
+        queries.AddCommand<QueriesRunCommand>(serviceProvider);
+        queries.AddCommand<QueriesRunsCommand>(serviceProvider);
+
+        var runs = new CommandGroup("runs", "Cleanroom run operations - Commands for polling and inspecting query run state in a cleanroom collaboration.");
+        root.AddSubGroup(runs);
+
+        runs.AddCommand<RunsGetCommand>(serviceProvider);
+
+        var auditevents = new CommandGroup("auditevents", "Cleanroom audit event operations - Commands for listing and inspecting audit events in a cleanroom collaboration.");
+        root.AddSubGroup(auditevents);
+
+        auditevents.AddCommand<AuditEventsListCommand>(serviceProvider);
 
         return root;
     }

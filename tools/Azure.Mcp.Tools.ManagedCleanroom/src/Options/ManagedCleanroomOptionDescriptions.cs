@@ -15,12 +15,13 @@ public static class ManagedCleanroomOptionDescriptions
     public const string CollaborationId =
         "The unique identifier (UUID) of the cleanroom collaboration.";
 
+    public const string DocumentId =
+        "The unique identifier (UUID) of the dataset document to publish.";
+
     public const string AllowUntrustedCert =
         "When true, skips TLS certificate validation for the cleanroom endpoint. Use only for dev/test endpoints with self-signed certificates.";
 
     public const string TokenScope =
-        "Optional Microsoft Entra token scope for the cleanroom frontend API (for example, 'https://my-cleanroom.cloudapp.azure.net/.default'). Defaults to '<endpoint-origin>/.default'.";
-
-    public const string DocumentId =
-        "The unique identifier (UUID) of the dataset document to publish.";
+        "Optional OAuth scope override for access tokens used when calling the cleanroom endpoint.";
 }
+

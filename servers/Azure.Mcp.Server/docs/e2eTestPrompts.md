@@ -682,6 +682,66 @@ This file contains prompts used for end-to-end testing to ensure each tool is in
 |:----------|:----------|
 | grafana_list | List all Azure Managed Grafana in one subscription |
 
+## Azure Managed Cleanroom
+
+| Tool Name | Test Prompt |
+|:----------|:----------|
+| managedcleanroom_analytics_get | Get the analytics workload configuration for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_analytics_get | Show me the analytics config for cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_analytics_skr-policy | Get the SKR policy for key <kid> on cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_analytics_skr-policy | Show me the Secure Key Release policy for key <kid> in cleanroom <collaboration-id> |
+| managedcleanroom_auditevents_list | List audit events for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_auditevents_list | Show me the audit log for cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_collaboration_add-collaborator | Add collaborator alice@contoso.com to cleanroom collaboration <name> in resource group <resource-group> |
+| managedcleanroom_collaboration_add-collaborator | Add service principal <spn-id> as a collaborator to cleanroom collaboration <name> |
+| managedcleanroom_collaboration_create | Create an Azure Cleanroom collaboration named <name> in resource group <resource-group> in location <location> |
+| managedcleanroom_collaboration_create | Create a new cleanroom collaboration called <name> in <resource-group> in subscription <subscription> |
+| managedcleanroom_collaboration_enable-workload | Enable the Analytics workload on cleanroom collaboration <name> in resource group <resource-group> |
+| managedcleanroom_collaboration_enable-workload | Enable workload type Analytics on cleanroom collaboration <name> in subscription <subscription> |
+| managedcleanroom_collaboration_get | Get the ARM resource details for cleanroom collaboration <name> in resource group <resource-group> |
+| managedcleanroom_collaboration_get | Show the provisioningState and health of cleanroom collaboration <name> in subscription <subscription> |
+| managedcleanroom_collaboration_get-readonly-kubeconfig | Get a read-only kubeconfig for cleanroom collaboration <name> in resource group <resource-group> |
+| managedcleanroom_collaboration_get-readonly-kubeconfig | Download the read-only kubeconfig for cleanroom collaboration <name> in subscription <subscription> |
+| managedcleanroom_collaboration_recover | Recover cleanroom collaboration <name> in resource group <resource-group> |
+| managedcleanroom_collaboration_recover | Trigger ARM recover for cleanroom collaboration <name> in subscription <subscription> |
+| managedcleanroom_collaborations_get | Get details for cleanroom collaboration <collaboration-id> from endpoint <endpoint> |
+| managedcleanroom_collaborations_get | Show me the cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_collaborations_list | List my Azure Cleanroom collaborations from endpoint <endpoint> |
+| managedcleanroom_collaborations_list | Show me the cleanroom collaborations I participate in using endpoint <endpoint> |
+| managedcleanroom_collaborations_list | List active cleanroom collaborations from <endpoint> |
+| managedcleanroom_consent_put | Grant consent for document <document-id> in cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_consent_put | Put consent for document <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_datasets_get | Get dataset document <document-id> for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_datasets_get | Show me the dataset <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_datasets_list | List all datasets for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_datasets_list | Show me the datasets in cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_datasets_publish | Publish dataset document <document-id> for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_datasets_publish | Publish the dataset <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_invitations_accept | Accept the invitation <invitation-id> to join cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_invitations_accept | Accept my pending invitation <invitation-id> for cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_invitations_list | List the invitations for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_invitations_list | Show me pending invitations for cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_oidc_issuer-info | Get the OIDC issuer info for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_oidc_issuer-info | Show me the OIDC issuer configuration for cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_oidc_keys | Get the OIDC JSON Web Key Set (JWKS) for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_oidc_keys | Show me the public keys used by the OIDC issuer of cleanroom <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_oidc_set-issuer-url | Register the OIDC issuer URL <issuer-url> for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_oidc_set-issuer-url | Set the OIDC issuer URL for cleanroom <collaboration-id> to <issuer-url> using endpoint <endpoint> |
+| managedcleanroom_queries_get | Get query document <document-id> for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_queries_get | Show me the query <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_queries_list | List all queries for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_queries_list | Show me the queries in cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_queries_publish | Publish query document <document-id> for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_queries_publish | Publish the query <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_queries_run | Run query <document-id> for cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_queries_run | Execute the query <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_queries_runs | Get the run history for query <document-id> in cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_queries_runs | Show me the run history for query <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_queries_vote | Approve query <document-id> in cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_queries_vote | Reject query <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
+| managedcleanroom_runs_get | Get the run history for query <document-id> in cleanroom collaboration <collaboration-id> at endpoint <endpoint> |
+| managedcleanroom_runs_get | Show me the runs for query <document-id> in cleanroom <collaboration-id> using endpoint <endpoint> |
+
 ## Azure Managed Lustre
 
 | Tool Name | Test Prompt |
